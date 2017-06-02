@@ -1,0 +1,38 @@
+{
+  "name": "solid-auth-client",
+  "version": "0.1.0",
+  "description": "Opaquely authenticates solid clients",
+  "main": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "repository": "git@github.com:solid/solid-auth-client.git",
+  "author": "Daniel Friedman <dfriedman58@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "jest": "jest src --coverage",
+    "test": "yarn jest",
+    "test:dev": "yarn jest -- --watch",
+    "build": "yarn build:lib && yarn build:umd",
+    "build:lib": "babel src -d lib",
+    "build:umd": "webpack",
+    "prepublish": "yarn run build"
+  },
+  "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
+    "solid-auth-oidc": "^0.1.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-jest": "^20.0.3",
+    "babel-loader": "^7.0.0",
+    "babel-plugin-transform-object-rest-spread": "^6.23.0",
+    "babel-preset-env": "^1.5.1",
+    "babel-preset-flow": "^6.23.0",
+    "flow-bin": "^0.47.0",
+    "jest": "^20.0.4",
+    "nock": "^9.0.13",
+    "url-search-params": "^0.9.0",
+    "webpack": "^2.6.1"
+  }
+}
