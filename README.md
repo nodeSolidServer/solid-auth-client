@@ -21,8 +21,7 @@ functions.  You don't have to know anything about flow.*
 
 ```js
 login (idp: string, {
-  returnRoute?: string,
-  rsWhitelist?: Array<string>,
+  redirectUri?: string,
   storage?: Storage
 }): Promise<[string?, fetch]>
 ```
@@ -40,8 +39,7 @@ When the user is not found on the IDP, the WebID will be `null`.
 If there's an error during the auth handshake, the Promise will reject.
 
 Options:
-- `returnRoute` (default `'/'`): a path to append to the application origin for auth flows which involve redirects
-- `rsWhiteList` (default `null`): a resource server whitelist.  When `null`, allows the `fetch` function to present credentials all resource servers.  When `Array<string>`, restricts the fetch function to only pass credentials to origins in the array.
+- `redirectUri` (default current window location): a URI to be redirected back to with credentials for auth flows which involve redirects
 - `storage`: An object implementing the storage interface for persisting credentials.
 
 ### `currentUser`

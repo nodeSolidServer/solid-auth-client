@@ -1,52 +1,40 @@
-import URLSearchParams from 'url-search-params'
 import nock from 'nock'
+import URLSearchParams from 'url-search-params'
 
-import { login } from './'
+import { currentUser, login, memStorage } from './'
 
-const corsHeaders = {
-  'access-control-allow-origin': '*',
-  'access-control-expose-headers': 'user',
-  'access-control-allow-credentials': 'true',
-  'access-control-allow-methods': 'OPTIONS, HEAD, GET, PUT, POST, PATCH'
-}
-
-const mockLocalStorage = () => {
-  const store = {}
-  return {
-    getItem (key) {
-      return store[key]
-    },
-    setItem (key, val) {
-      store[key] = val
-    }
-  }
-}
+let _href
+let _URL
 
 beforeEach(() => {
   // polyfill missing web apis
-  window.localStorage = mockLocalStorage()
-  window.URLSearchParams = URLSearchParams
-  window.location = { href: 'https://app.biz/' }
-  window._URL = URL
+  _href = window.location.href
+  Object.defineProperty(window.location, 'href', {
+    writable: true,
+    value: 'https://app.biz/'
+  })
+  _URL = URL
   window.URL = function (urlStr) {
     const url = new _URL(urlStr)
     url.searchParams = new URLSearchParams(url.search)
     return url
   }
+  window.URLSearchParams = URLSearchParams
+  window.localStorage = memStorage()
 })
 
 afterEach(() => {
   delete window.localStorage
   delete window.URLSearchParams
-  delete window.location
-  window.URL = window._URL
+  window.URL = _URL
+  window.location.href = _href
 })
 
 const oidcConfiguration = {
-  issuer: 'https://example.com',
-  jwks_uri: 'https://example.com/jwks',
-  registration_endpoint: 'https://example.com/register',
-  authorization_endpoint: 'https://example.com/authorize'
+  issuer:                 'https://localhost',
+  jwks_uri:               'https://localhost/jwks',
+  registration_endpoint:  'https://localhost/register',
+  authorization_endpoint: 'https://localhost/authorize'
 }
 
 const jwks = {
@@ -58,45 +46,99 @@ const oidcRegistration = {
 }
 
 describe('login', () => {
-  afterEach(nock.cleanAll)
-
-  it('can log in with WebID-TLS', () => {
-    const webId = 'https://example.com/profile#me'
-    nock('https://example.com/')
-      .options('/')
-      .reply(200, '', corsHeaders)
-      .options('/')
-      .reply(200, '', { ...corsHeaders, user: webId })
-
-    return login('https://example.com')
-      .then(({ webId: _webId }) => {
-        expect(_webId).toBe(webId)
-      })
+  beforeEach(() => {
+    nock.disableNetConnect()
   })
 
-  it('can log in with WebID-OIDC', () => {
-    nock('https://example.com/')
-      .options('/')
-      .reply(200, '', corsHeaders)
-      .options('/')
-      .reply(200, '', corsHeaders)
-      .get('/.well-known/openid-configuration')
-      .reply(200, oidcConfiguration, corsHeaders)
-      .get('/jwks')
-      .reply(200, jwks, corsHeaders)
-      .post('/register')
-      .reply(200, oidcRegistration, corsHeaders)
+  afterEach(() => {
+    nock.cleanAll()
+    nock.enableNetConnect()
+  })
 
-    return login('https://example.com')
-      .then(() => {
-        const location = new URL(window.location.href)
-        expect(location.origin).toEqual('https://example.com')
-        expect(location.pathname).toEqual('/authorize')
-        expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/')
-        expect(location.searchParams.get('response_type')).toEqual('id_token token')
-        expect(location.searchParams.get('scope')).toEqual('openid')
-        expect(location.searchParams.get('client_id')).toEqual('abc123')
-      })
+  describe('WebID-TLS', () => {
+    it('can log in with WebID-TLS', () => {
+      const webId = 'https://localhost/profile#me'
+      nock('https://localhost/')
+        .options('/')
+        .reply(200, '', { user: webId })
+
+      return login('https://localhost')
+        .then(({ webId: _webId }) => {
+          expect(_webId).toBe(webId)
+        })
+    })
+  })
+
+  describe('WebID-OIDC', () => {
+    it('can log in with WebID-OIDC', () => {
+      nock('https://localhost/')
+        .options('/')
+        .reply(200)
+        .get('/.well-known/openid-configuration')
+        .reply(200, oidcConfiguration)
+        .get('/jwks')
+        .reply(200, jwks)
+        .post('/register')
+        .reply(200, oidcRegistration)
+
+      return login('https://localhost')
+        .then(() => {
+          const location = new URL(window.location.href)
+          expect(location.origin).toEqual('https://localhost')
+          expect(location.pathname).toEqual('/authorize')
+          expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/')
+          expect(location.searchParams.get('response_type')).toEqual('id_token token')
+          expect(location.searchParams.get('scope')).toEqual('openid')
+          expect(location.searchParams.get('client_id')).toEqual('abc123')
+        })
+    })
+
+    it('uses the provided redirect uri', () => {
+      nock('https://localhost')
+        .options('/')
+        .reply(200)
+        .get('/.well-known/openid-configuration')
+        .reply(200, oidcConfiguration)
+        .get('/jwks')
+        .reply(200, jwks)
+        .post('/register')
+        .reply(200, oidcRegistration)
+
+      return login('https://localhost', { redirectUri: 'https://app.biz/welcome/' })
+        .then(() => {
+          const location = new URL(window.location.href)
+          expect(location.origin).toEqual('https://localhost')
+          expect(location.pathname).toEqual('/authorize')
+          expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/welcome/')
+          expect(location.searchParams.get('response_type')).toEqual('id_token token')
+          expect(location.searchParams.get('scope')).toEqual('openid')
+          expect(location.searchParams.get('client_id')).toEqual('abc123')
+        })
+    })
+
+    it('resolves to a `null` WebID when none of the recognized auth schemes are available')
+  })
+})
+
+describe('currentUser', () => {
+  describe('WebID-TLS', () => {
+    it('can find the current user', () => {
+      const webId = 'https://localhost/profile#me'
+      nock('https://localhost/')
+        .options('/')
+        .reply(200, '', { user: webId })
+
+      return currentUser('https://localhost')
+        .then(({ webId: _webId }) => {
+          expect(_webId).toBe(webId)
+        })
+    })
+  })
+
+  describe('WebID-OIDC', () => {
+    it('can find the current user if stored')
+
+    it('resolves to a `null` WebID when there is no stored user session')
   })
 })
 

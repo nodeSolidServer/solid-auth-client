@@ -13,6 +13,7 @@
     "jest": "jest src --coverage",
     "test": "yarn jest",
     "test:dev": "yarn jest -- --watch",
+    "test:debug": "node --debug-brk ./node_modules/.bin/jest --runInBand src",
     "build": "yarn build:lib && yarn build:umd",
     "build:lib": "babel src -d lib",
     "build:umd": "webpack",
