@@ -1,4 +1,5 @@
 [ignore]
+.*.json$
 
 [include]
 

@@ -1,7 +1,8 @@
 import nock from 'nock'
 import URLSearchParams from 'url-search-params'
 
-import { currentUser, login, memStorage } from './'
+import { currentUser, login } from './'
+import { memStorage } from './storage'
 
 let _href
 let _URL

@@ -2,6 +2,28 @@
 # yarn lockfile v1
 
 
+"@trust/jose@^0.1.1":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@trust/jose/-/jose-0.1.2.tgz#47e0cd15c62e35d84ddd30d24204695145482cf8"
+  dependencies:
+    "@trust/json-document" "^0.1.4"
+    "@trust/webcrypto" "^0.0.2"
+    base64url "^2.0.0"
+    text-encoding "^0.6.1"
+
+"@trust/json-document@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@trust/json-document/-/json-document-0.1.4.tgz#b2023b1e145ba7685bd1f36ec7b69128940073e9"
+
+"@trust/webcrypto@0.0.2", "@trust/webcrypto@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@trust/webcrypto/-/webcrypto-0.0.2.tgz#e77c69a2e612b9d392251c5966c73168537e2667"
+  dependencies:
+    base64url "^2.0.0"
+    node-rsa "^0.4.0"
+    pem-jwk "^1.5.1"
+    text-encoding "^0.6.1"
+
 URIjs@*:
   version "1.16.1"
   resolved "https://registry.yarnpkg.com/URIjs/-/URIjs-1.16.1.tgz#edebc678b8b74b26b05d2b481e12383f5ae04b8b"
@@ -2068,15 +2090,6 @@ jodid25519@^1.0.0:
   dependencies:
     jsbn "~0.1.0"
 
-"jose@git://github.com/anvilresearch/jose.git#rc-006":
-  version "0.0.0"
-  resolved "git://github.com/anvilresearch/jose.git#52e00da816c1804ff80f7d2f3e3fa35b78090115"
-  dependencies:
-    base64url "^2.0.0"
-    json-document "git://github.com/anvilresearch/json-document.git#rc-002"
-    text-encoding "^0.6.1"
-    webcrypto "git://github.com/anvilresearch/webcrypto.git#v0.0.1"
-
 js-tokens@^3.0.0:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-3.0.1.tgz#08e9f132484a2c45a30907e9dc4d5567b7f114d7"
@@ -2123,10 +2136,6 @@ jsesc@^1.3.0:
 jsesc@~0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-0.5.0.tgz#e7dee66e35d6fc16f710fe91d5cf69f70f08911d"
-
-"json-document@git://github.com/anvilresearch/json-document.git#rc-002":
-  version "0.1.0"
-  resolved "git://github.com/anvilresearch/json-document.git#d0ccc8f397d60639ded7cb75e746f3d042322289"
 
 json-loader@^0.5.4:
   version "0.5.4"
@@ -2540,17 +2549,17 @@ object.omit@^2.0.0:
     for-own "^0.1.4"
     is-extendable "^0.1.1"
 
-"oidc-rp@git://github.com/anvilresearch/oidc-rp.git#rc-005":
-  version "0.1.0"
-  resolved "git://github.com/anvilresearch/oidc-rp.git#568705e821a0dbf5fccd7f7443709f570592006c"
+"oidc-rp@git://github.com/anvilresearch/oidc-rp.git#8ddcd67d815c55f000d1709b73fcb62d1c31e58f":
+  version "0.2.0"
+  resolved "git://github.com/anvilresearch/oidc-rp.git#8ddcd67d815c55f000d1709b73fcb62d1c31e58f"
   dependencies:
+    "@trust/jose" "^0.1.1"
+    "@trust/json-document" "^0.1.4"
+    "@trust/webcrypto" "0.0.2"
     base64url "^2.0.0"
-    jose "git://github.com/anvilresearch/jose.git#rc-006"
-    json-document "git://github.com/anvilresearch/json-document.git#rc-002"
     node-fetch "^1.6.3"
     text-encoding "^0.6.1"
     urlutils "0.0.3"
-    webcrypto "git://github.com/anvilresearch/webcrypto.git#v0.0.1"
 
 once@^1.3.0, once@^1.3.3, once@^1.4.0:
   version "1.4.0"
@@ -3030,12 +3039,6 @@ sntp@1.x.x:
   dependencies:
     hoek "2.x.x"
 
-solid-auth-oidc@^0.1.2:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/solid-auth-oidc/-/solid-auth-oidc-0.1.2.tgz#6a756b8ec1c6633297a7b517618a36a24db02158"
-  dependencies:
-    oidc-rp "git://github.com/anvilresearch/oidc-rp.git#rc-005"
-
 source-list-map@^1.1.1:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-1.1.2.tgz#9889019d1024cce55cdc069498337ef6186a11a1"
@@ -3373,15 +3376,6 @@ watchpack@^1.3.1:
     async "^2.1.2"
     chokidar "^1.4.3"
     graceful-fs "^4.1.2"
-
-"webcrypto@git://github.com/anvilresearch/webcrypto.git#v0.0.1":
-  version "0.0.1"
-  resolved "git://github.com/anvilresearch/webcrypto.git#04227d3592b9d9f37c6e981c24c125ca7d162155"
-  dependencies:
-    base64url "^2.0.0"
-    node-rsa "^0.4.0"
-    pem-jwk "^1.5.1"
-    text-encoding "^0.6.1"
 
 webidl-conversions@^3.0.0:
   version "3.0.1"

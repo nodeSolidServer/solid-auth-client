@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",
-    "solid-auth-oidc": "^0.1.2"
+    "oidc-rp": "git://github.com/anvilresearch/oidc-rp.git#8ddcd67d815c55f000d1709b73fcb62d1c31e58f"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
