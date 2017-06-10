@@ -1,7 +1,9 @@
 // @flow
 import RelyingParty from 'oidc-rp'
 
-import type { authResponse, loginOptions } from './'
+import type { loginOptions } from './'
+import type { session } from './session'
+import { saveSession } from './session'
 import type { Storage } from './storage'
 import { NAMESPACE, defaultStorage, getData, updateStorage } from './storage'
 import { currentUrl } from './util'
@@ -60,11 +62,7 @@ const sendAuthRequest = (rp: RelyingParty, { redirectUri, storage }: loginOption
   rp.createRequest({ redirect_uri: redirectUri }, storage)
     .then(authUrl => { window.location.href = authUrl })
 
-export const currentUser = (idp: string, { storage }: { storage: Storage } = { storage: defaultStorage() }): Promise<authResponse> => {
-  const { session } = getData(storage)
-  if (session && session.idp === idp) {
-    return Promise.resolve({ webId: session.webId, fetch })
-  }
+export const currentUser = (idp: string, { storage }: { storage: Storage } = { storage: defaultStorage() }): Promise<?session> => {
   return getStoredRp(storage, idp)
     .then(rp => {
       if (!rp) { return null }
@@ -72,24 +70,11 @@ export const currentUser = (idp: string, { storage }: { storage: Storage } = { s
     })
     .then(resp => {
       if (!resp) { return null }
-      return saveSession(storage, {
+      return {
         idp,
         webId: resp.decoded.payload.sub,
         idToken: resp.params.id_token,
         accessToken: resp.params.access_token
-      }).webId
+      }
     })
-    .then(webId => ({ webId, fetch }))
-}
-
-type Session =
-  { idp: string
-  , webId: string
-  , accessToken: ?string
-  , idToken: ?string
-  }
-
-const saveSession = (storage: Storage, session: Session): Session => {
-  updateStorage(storage, data => ({ ...data, session }))
-  return session
 }

@@ -17,24 +17,41 @@ clients don't have to handle different authentication protocols.
 They're just here to show you the types of arguments expected by exported
 functions.  You don't have to know anything about flow.*
 
+### types
+
+```
+type session =
+  { idp: string
+  , webId: string
+  , accessToken?: string
+  , idToken?: string
+  }
+
+type authResponse =
+  { session: ?session
+  , fetch: fetchApi
+  }
+```
+
 ### `login`
 
-```js
+```
 login (idp: string, {
   redirectUri?: string,
   storage?: Storage
-}): Promise<[string?, fetch]>
+}): Promise<authResponse>
 ```
 
-Authenticates the user with their IDP (identity provider) and promises an array
-containing the user's WebID and a `fetch` function.
+Authenticates the user with their IDP (identity provider) and promises an object
+containing the user's session and a `fetch` function.
 
-When the user is successfully authenticated, the WebID will be bound to a
-non-empty string and the `fetch` function (same API as [whatwg
+When the user is successfully authenticated, the session will be non-null and
+the `fetch` function (same API as [whatwg
 fetch](https://fetch.spec.whatwg.org/)) can be used to request any resource on
 the web, passing credentials when necessary.
 
-When the user is not found on the IDP, the WebID will be `null`.
+When the user is not found from the IDP, the session will be `null`, and the
+`fetch` will be a plain old fetch.
 
 If there's an error during the auth handshake, the Promise will reject.
 
@@ -44,16 +61,17 @@ Options:
 
 ### `currentUser`
 
-```js
-currentUser (idp: string): Promise<[string?, fetch]>
+```
+currentUser (idp: string): Promise<authResponse>
 ```
 
-Finds the current user for the given IDP, and returns their WebID and `fetch`
-function, if their session is still active.
+Finds the current user for the given IDP, and returns their session and `fetch`
+function, if their session is still active, otherwise `null` and a regular
+fetch.
 
 ### `logout`
 
-```js
+```
 logout (idp: string): void
 ```
 

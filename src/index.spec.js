@@ -6,7 +6,8 @@ import rsaPemToJwk from 'rsa-pem-to-jwk'
 import URLSearchParams from 'url-search-params'
 
 import { currentUser, login } from './'
-import { NAMESPACE, getData, memStorage, updateStorage } from './storage'
+import { getSession, saveSession } from './session'
+import { NAMESPACE, getData, memStorage } from './storage'
 
 /*
  * OIDC test data:
@@ -86,8 +87,9 @@ describe('login', () => {
         .reply(200, '', { user: webId })
 
       return login('https://localhost')
-        .then(({ webId: _webId }) => {
-          expect(_webId).toBe(webId)
+        .then(({ session }) => {
+          expect(session.webId).toBe(webId)
+          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
         })
     })
   })
@@ -144,7 +146,7 @@ describe('login', () => {
     })
 
     // TODO: this is broken due to https://github.com/anvilresearch/oidc-rp/issues/26
-    it('resolves to a `null` WebID when none of the recognized auth schemes are available')
+    it('resolves to a `null` session when none of the recognized auth schemes are available')
   })
 })
 
@@ -157,8 +159,9 @@ describe('currentUser', () => {
         .reply(200, '', { user: webId })
 
       return currentUser('https://localhost')
-        .then(({ webId: _webId }) => {
-          expect(_webId).toBe(webId)
+        .then(({ session }) => {
+          expect(session.webId).toBe(webId)
+          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
         })
     })
   })
@@ -218,70 +221,62 @@ describe('currentUser', () => {
             `state=${state}`
         })
         .then(() => currentUser('https://localhost'))
-        .then(({ webId }) => {
-          expect(webId).toBe('https://person.me/#me')
-        })
-        .then(() => {
-          // expect that the session has been updated
-          const { session: { idp, webId, accessToken, idToken } } = getData(localStorage)
-          expect(idp).toBe('https://localhost')
-          expect(webId).toBe('https://person.me/#me')
-          expect(accessToken).toBe(expectedAccessToken)
-          expect(idToken).toBe(expectedIdToken)
+        .then(({ session }) => {
+          expect(session.webId).toBe('https://person.me/#me')
+          expect(session.accessToken).toBe(expectedAccessToken)
+          expect(session.idToken).toBe(expectedIdToken)
+          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
         })
     })
 
     it('can find the current user if stored', () => {
       // Pretend we've stored the current user session from a prior login
-      updateStorage(localStorage, data => ({
-        ...data,
-        session: {
-          idp: 'https://localhost',
-          webId: 'https://person.me/#me',
-          accessToken: 'fake_access_token',
-          idToken: 'abc.def.ghi'
-        }
-      }))
+      saveSession(localStorage,{
+        idp: 'https://localhost',
+        webId: 'https://person.me/#me',
+        accessToken: 'fake_access_token',
+        idToken: 'abc.def.ghi'
+      })
 
       nock('https://localhost/')
         .options('/')
         .reply(200, '')
 
       return currentUser('https://localhost')
-        .then(({ webId }) => {
-          expect(webId).toBe('https://person.me/#me')
+        .then(({ session }) => {
+          expect(session.webId).toBe('https://person.me/#me')
+          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
         })
     })
 
-    it('resolves to a `null` WebID when the stored session is for a different IDP', () => {
-      updateStorage(localStorage, data => ({
-        ...data,
-        session: {
-          idp: 'https://localhost',
-          webId: 'https://person.me/#me',
-          accessToken: 'fake_access_token',
-          idToken: 'abc.def.ghi'
-        }
-      }))
+    it('resolves to a `null` session when the stored session is for a different IDP', () => {
+      saveSession(localStorage, {
+        idp: 'https://localhost',
+        webId: 'https://person.me/#me',
+        accessToken: 'fake_access_token',
+        idToken: 'abc.def.ghi'
+      })
 
       nock('https://other-idp.com')
         .options('/')
         .reply(200, '')
 
       return currentUser('https://other-idp.com')
-        .then(({ webId }) => {
-          expect(webId).toBeNull()
+        .then(({ session }) => {
+          expect(session).toBeNull()
+          expect(getSession(localStorage, 'https://other-idp.com')).toBeNull()
         })
     })
 
-    it('resolves to a `null` WebID when there is no stored user session', () => {
+    it('resolves to a `null` session when there is no stored user session', () => {
       nock('https://localhost/')
         .options('/')
         .reply(200, '')
 
       return currentUser('https://localhost')
-        .then(({ webId }) => {
-          expect(webId).toBeNull()
+        .then(({ session }) => {
+          expect(session).toBeNull()
+          expect(getSession(localStorage, 'https://localhost')).toBeNull()
         })
     })
   })

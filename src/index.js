@@ -1,9 +1,10 @@
 // @flow
 import 'isomorphic-fetch'
 
+import type { session } from './session'
+import { getSession, saveSession } from './session'
 import type { Storage } from './storage'
 import { memStorage, defaultStorage } from './storage'
-
 import { currentUrl } from './util'
 import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
@@ -11,7 +12,7 @@ import * as WebIdOidc from './webid-oidc'
 type fetchApi = (url: string, options: Object) => any
 
 export type authResponse =
-  { webId: ?string
+  { session: ?session
   , fetch: fetchApi
   }
 
@@ -25,20 +26,20 @@ const defaultLoginOptions = (): loginOptions => ({
   storage: defaultStorage()
 })
 
-// TODO: manage storage here, not in the OIDC module
-
 export const login = (idp: string, options: loginOptions): Promise<authResponse> => {
   options = { ...defaultLoginOptions(), ...options }
   return WebIdTls.login(idp)
-    .then(webId => webId
-      ? { webId, fetch }
-      : WebIdOidc.login(idp, options)
-    )
+    .then(session => session ? saveSession(options.storage, session) : null)
+    .then(session => session ? { session, fetch } : WebIdOidc.login(idp, options))
 }
 
-export const currentUser = (idp: string, options: { storage: Storage } = { storage: defaultStorage() }): Promise<authResponse> =>
-  WebIdTls.login(idp)
-    .then(webId => webId
-      ? { webId, fetch }
-      : WebIdOidc.currentUser(idp, options)
-    )
+export const currentUser = (idp: string, options: { storage: Storage } = { storage: defaultStorage() }): Promise<authResponse> => {
+  const session = getSession(options.storage, idp)
+  if (session) {
+    return Promise.resolve({ session, fetch })
+  }
+  return WebIdTls.login(idp)
+    .then(session => session || WebIdOidc.currentUser(idp, options))
+    .then(session => session ? saveSession(options.storage, session) : session)
+    .then(session => ({ session, fetch }))
+}
