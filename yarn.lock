@@ -11,15 +11,6 @@
     base64url "^2.0.0"
     text-encoding "^0.6.1"
 
-"@trust/jose@^0.2.2":
-  version "0.2.2"
-  resolved "https://registry.yarnpkg.com/@trust/jose/-/jose-0.2.2.tgz#d30a18c9953b22dd3a5f6e72dcfe2a2bf29f1aaa"
-  dependencies:
-    "@trust/json-document" "^0.1.4"
-    "@trust/webcrypto" "^0.0.2"
-    base64url "^2.0.0"
-    text-encoding "^0.6.1"
-
 "@trust/json-document@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@trust/json-document/-/json-document-0.1.4.tgz#b2023b1e145ba7685bd1f36ec7b69128940073e9"
@@ -27,15 +18,6 @@
 "@trust/webcrypto@0.0.2", "@trust/webcrypto@^0.0.2":
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/@trust/webcrypto/-/webcrypto-0.0.2.tgz#e77c69a2e612b9d392251c5966c73168537e2667"
-  dependencies:
-    base64url "^2.0.0"
-    node-rsa "^0.4.0"
-    pem-jwk "^1.5.1"
-    text-encoding "^0.6.1"
-
-"@trust/webcrypto@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@trust/webcrypto/-/webcrypto-0.1.0.tgz#277b74f3c2056c5886fcb652eec6ca8bda8a947d"
   dependencies:
     base64url "^2.0.0"
     node-rsa "^0.4.0"
@@ -2504,14 +2486,7 @@ nock@^9.0.13:
     propagate "0.4.0"
     qs "^6.0.2"
 
-node-fetch@^1.0.1:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-1.7.0.tgz#3ff6c56544f9b7fb00682338bb55ee6f54a8a0ef"
-  dependencies:
-    encoding "^0.1.11"
-    is-stream "^1.0.1"
-
-node-fetch@^1.7.1:
+node-fetch@^1.0.1, node-fetch@^1.7.1:
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-1.7.1.tgz#899cb3d0a3c92f952c47f1b876f4c8aeabd400d5"
   dependencies:

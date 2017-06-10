@@ -11,6 +11,7 @@
   "license": "MIT",
   "scripts": {
     "jest": "jest src --coverage",
+    "pretest": "flow",
     "test": "yarn jest",
     "test:dev": "yarn jest -- --watch",
     "test:debug": "node --debug-brk ./node_modules/.bin/jest --runInBand src",
@@ -24,8 +25,6 @@
     "oidc-rp": "git://github.com/anvilresearch/oidc-rp.git#47de5e5dfe1356eff7484171d22f5abb2981a8d2"
   },
   "devDependencies": {
-    "@trust/jose": "^0.2.2",
-    "@trust/webcrypto": "^0.1.0",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "babel-loader": "^7.0.0",
