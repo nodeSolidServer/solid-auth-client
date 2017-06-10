@@ -36,7 +36,7 @@ export const login = (idp: string, options: loginOptions): Promise<authResponse>
     )
 }
 
-export const currentUser = (idp: string, options: { storage?: Storage } = { storage: defaultStorage() }): Promise<authResponse> =>
+export const currentUser = (idp: string, options: { storage: Storage } = { storage: defaultStorage() }): Promise<authResponse> =>
   WebIdTls.login(idp)
     .then(webId => webId
       ? { webId, fetch }

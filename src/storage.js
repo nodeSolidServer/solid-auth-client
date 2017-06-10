@@ -36,12 +36,12 @@ export const defaultStorage = () => {
  * Gets the deserialized stored data
  */
 export const getData = (store: Storage) =>
-  JSON.parse(store.getItem(NAMESPACE)) || {}
+  JSON.parse(store.getItem(NAMESPACE) || '{}')
 
 /**
  * Updates a Storage object without mutating its intermediate representation.
  */
-export const updateStorage = (store: Storage, update: (object) => object): object => {
+export const updateStorage = (store: Storage, update: (Object) => Object): Object => {
   const currentData = getData(store)
   const newData = update(currentData)
   store.setItem(NAMESPACE, JSON.stringify(newData))
