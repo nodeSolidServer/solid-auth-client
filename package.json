@@ -21,9 +21,11 @@
   },
   "dependencies": {
     "isomorphic-fetch": "^2.2.1",
-    "oidc-rp": "git://github.com/anvilresearch/oidc-rp.git#8ddcd67d815c55f000d1709b73fcb62d1c31e58f"
+    "oidc-rp": "git://github.com/anvilresearch/oidc-rp.git#47de5e5dfe1356eff7484171d22f5abb2981a8d2"
   },
   "devDependencies": {
+    "@trust/jose": "^0.2.2",
+    "@trust/webcrypto": "^0.1.0",
     "babel-cli": "^6.24.1",
     "babel-jest": "^20.0.3",
     "babel-loader": "^7.0.0",
@@ -32,7 +34,9 @@
     "babel-preset-flow": "^6.23.0",
     "flow-bin": "^0.47.0",
     "jest": "^20.0.4",
+    "jsonwebtoken": "^7.4.1",
     "nock": "^9.0.13",
+    "rsa-pem-to-jwk": "^1.1.3",
     "url-search-params": "^0.9.0",
     "webpack": "^2.6.1"
   }

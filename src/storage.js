@@ -7,17 +7,16 @@ export interface Storage {
   setItem (key: string, val: string): void;
 }
 
-export const memStorage = () => {
+export const memStorage = (): Storage => {
   const store = {}
-  return {
-    getItem (key: string) {
-      if (typeof store[key] === 'undefined') return null
-      return store[key]
-    },
-    setItem (key: string, val: string) {
-      store[key] = val
-    }
+  store.getItem = (key: string): ?string => {
+    if (typeof store[key] === 'undefined') return null
+    return store[key]
   }
+  store.setItem = (key: string, val: string) => {
+    store[key] = val
+  }
+  return store
 }
 
 export const defaultStorage = () => {
@@ -31,4 +30,20 @@ export const defaultStorage = () => {
     )
     return memStorage()
   }
+}
+
+/**
+ * Gets the deserialized stored data
+ */
+export const getData = (store: Storage) =>
+  JSON.parse(store.getItem(NAMESPACE)) || {}
+
+/**
+ * Updates a Storage object without mutating its intermediate representation.
+ */
+export const updateStorage = (store: Storage, update: (object) => object): object => {
+  const currentData = getData(store)
+  const newData = update(currentData)
+  store.setItem(NAMESPACE, JSON.stringify(newData))
+  return newData
 }

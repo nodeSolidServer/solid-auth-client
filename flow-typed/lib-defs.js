@@ -4,6 +4,7 @@ declare module 'oidc-rp' {
     static register (issuer: string, registration: object, options: object): Promise<RelyingParty>;
     createRequest (options: object, storage: object): Promise<string>;
     serialize (): string;
+    validateResponse (response: string, session: object): Promise<object>;
   }
 }
 
