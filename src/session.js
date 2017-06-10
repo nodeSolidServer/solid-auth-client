@@ -18,3 +18,7 @@ export const getSession = (storage: Storage, idp: string): ?session => {
 
 export const saveSession = (storage: Storage, session: session): session =>
   updateStorage(storage, data => ({ ...data, session })).session
+
+export const clearSession = (storage: Storage, idp: string): void => {
+  updateStorage(storage, data => ({ ...data, session: null }))
+}

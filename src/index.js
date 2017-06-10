@@ -2,7 +2,7 @@
 import 'isomorphic-fetch'
 
 import type { session } from './session'
-import { getSession, saveSession } from './session'
+import { getSession, saveSession, clearSession } from './session'
 import type { Storage } from './storage'
 import { memStorage, defaultStorage } from './storage'
 import { currentUrl } from './util'
@@ -43,3 +43,11 @@ export const currentUser = (idp: string, options: { storage: Storage } = { stora
     .then(session => session ? saveSession(options.storage, session) : session)
     .then(session => ({ session, fetch }))
 }
+
+export const logout = (idp: string, options: { storage: Storage } = { storage: defaultStorage() }): Promise<void> =>
+  Promise.resolve(getSession(options.storage, idp))
+    .then(session => session && session.idToken && session.accessToken
+      ? WebIdOidc.logout(idp, options)
+      : null
+    )
+    .then(() => clearSession(options.storage, idp))

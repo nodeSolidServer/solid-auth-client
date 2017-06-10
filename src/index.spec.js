@@ -5,7 +5,7 @@ import RelyingParty from 'oidc-rp'
 import rsaPemToJwk from 'rsa-pem-to-jwk'
 import URLSearchParams from 'url-search-params'
 
-import { currentUser, login } from './'
+import { currentUser, login, logout } from './'
 import { getSession, saveSession } from './session'
 import { NAMESPACE, getData, memStorage } from './storage'
 
@@ -20,7 +20,8 @@ const oidcConfiguration = {
   issuer:                 'https://localhost',
   jwks_uri:               'https://localhost/jwks',
   registration_endpoint:  'https://localhost/register',
-  authorization_endpoint: 'https://localhost/authorize'
+  authorization_endpoint: 'https://localhost/authorize',
+  end_session_endpoint:   'https://localhost/logout'
 }
 
 const oidcRegistration = {
@@ -283,9 +284,91 @@ describe('currentUser', () => {
 })
 
 describe('logout', () => {
-  describe('WebID-TLS', () => {})
+  describe('WebID-TLS', () => {
+    it('just removes the current session from the store', () => {
+      saveSession(localStorage, {
+        idp: 'https://localhost',
+        webId: 'https://person.me/#me',
+        accessToken: 'fake_access_token',
+        idToken: 'abc.def.ghi'
+      })
 
-  describe('WebID-OIDC', () => {})
+      return logout('https://localhost')
+        .then(() => {
+          expect(getSession(localStorage, 'https://localhost')).toBeNull()
+        })
+    })
+  })
+
+  describe('WebID-OIDC', () => {
+    it('hits the end_session_endpoint and clears the current session from the store', () => {
+      // To test currentUser with WebID-OIDC it's easist to set up the OIDC RP
+      // client by logging in, generating the IDP's response, and redirecting
+      // back to the app.
+      nock('https://localhost/')
+        // try to log in with WebID-TLS
+        .options('/')
+        .reply(200)
+        // no user header, so try to use WebID-OIDC
+        .get('/.well-known/openid-configuration')
+        .reply(200, oidcConfiguration)
+        .get('/jwks')
+        .reply(200, jwks)
+        .post('/register')
+        .reply(200, oidcRegistration)
+        // try to get the current user with WebID-TLS
+        .options('/')
+        .reply(200)
+        // no luck, try with WebID-OIDC
+        // see https://github.com/anvilresearch/oidc-rp/issues/29
+        .get('/jwks')
+        .reply(200, jwks)
+        .get('/logout')
+        .reply(200)
+
+      let expectedIdToken, expectedAccessToken
+
+      return login('https://localhost')
+        .then(() => {
+          // generate the auth response
+          const location = new URL(window.location.href)
+          const state = location.searchParams.get('state')
+          const redirectUri = location.searchParams.get('redirect_uri')
+          const nonce = location.searchParams.get('nonce')
+          const accessToken = 'example_access_token'
+          const { alg } = jwks.keys[0]
+          const idToken = jwt.sign(
+            {
+              iss: oidcConfiguration.issuer,
+              aud: oidcRegistration.client_id,
+              exp: Math.floor(Date.now() / 1000) + (60 * 60), // one hour
+              sub: 'https://person.me/#me',
+              nonce
+            },
+            pem,
+            { algorithm: alg }
+          )
+          expectedIdToken = idToken
+          expectedAccessToken = accessToken
+          window.location.href = `${redirectUri}#` +
+            `access_token=${accessToken}&` +
+            `token_type=Bearer&` +
+            `id_token=${idToken}&` +
+            `state=${state}`
+        })
+        .then(() => currentUser('https://localhost'))
+        .then(({ session }) => {
+          expect(session.webId).toBe('https://person.me/#me')
+          expect(session.accessToken).toBe(expectedAccessToken)
+          expect(session.idToken).toBe(expectedIdToken)
+          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
+        })
+        .then(() => logout('https://localhost'))
+        .then(() => {
+          expect(getSession(localStorage, 'https://localhost')).toBeNull()
+        })
+    })
+  })
 })
 
 describe('fetch', () => {

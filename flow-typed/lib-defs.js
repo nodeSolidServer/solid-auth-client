@@ -5,6 +5,7 @@ declare module 'oidc-rp' {
     createRequest (options: object, storage: object): Promise<string>;
     serialize (): string;
     validateResponse (response: string, session: object): Promise<object>;
+    logout (): Promise<void>;
   }
 }
 

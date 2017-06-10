@@ -62,7 +62,7 @@ Options:
 ### `currentUser`
 
 ```
-currentUser (idp: string): Promise<authResponse>
+currentUser (idp: string, { storage?: Storage }): Promise<authResponse>
 ```
 
 Finds the current user for the given IDP, and returns their session and `fetch`
@@ -72,7 +72,11 @@ fetch.
 ### `logout`
 
 ```
-logout (idp: string): void
+logout (idp: string, { storage?: Storage }): Promise<void>
 ```
 
 Clears the user session with the given IDP.
+
+Note: this is an unsupported use case in WebID-TLS.  Once your browser provides
+its client cert to a web server, there's no going back!  So for WebID-TLS, the
+only thing this will do is clear the session from the store.
