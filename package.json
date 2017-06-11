@@ -17,7 +17,7 @@
     "test:debug": "node --debug-brk ./node_modules/.bin/jest --runInBand src",
     "coverage:report": "cat ./coverage/lcov.info | coveralls",
     "build": "yarn build:lib && yarn build:umd",
-    "build:lib": "babel src -d lib",
+    "build:lib": "babel --ignore '**.spec.js' src -d lib",
     "build:umd": "webpack",
     "prepublish": "yarn run build"
   },
