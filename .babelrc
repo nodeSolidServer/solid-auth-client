@@ -1,4 +1,7 @@
 {
-  "presets": ["flow", "env"],
-  "plugins": ["transform-object-rest-spread"]
+  "presets": ["flow", "es2015"],
+  "plugins": ["transform-object-rest-spread"],
+  "ignore": [
+    "**.spec.js"
+  ]
 }

@@ -5,7 +5,7 @@ import RelyingParty from 'oidc-rp'
 import rsaPemToJwk from 'rsa-pem-to-jwk'
 import URLSearchParams from 'url-search-params'
 
-import { currentUser, login, logout } from './'
+import { currentUser, login, logout } from './api'
 import { getSession, saveSession } from './session'
 import { NAMESPACE, getData, memStorage } from './storage'
 
@@ -372,9 +372,72 @@ describe('logout', () => {
 })
 
 describe('fetch', () => {
-  it('Handles 401s from WebID-OIDC resources by resending with credentials')
+  it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
+    saveSession(localStorage, {
+      idp: 'https://localhost',
+      webId: 'https://person.me/#me',
+      accessToken: 'fake_access_token',
+      idToken: 'abc.def.ghi'
+    })
 
-  it('Only resends with credentials for resources in the whitelist')
+    nock('https://third-party.com')
+      .get('/protected-resource')
+      .reply(401, '', { 'www-authenticate': 'Bearer scope=openid' })
+      .get('/protected-resource')
+      .matchHeader('authorization', 'Bearer fake_access_token')
+      .reply(200)
 
-  it('Resends with credentials for all resources if the whitelist is not provided')
+    return currentUser('https://localhost')
+      .then(({ session, fetch }) => {
+        expect(session.webId).toBe('https://person.me/#me')
+        return fetch('https://third-party.com/protected-resource')
+      })
+      .then(resp => {
+        expect(resp.status).toBe(200)
+      })
+  })
+
+  it('does not resend with credentials if the www-authenticate header is missing', () => {
+    saveSession(localStorage, {
+      idp: 'https://localhost',
+      webId: 'https://person.me/#me',
+      accessToken: 'fake_access_token',
+      idToken: 'abc.def.ghi'
+    })
+
+    nock('https://third-party.com')
+      .get('/protected-resource')
+      .reply(401)
+
+    return currentUser('https://localhost')
+      .then(({ session, fetch }) => {
+        expect(session.webId).toBe('https://person.me/#me')
+        return fetch('https://third-party.com/protected-resource')
+      })
+      .then(resp => {
+        expect(resp.status).toBe(401)
+      })
+  })
+
+  it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', () => {
+    saveSession(localStorage, {
+      idp: 'https://localhost',
+      webId: 'https://person.me/#me',
+      accessToken: 'fake_access_token',
+      idToken: 'abc.def.ghi'
+    })
+
+    nock('https://third-party.com')
+      .get('/protected-resource')
+      .reply(401, '', { 'www-authenticate': 'Basic token' })
+
+    return currentUser('https://localhost')
+      .then(({ session, fetch }) => {
+        expect(session.webId).toBe('https://person.me/#me')
+        return fetch('https://third-party.com/protected-resource')
+      })
+      .then(resp => {
+        expect(resp.status).toBe(401)
+      })
+  })
 })

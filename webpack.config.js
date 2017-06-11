@@ -15,6 +15,10 @@ module.exports = {
         test: /\.js$/,
         loader: 'babel-loader',
         exclude: /node_modules/
+      },
+      {
+        test: /^.*\/oidc-rp\/.*\.js$/,
+        loader: 'babel-loader'
       }
     ]
   },
@@ -22,7 +26,7 @@ module.exports = {
     'node-fetch': 'fetch',
     'text-encoding': 'TextEncoder',
     'urlutils': 'URL',
-    'webcrypto': 'crypto'
+    '@trust/webcrypto': 'crypto'
   },
   plugins: [
     new webpack.optimize.UglifyJsPlugin()

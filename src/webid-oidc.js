@@ -1,7 +1,7 @@
 // @flow
 import RelyingParty from 'oidc-rp'
 
-import type { loginOptions } from './'
+import type { loginOptions } from './api'
 import type { session } from './session'
 import { saveSession } from './session'
 import type { Storage } from './storage'
