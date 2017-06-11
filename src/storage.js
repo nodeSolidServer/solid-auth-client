@@ -25,8 +25,7 @@ export const defaultStorage = () => {
   } else {
     console.warn(
       `'window.localStorage' unavailable.  ` +
-      `Passing a (not very useful) in-memory storage object as the storage interface.  ` +
-      `Call 'login' with a valid storage interface for 'options.storage'`
+      `Creating a (not very useful) in-memory storage object as the default storage interface.`
     )
     return memStorage()
   }

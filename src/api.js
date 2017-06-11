@@ -18,10 +18,13 @@ export type loginOptions = {
   storage: Storage
 }
 
-const defaultLoginOptions = (): loginOptions => ({
-  redirectUri: currentUrl(),
-  storage: defaultStorage()
-})
+const defaultLoginOptions = (): loginOptions => {
+  const url = currentUrl()
+  return {
+    redirectUri: url ? url.split('#')[0] : null,
+    storage: defaultStorage()
+  }
+}
 
 export const login = (idp: string, options: loginOptions): Promise<authResponse> => {
   options = { ...defaultLoginOptions(), ...options }

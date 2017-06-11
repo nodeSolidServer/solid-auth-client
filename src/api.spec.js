@@ -146,6 +146,33 @@ describe('login', () => {
         })
     })
 
+    it('strips the hash fragment from the current URL when proiding the default redirect URL', () => {
+      nock('https://localhost/')
+        // try to log in with WebID-TLS
+        .options('/')
+        .reply(200)
+        // no user header, so try to use WebID-OIDC
+        .get('/.well-known/openid-configuration')
+        .reply(200, oidcConfiguration)
+        .get('/jwks')
+        .reply(200, jwks)
+        .post('/register')
+        .reply(200, oidcRegistration)
+
+      window.location.href += '#foo-bar'
+
+      return login('https://localhost')
+        .then(() => {
+          const location = new URL(window.location.href)
+          expect(location.origin).toEqual('https://localhost')
+          expect(location.pathname).toEqual('/authorize')
+          expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/')
+          expect(location.searchParams.get('response_type')).toEqual('id_token token')
+          expect(location.searchParams.get('scope')).toEqual('openid')
+          expect(location.searchParams.get('client_id')).toEqual('the-client-id')
+        })
+    })
+
     // TODO: this is broken due to https://github.com/anvilresearch/oidc-rp/issues/26
     it('resolves to a `null` session when none of the recognized auth schemes are available')
   })
