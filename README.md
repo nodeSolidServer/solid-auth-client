@@ -20,16 +20,16 @@ functions.  You don't have to know anything about flow.*
 ### types
 
 ```
+type authResponse =
+  { session: ?session
+  , fetch: fetch
+  }
+
 type session =
   { idp: string
   , webId: string
   , accessToken?: string
   , idToken?: string
-  }
-
-type authResponse =
-  { session: ?session
-  , fetch: fetchApi
   }
 ```
 
@@ -52,6 +52,11 @@ the web, passing credentials when necessary.
 
 When the user is not found from the IDP, the session will be `null`, and the
 `fetch` will be a plain old fetch.
+
+Auth flows like OIDC require the user to give consent on their identity
+provider.  In such cases, this function redirects the user to their auth
+provider, which sort of breaks the promise.  All you have to do is call
+`currentUser` when the user gives consent and lands back in your app.
 
 If there's an error during the auth handshake, the Promise will reject.
 
