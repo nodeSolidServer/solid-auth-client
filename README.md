@@ -59,31 +59,30 @@ When the user is not found from the IDP, the session will be `null`, and the
 Auth flows like OIDC require the user to give consent on their identity
 provider.  In such cases, this function redirects the user to their auth
 provider, which sort of breaks the promise.  All you have to do is call
-`currentUser` when the user gives consent and lands back in your app.
+`currentSession` when the user gives consent and lands back in your app.
 
 If there's an error during the auth handshake, the Promise will reject.
 
 Options:
 - `redirectUri` (default current window location): a URI to be redirected back to with credentials for auth flows which involve redirects
-- `storage`: An object implementing the storage interface for persisting credentials.
+- `storage`: An object implementing the storage interface for persisting credentials.  `localStorage` is the default in the browser.
 
-### `currentUser`
+### `currentSession`
 
 ```
-currentUser (idp: string, { storage?: Storage }): Promise<authResponse>
+currentSession (storage?: Storage): Promise<authResponse>
 ```
 
-Finds the current user for the given IDP, and returns their session and `fetch`
-function, if their session is still active, otherwise `null` and a regular
-fetch.
+Finds the current session, and returns it along with a `fetch` function, if
+their session is still active, otherwise `null` and a regular fetch.
 
 ### `logout`
 
 ```
-logout (idp: string, { storage?: Storage }): Promise<void>
+logout (storage?: Storage): Promise<void>
 ```
 
-Clears the user session with the given IDP.
+Clears the active user session.
 
 Note: this is an unsupported use case in WebID-TLS.  Once your browser provides
 its client cert to a web server, there's no going back!  So for WebID-TLS, the

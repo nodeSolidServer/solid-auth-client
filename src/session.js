@@ -9,16 +9,12 @@ export type session =
   , idToken?: string
   }
 
-export const getSession = (storage: Storage, idp: string): ?session => {
-  const { session } = getData(storage)
-  return session && session.idp === idp
-    ? session
-    : null
-}
+export const getSession = (storage: Storage): ?session =>
+  getData(storage).session || null
 
 export const saveSession = (storage: Storage, session: session): session =>
   updateStorage(storage, data => ({ ...data, session })).session
 
-export const clearSession = (storage: Storage, idp: string): void => {
+export const clearSession = (storage: Storage): void => {
   updateStorage(storage, data => ({ ...data, session: null }))
 }

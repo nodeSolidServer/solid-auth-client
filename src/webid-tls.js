@@ -1,4 +1,7 @@
 // @flow
+/* global fetch */
+import 'isomorphic-fetch'
+
 import type { session } from './session'
 
 export const login = (idp: string): Promise<?session> =>

@@ -1,13 +1,12 @@
 const path = require('path')
 const webpack = require('webpack')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
-  entry: './src/index.js',
+  entry: './demo/index.js',
   output: {
-    filename: 'solid-auth-client.min.js',
-    path: path.resolve(__dirname, 'dist'),
-    library: 'SolidAuthClient',
-    libraryTarget: 'umd'
+    filename: 'app.js',
+    path: path.resolve(__dirname, 'docs')
   },
   module: {
     rules: [
@@ -19,6 +18,10 @@ module.exports = {
       {
         test: /^.*\/oidc-rp\/.*\.js$/,
         loader: 'babel-loader'
+      },
+      {
+        test: /\.css$/,
+        use: [ 'style-loader', 'css-loader' ]
       }
     ]
   },
@@ -29,11 +32,14 @@ module.exports = {
     '@trust/webcrypto': 'crypto'
   },
   plugins: [
+    new HtmlWebpackPlugin({
+      title: 'Solid Auth Client',
+      hash: true
+    }),
     new webpack.optimize.UglifyJsPlugin()
   ],
   devServer: {
     contentBase: path.join(__dirname, 'docs'),
-    historyApiFallback: true,
-    publicPath: '/js/'
+    historyApiFallback: true
   }
 }

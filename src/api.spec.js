@@ -1,13 +1,14 @@
+/* eslint-env mocha */
+/* global expect */
 import fs from 'fs'
 import jwt from 'jsonwebtoken'
 import nock from 'nock'
-import RelyingParty from 'oidc-rp'
 import rsaPemToJwk from 'rsa-pem-to-jwk'
 import URLSearchParams from 'url-search-params'
 
-import { currentUser, login, logout } from './api'
+import { currentSession, login, logout } from './api'
 import { getSession, saveSession } from './session'
-import { NAMESPACE, getData, memStorage } from './storage'
+import { memStorage } from './storage'
 
 /*
  * OIDC test data:
@@ -17,11 +18,11 @@ import { NAMESPACE, getData, memStorage } from './storage'
  */
 
 const oidcConfiguration = {
-  issuer:                 'https://localhost',
-  jwks_uri:               'https://localhost/jwks',
-  registration_endpoint:  'https://localhost/register',
+  issuer: 'https://localhost',
+  jwks_uri: 'https://localhost/jwks',
+  registration_endpoint: 'https://localhost/register',
   authorization_endpoint: 'https://localhost/authorize',
-  end_session_endpoint:   'https://localhost/logout'
+  end_session_endpoint: 'https://localhost/logout'
 }
 
 const oidcRegistration = {
@@ -53,7 +54,7 @@ beforeEach(() => {
     writable: true,
     value: 'https://app.biz/'
   })
-  _URL = URL
+  _URL = window.URL
   window.URL = function (urlStr) {
     const url = new _URL(urlStr)
     url.searchParams = new URLSearchParams(url.search)
@@ -90,7 +91,7 @@ describe('login', () => {
       return login('https://localhost')
         .then(({ session }) => {
           expect(session.webId).toBe(webId)
-          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
+          expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
         })
     })
   })
@@ -111,7 +112,7 @@ describe('login', () => {
 
       return login('https://localhost')
         .then(() => {
-          const location = new URL(window.location.href)
+          const location = new window.URL(window.location.href)
           expect(location.origin).toEqual('https://localhost')
           expect(location.pathname).toEqual('/authorize')
           expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/')
@@ -136,7 +137,7 @@ describe('login', () => {
 
       return login('https://localhost', { redirectUri: 'https://app.biz/welcome/' })
         .then(() => {
-          const location = new URL(window.location.href)
+          const location = new window.URL(window.location.href)
           expect(location.origin).toEqual('https://localhost')
           expect(location.pathname).toEqual('/authorize')
           expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/welcome/')
@@ -163,7 +164,7 @@ describe('login', () => {
 
       return login('https://localhost')
         .then(() => {
-          const location = new URL(window.location.href)
+          const location = new window.URL(window.location.href)
           expect(location.origin).toEqual('https://localhost')
           expect(location.pathname).toEqual('/authorize')
           expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/')
@@ -178,25 +179,33 @@ describe('login', () => {
   })
 })
 
-describe('currentUser', () => {
-  describe('WebID-TLS', () => {
-    it('can find the current user', () => {
-      const webId = 'https://localhost/profile#me'
-      nock('https://localhost/')
-        .options('/')
-        .reply(200, '', { user: webId })
-
-      return currentUser('https://localhost')
-        .then(({ session }) => {
-          expect(session.webId).toBe(webId)
-          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
-        })
+describe('currentSession', () => {
+  it('can find the current user if stored', () => {
+    saveSession(window.localStorage, {
+      idp: 'https://localhost',
+      webId: 'https://person.me/#me',
+      accessToken: 'fake_access_token',
+      idToken: 'abc.def.ghi'
     })
+
+    return currentSession()
+      .then(({ session }) => {
+        expect(session.webId).toBe('https://person.me/#me')
+        expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
+      })
+  })
+
+  it('resolves to a `null` session when there is no stored user session', () => {
+    return currentSession()
+      .then(({ session }) => {
+        expect(session).toBeNull()
+        expect(getSession(window.localStorage)).toBeNull()
+      })
   })
 
   describe('WebID-OIDC', () => {
     it('can find the current user from the URL auth response', () => {
-      // To test currentUser with WebID-OIDC it's easist to set up the OIDC RP
+      // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
       nock('https://localhost/')
@@ -210,10 +219,6 @@ describe('currentUser', () => {
         .reply(200, jwks)
         .post('/register')
         .reply(200, oidcRegistration)
-        // try to get the current user with WebID-TLS
-        .options('/')
-        .reply(200)
-        // no luck, try with WebID-OIDC
         // see https://github.com/anvilresearch/oidc-rp/issues/29
         .get('/jwks')
         .reply(200, jwks)
@@ -223,7 +228,7 @@ describe('currentUser', () => {
       return login('https://localhost')
         .then(() => {
           // generate the auth response
-          const location = new URL(window.location.href)
+          const location = new window.URL(window.location.href)
           const state = location.searchParams.get('state')
           const redirectUri = location.searchParams.get('redirect_uri')
           const nonce = location.searchParams.get('nonce')
@@ -248,63 +253,12 @@ describe('currentUser', () => {
             `id_token=${idToken}&` +
             `state=${state}`
         })
-        .then(() => currentUser('https://localhost'))
+        .then(currentSession)
         .then(({ session }) => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
-          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
-        })
-    })
-
-    it('can find the current user if stored', () => {
-      // Pretend we've stored the current user session from a prior login
-      saveSession(localStorage,{
-        idp: 'https://localhost',
-        webId: 'https://person.me/#me',
-        accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
-      })
-
-      nock('https://localhost/')
-        .options('/')
-        .reply(200, '')
-
-      return currentUser('https://localhost')
-        .then(({ session }) => {
-          expect(session.webId).toBe('https://person.me/#me')
-          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
-        })
-    })
-
-    it('resolves to a `null` session when the stored session is for a different IDP', () => {
-      saveSession(localStorage, {
-        idp: 'https://localhost',
-        webId: 'https://person.me/#me',
-        accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
-      })
-
-      nock('https://other-idp.com')
-        .options('/')
-        .reply(200, '')
-
-      return currentUser('https://other-idp.com')
-        .then(({ session }) => {
-          expect(session).toBeNull()
-          expect(getSession(localStorage, 'https://other-idp.com')).toBeNull()
-        })
-    })
-
-    it('resolves to a `null` session when there is no stored user session', () => {
-      nock('https://localhost/')
-        .options('/')
-        .reply(200, '')
-
-      return currentUser('https://localhost')
-        .then(({ session }) => {
-          expect(session).toBeNull()
-          expect(getSession(localStorage, 'https://localhost')).toBeNull()
+          expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
         })
     })
   })
@@ -313,23 +267,23 @@ describe('currentUser', () => {
 describe('logout', () => {
   describe('WebID-TLS', () => {
     it('just removes the current session from the store', () => {
-      saveSession(localStorage, {
+      saveSession(window.localStorage, {
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
         idToken: 'abc.def.ghi'
       })
 
-      return logout('https://localhost')
+      return logout()
         .then(() => {
-          expect(getSession(localStorage, 'https://localhost')).toBeNull()
+          expect(getSession(window.localStorage, 'https://localhost')).toBeNull()
         })
     })
   })
 
   describe('WebID-OIDC', () => {
     it('hits the end_session_endpoint and clears the current session from the store', () => {
-      // To test currentUser with WebID-OIDC it's easist to set up the OIDC RP
+      // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
       nock('https://localhost/')
@@ -343,9 +297,6 @@ describe('logout', () => {
         .reply(200, jwks)
         .post('/register')
         .reply(200, oidcRegistration)
-        // try to get the current user with WebID-TLS
-        .options('/')
-        .reply(200)
         // no luck, try with WebID-OIDC
         // see https://github.com/anvilresearch/oidc-rp/issues/29
         .get('/jwks')
@@ -358,7 +309,7 @@ describe('logout', () => {
       return login('https://localhost')
         .then(() => {
           // generate the auth response
-          const location = new URL(window.location.href)
+          const location = new window.URL(window.location.href)
           const state = location.searchParams.get('state')
           const redirectUri = location.searchParams.get('redirect_uri')
           const nonce = location.searchParams.get('nonce')
@@ -383,16 +334,16 @@ describe('logout', () => {
             `id_token=${idToken}&` +
             `state=${state}`
         })
-        .then(() => currentUser('https://localhost'))
+        .then(currentSession)
         .then(({ session }) => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
-          expect(getSession(localStorage, 'https://localhost')).toEqual(session)
+          expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
         })
-        .then(() => logout('https://localhost'))
+        .then(() => logout())
         .then(() => {
-          expect(getSession(localStorage, 'https://localhost')).toBeNull()
+          expect(getSession(window.localStorage, 'https://localhost')).toBeNull()
         })
     })
   })
@@ -400,7 +351,7 @@ describe('logout', () => {
 
 describe('fetch', () => {
   it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
-    saveSession(localStorage, {
+    saveSession(window.localStorage, {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -414,7 +365,7 @@ describe('fetch', () => {
       .matchHeader('authorization', 'Bearer fake_access_token')
       .reply(200)
 
-    return currentUser('https://localhost')
+    return currentSession()
       .then(({ session, fetch }) => {
         expect(session.webId).toBe('https://person.me/#me')
         return fetch('https://third-party.com/protected-resource')
@@ -425,7 +376,7 @@ describe('fetch', () => {
   })
 
   it('does not resend with credentials if the www-authenticate header is missing', () => {
-    saveSession(localStorage, {
+    saveSession(window.localStorage, {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -436,7 +387,7 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401)
 
-    return currentUser('https://localhost')
+    return currentSession()
       .then(({ session, fetch }) => {
         expect(session.webId).toBe('https://person.me/#me')
         return fetch('https://third-party.com/protected-resource')
@@ -447,7 +398,7 @@ describe('fetch', () => {
   })
 
   it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', () => {
-    saveSession(localStorage, {
+    saveSession(window.localStorage, {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -458,7 +409,7 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Basic token' })
 
-    return currentUser('https://localhost')
+    return currentSession()
       .then(({ session, fetch }) => {
         expect(session.webId).toBe('https://person.me/#me')
         return fetch('https://third-party.com/protected-resource')

@@ -1,10 +1,11 @@
 // @flow
+/* global fetch, RequestInfo, Response */
 import 'isomorphic-fetch'
 import * as authorization from 'auth-header'
 
 import type { session } from './session'
 
-export const authenticatedFetch = (session: ?session): fetch =>
+export const authenticatedFetch = (session: ?session): (url: RequestInfo, options?: Object) => Promise<Response> =>
   (url: RequestInfo, options?: Object) =>
     fetch(url, options)
       .then(resp => {
