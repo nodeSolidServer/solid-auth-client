@@ -8,7 +8,7 @@ type propTypes = {
   choosingProvider: boolean,
   onClickLogIn: (event: Event) => any,
   onClickCancelLogin: (event: Event) => any,
-  onSubmitIdp: (event: Event) => any,
+  onSubmitIdp: (idp: string) => any,
   onClickLogOut: (event: Event) => any
 }
 

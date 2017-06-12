@@ -4,7 +4,7 @@ import React from 'react'
 export default class TextForm extends React.Component {
   props: {
     label: string,
-    onSubmit: (Event) => any,
+    onSubmit: (string) => any,
     onCancel: (Event) => any
   }
 
@@ -12,8 +12,10 @@ export default class TextForm extends React.Component {
     input: ''
   }
 
-  updateInput = (event: Event) =>
+  updateInput = (event: Event & { target: EventTarget }) => {
+    console.log(event)
     this.setState({ input: event.target.value })
+  }
 
   handle = (handler: (input: string) => any) => (event: Event) => {
     event.preventDefault()
@@ -22,7 +24,7 @@ export default class TextForm extends React.Component {
 
   render () {
     const onSubmit = this.handle(this.props.onSubmit)
-    const onCancel = this.handle(this.props.onCancel)
+    const onCancel = this.props.onCancel
     return (
       <form className='form-inline' onSubmit={onSubmit}>
         <div className='form-group'>
