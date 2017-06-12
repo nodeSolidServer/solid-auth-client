@@ -7,7 +7,7 @@ type propTypes = {
   loggedIn: boolean,
   choosingProvider: boolean,
   onClickLogIn: (event: Event) => any,
-  onClickCancelLogin: (event: Event) => any,
+  onClickCancelLogin: () => any,
   onSubmitIdp: (idp: string) => any,
   onClickLogOut: (event: Event) => any
 }
@@ -20,6 +20,7 @@ const Nav = ({loggedIn, choosingProvider, onClickLogIn, onClickCancelLogin, onSu
       : choosingProvider
         ? <TextForm
           label='Choose an Identity Provider'
+          placeholder='e.g. https://solidtest.space'
           onCancel={onClickCancelLogin}
           onSubmit={onSubmitIdp}
           />

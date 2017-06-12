@@ -1,7 +1,10 @@
 // @flow
+import 'isomorphic-fetch'
 import React from 'react'
 
+import Copy from './Copy'
 import Nav from './Nav'
+import PersonalInfo from './PersonalInfo'
 
 import type { authResponse } from '../../src/api'
 import type { session } from '../../src/session'
@@ -16,7 +19,7 @@ export default class App extends React.Component {
     choosingProvider: false
   }
 
-  fetch: fetch
+  fetch = fetch
 
   saveCredentials = ({ session, fetch }: authResponse): void => {
     this.setState({ session })
@@ -26,7 +29,7 @@ export default class App extends React.Component {
   onClickLogIn = (event: Event) =>
     this.setState({ choosingProvider: true })
 
-  onClickCancelLogin = (event: Event) =>
+  onClickCancelLogin = () =>
     this.setState({ choosingProvider: false })
 
   onSubmitIdp = (idp: string) => {
@@ -58,10 +61,8 @@ export default class App extends React.Component {
           onSubmitIdp={this.onSubmitIdp}
           onClickLogOut={this.onClickLogOut}
         />
-        <div>
-          This is a simple demo of the Solid Auth Client.  You're currently
-          {loggedIn ? ' logged in' : ' anonymous. Click "Log in" to authenticate and see some information about yourself'}.
-        </div>
+        <Copy loggedIn={loggedIn} />
+        <PersonalInfo session={this.state.session} fetch={this.fetch} />
       </div>
     )
   }

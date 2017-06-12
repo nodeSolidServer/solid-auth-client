@@ -5,7 +5,7 @@ import type { session } from './session'
 import { getSession, saveSession, clearSession } from './session'
 import type { Storage } from './storage'
 import { defaultStorage } from './storage'
-import { currentUrl } from './util'
+import { currentUrlNoParams } from './util'
 import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
 
@@ -20,7 +20,7 @@ export type loginOptions = {
 }
 
 const defaultLoginOptions = (): loginOptions => {
-  const url = currentUrl()
+  const url = currentUrlNoParams()
   return {
     redirectUri: url ? url.split('#')[0] : null,
     storage: defaultStorage()

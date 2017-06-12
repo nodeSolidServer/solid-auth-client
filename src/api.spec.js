@@ -54,6 +54,14 @@ beforeEach(() => {
     writable: true,
     value: 'https://app.biz/'
   })
+  Object.defineProperty(window.location, 'origin', {
+    writable: true,
+    value: 'https://app.biz'
+  })
+  Object.defineProperty(window.location, 'pathname', {
+    writable: true,
+    value: '/'
+  })
   _URL = window.URL
   window.URL = function (urlStr) {
     const url = new _URL(urlStr)

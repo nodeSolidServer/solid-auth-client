@@ -1,7 +1,7 @@
 // @flow
-export const currentUrl = (): ?string => {
+const whenLocationAvailable = <T>(fn: () => T): ?T => {
   if (window && window.location) {
-    return window.location.href
+    return fn()
   } else {
     console.warn(
       `'window.location' unavailable.  Returning 'null' as the current URL.`
@@ -9,3 +9,9 @@ export const currentUrl = (): ?string => {
     return null
   }
 }
+
+export const currentUrl = (): ?string =>
+  whenLocationAvailable(() => window.location.href)
+
+export const currentUrlNoParams = (): ?string =>
+  whenLocationAvailable(() => window.location.origin + window.location.pathname)
