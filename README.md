@@ -1,5 +1,8 @@
 # solid-auth-client
 
+[![Build Status](https://travis-ci.org/solid/solid-auth-client.svg?branch=master)](https://travis-ci.org/solid/solid-auth-client)
+[![Coverage Status](https://coveralls.io/repos/github/solid/solid-auth-client/badge.svg?branch=master)](https://coveralls.io/github/solid/solid-auth-client?branch=master)
+
 Opaquely authenticates solid clients
 
 ## About
@@ -17,46 +20,70 @@ clients don't have to handle different authentication protocols.
 They're just here to show you the types of arguments expected by exported
 functions.  You don't have to know anything about flow.*
 
-### `login`
+### types
 
-```js
-login (idp: string, {
-  returnRoute?: string,
-  rsWhitelist?: Array<string>,
-  storage?: Storage
-}): Promise<[string?, fetch]>
+```
+type authResponse =
+  { session: ?session
+  , fetch: fetch
+  }
+
+type session =
+  { idp: string
+  , webId: string
+  , accessToken?: string
+  , idToken?: string
+  }
 ```
 
-Authenticates the user with their IDP (identity provider) and promises an array
-containing the user's WebID and a `fetch` function.
+### `login`
 
-When the user is successfully authenticated, the WebID will be bound to a
-non-empty string and the `fetch` function (same API as [whatwg
+```
+login (idp: string, {
+  redirectUri?: string,
+  storage?: Storage
+}): Promise<authResponse>
+```
+
+Authenticates the user with their IDP (identity provider) and promises an object
+containing the user's session and a `fetch` function.
+
+When the user is successfully authenticated, the session will be non-null and
+the `fetch` function (same API as [whatwg
 fetch](https://fetch.spec.whatwg.org/)) can be used to request any resource on
 the web, passing credentials when necessary.
 
-When the user is not found on the IDP, the WebID will be `null`.
+When the user is not found from the IDP, the session will be `null`, and the
+`fetch` will be a plain old fetch.
+
+Auth flows like OIDC require the user to give consent on their identity
+provider.  In such cases, this function redirects the user to their auth
+provider, which sort of breaks the promise.  All you have to do is call
+`currentSession` when the user gives consent and lands back in your app.
 
 If there's an error during the auth handshake, the Promise will reject.
 
 Options:
-- `returnRoute` (default `'/'`): a path to append to the application origin for auth flows which involve redirects
-- `rsWhiteList` (default `null`): a resource server whitelist.  When `null`, allows the `fetch` function to present credentials all resource servers.  When `Array<string>`, restricts the fetch function to only pass credentials to origins in the array.
-- `storage`: An object implementing the storage interface for persisting credentials.
+- `redirectUri` (default current window location): a URI to be redirected back to with credentials for auth flows which involve redirects
+- `storage`: An object implementing the storage interface for persisting credentials.  `localStorage` is the default in the browser.
 
-### `currentUser`
+### `currentSession`
 
-```js
-currentUser (idp: string): Promise<[string?, fetch]>
+```
+currentSession (storage?: Storage): Promise<authResponse>
 ```
 
-Finds the current user for the given IDP, and returns their WebID and `fetch`
-function, if their session is still active.
+Finds the current session, and returns it along with a `fetch` function, if
+their session is still active, otherwise `null` and a regular fetch.
 
 ### `logout`
 
-```js
-logout (idp: string): void
+```
+logout (storage?: Storage): Promise<void>
 ```
 
-Clears the user session with the given IDP.
+Clears the active user session.
+
+Note: this is an unsupported use case in WebID-TLS.  Once your browser provides
+its client cert to a web server, there's no going back!  So for WebID-TLS, the
+only thing this will do is clear the session from the store.

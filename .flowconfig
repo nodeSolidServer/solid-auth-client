@@ -1,0 +1,8 @@
+[ignore]
+.*.json$
+
+[include]
+
+[libs]
+
+[options]
