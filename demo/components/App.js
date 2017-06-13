@@ -44,9 +44,7 @@ export default class App extends React.Component {
 
   constructor (props: {}) {
     super(props)
-    currentSession()
-      .then(this.saveCredentials)
-      .then(() => { window.location.hash = '' })
+    currentSession().then(this.saveCredentials)
   }
 
   render () {

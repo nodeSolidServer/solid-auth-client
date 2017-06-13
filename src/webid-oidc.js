@@ -5,7 +5,7 @@ import type { loginOptions } from './api'
 import type { session } from './session'
 import type { Storage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
-import { currentUrl } from './util'
+import { currentUrl, clearHashFragment } from './util'
 
 export const login = (idp: string, options: loginOptions): Promise<any> =>
   getRegisteredRp(idp, options).then(rp => sendAuthRequest(rp, options))
@@ -18,6 +18,7 @@ export const currentSession = (storage: Storage = defaultStorage()): Promise<?se
     })
     .then(resp => {
       if (!resp) { return null }
+      clearHashFragment()
       return {
         idp: resp.decoded.payload.iss,
         webId: resp.decoded.payload.sub,

@@ -188,7 +188,7 @@ describe('login', () => {
 })
 
 describe('currentSession', () => {
-  it('can find the current user if stored', () => {
+  it('can find the current session if stored', () => {
     saveSession(window.localStorage, {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -203,7 +203,7 @@ describe('currentSession', () => {
       })
   })
 
-  it('resolves to a `null` session when there is no stored user session', () => {
+  it('resolves to a `null` session when there is no stored session or OIDC response', () => {
     return currentSession()
       .then(({ session }) => {
         expect(session).toBeNull()
@@ -212,7 +212,7 @@ describe('currentSession', () => {
   })
 
   describe('WebID-OIDC', () => {
-    it('can find the current user from the URL auth response', () => {
+    it('can find the current session from the URL auth response', () => {
       // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
@@ -267,6 +267,7 @@ describe('currentSession', () => {
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
           expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
+          expect(window.location.hash).toBe('')
         })
     })
   })
@@ -347,6 +348,7 @@ describe('logout', () => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
+          expect(window.location.hash).toBe('')
           expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
         })
         .then(() => logout())
