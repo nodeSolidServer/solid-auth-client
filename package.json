@@ -18,11 +18,13 @@
     "test:dev": "yarn jest -- --watch",
     "test:debug": "node --debug-brk ./node_modules/.bin/jest --runInBand src",
     "coverage:report": "cat ./coverage/lcov.info | coveralls",
-    "build": "yarn build:lib && yarn build:umd",
+    "build": "yarn build:lib && yarn build:umd && yarn build:docs",
     "build:lib": "babel --ignore '**.spec.js' src -d lib",
     "build:umd": "webpack",
     "build:docs": "cross-env ENV=production webpack --config=./webpack.config.demo.js",
-    "prepublish": "yarn run build"
+    "preversion": "yarn test",
+    "postversion": "git push --follow-tags",
+    "prepublish": "yarn build"
   },
   "dependencies": {
     "auth-header": "^0.3.1",
