@@ -5,6 +5,7 @@ import React from 'react'
 import Copy from './Copy'
 import Nav from './Nav'
 import PersonalInfo from './PersonalInfo'
+import Footer from './Footer'
 
 import type { authResponse } from '../../src/api'
 import type { session } from '../../src/session'
@@ -61,6 +62,7 @@ export default class App extends React.Component {
         />
         <Copy loggedIn={loggedIn} />
         <PersonalInfo session={this.state.session} fetch={this.fetch} />
+        <Footer />
       </div>
     )
   }

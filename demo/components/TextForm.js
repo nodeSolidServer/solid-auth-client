@@ -29,9 +29,9 @@ export default class TextForm extends React.Component {
         <div className='form-group'>
           <label>
             <span className='sr-only'>{this.props.label}</span>
-            <input type='text' className='form-control' placeholder={this.props.placeholder} value={this.state.input} onChange={this.updateInput} />
+            <input type='text' className='form-control mr-1' placeholder={this.props.placeholder} value={this.state.input} onChange={this.updateInput} />
           </label>
-          <button type='submit' className='btn btn-primary' onClick={onSubmit}>Submit</button>
+          <button type='submit' className='btn btn-primary mr-1' onClick={onSubmit}>Submit</button>
           <button type='cancel' className='btn btn-secondary' onClick={onCancel}>Cancel</button>
         </div>
       </form>
