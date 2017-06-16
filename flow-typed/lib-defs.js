@@ -4,7 +4,7 @@ declare module 'auth-header' {
 
 declare module 'isomorphic-fetch' {}
 
-declare module 'oidc-rp' {
+declare module '@trust/oidc-rp' {
   declare export default class RelyingParty {
     provider : { url: string };
     static from (data: object): Promise<RelyingParty>;

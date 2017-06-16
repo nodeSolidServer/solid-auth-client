@@ -4,7 +4,8 @@
   "description": "Opaquely authenticates solid clients",
   "main": "lib/index.js",
   "files": [
-    "lib"
+    "lib",
+    "dist"
   ],
   "repository": "git@github.com:solid/solid-auth-client.git",
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
@@ -27,10 +28,10 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
+    "@trust/oidc-rp": "^0.3.0",
     "auth-header": "^0.3.1",
     "bootstrap": "^4.0.0-alpha.6",
-    "isomorphic-fetch": "^2.2.1",
-    "oidc-rp": "git://github.com/anvilresearch/oidc-rp.git#47de5e5dfe1356eff7484171d22f5abb2981a8d2"
+    "isomorphic-fetch": "^2.2.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
