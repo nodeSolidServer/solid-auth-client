@@ -1,5 +1,5 @@
 // @flow
-import RelyingParty from 'oidc-rp'
+import RelyingParty from '@trust/oidc-rp'
 
 import type { loginOptions } from './api'
 import type { session } from './session'
