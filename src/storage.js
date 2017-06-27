@@ -22,15 +22,18 @@ export const memStorage = (): Storage => {
 }
 
 export const defaultStorage = () => {
-  if (window && window.localStorage) {
-    return window.localStorage
-  } else {
-    console.warn(
-      `'window.localStorage' unavailable.  ` +
-      `Creating a (not very useful) in-memory storage object as the default storage interface.`
-    )
-    return memStorage()
+  try {
+    if (window && window.localStorage) {
+      return window.localStorage
+    }
+  } catch (e) {
+    if (!(e instanceof ReferenceError)) { throw e }
   }
+  console.warn(
+    `'window.localStorage' unavailable.  ` +
+    `Creating a (not very useful) in-memory storage object as the default storage interface.`
+  )
+  return memStorage()
 }
 
 /**

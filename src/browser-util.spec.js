@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 /* global expect */
-import { currentUrl, currentUrlNoParams } from './util'
+import { currentUrl, currentUrlNoParams } from './browser-util'
 
 describe('currentUrl', () => {
   it('returns the current url when window.location is available', () => {
