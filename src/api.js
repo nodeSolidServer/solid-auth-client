@@ -1,6 +1,6 @@
 // @flow
 /* global RequestInfo, Response */
-import { authenticatedFetch } from './auth-fetch'
+import { authnFetch } from './authn-fetch'
 import type { session } from './session'
 import { getSession, saveSession, clearSession } from './session'
 import type { Storage } from './storage'
@@ -32,7 +32,7 @@ export const login = (idp: string, options: loginOptions): Promise<authResponse>
   return WebIdTls.login(idp)
     .then(session => session ? saveSession(options.storage, session) : null)
     .then(session => session
-      ? { session, fetch: authenticatedFetch(session) }
+      ? { session, fetch: authnFetch(options.storage) }
       : WebIdOidc.login(idp, options)
     )
 }
@@ -40,11 +40,11 @@ export const login = (idp: string, options: loginOptions): Promise<authResponse>
 export const currentSession = (storage: Storage = defaultStorage()): Promise<authResponse> => {
   const session = getSession(storage)
   if (session) {
-    return Promise.resolve({ session, fetch: authenticatedFetch(session) })
+    return Promise.resolve({ session, fetch: authnFetch(storage) })
   }
   return WebIdOidc.currentSession(storage)
     .then(session => session ? saveSession(storage, session) : session)
-    .then(session => ({ session, fetch: authenticatedFetch(session) }))
+    .then(session => ({ session, fetch: authnFetch(storage) }))
 }
 
 export const logout = (storage: Storage = defaultStorage()): Promise<void> =>
@@ -54,3 +54,6 @@ export const logout = (storage: Storage = defaultStorage()): Promise<void> =>
       : null
     )
     .then(() => clearSession(storage))
+
+export const fetch: (url: RequestInfo, options?: Object) => Promise<Response> =
+  authnFetch(defaultStorage())

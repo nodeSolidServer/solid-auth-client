@@ -87,3 +87,14 @@ Clears the active user session.
 Note: this is an unsupported use case in WebID-TLS.  Once your browser provides
 its client cert to a web server, there's no going back!  So for WebID-TLS, the
 only thing this will do is clear the session from the store.
+
+### `fetch`
+
+Fetches a resource from the web.  Same API as
+[fetch](https://fetch.spec.whatwg.org/), but retries with credentials when
+it encounters a `401` with a `WWW-Authenticate` header which matches a
+recognized authenticate scheme.
+
+```
+fetch: (url: RequestInfo, options?: Object) => Promise<Response>
+```

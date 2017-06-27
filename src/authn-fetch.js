@@ -3,13 +3,15 @@
 import 'isomorphic-fetch'
 import * as authorization from 'auth-header'
 
-import type { session } from './session'
+import { getSession } from './session'
+import type { Storage } from './storage'
 
-export const authenticatedFetch = (session: ?session): (url: RequestInfo, options?: Object) => Promise<Response> =>
+export const authnFetch = (storage: Storage): (url: RequestInfo, options?: Object) => Promise<Response> =>
   (url: RequestInfo, options?: Object) =>
     fetch(url, options)
       .then(resp => {
         if (resp.status === 401 && requiresWebIdOidc(resp.headers.get('www-authenticate'))) {
+          const session = getSession(storage)
           if (session && session.accessToken) {
             options = options || { headers: {} }
             options.headers.authorization = `Bearer ${session.accessToken}`
