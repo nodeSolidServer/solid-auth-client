@@ -2,10 +2,10 @@
 import RelyingParty from '@trust/oidc-rp'
 
 import type { loginOptions } from './api'
+import { currentUrl, clearHashFragment, navigateTo } from './browser-util'
 import type { session } from './session'
 import type { Storage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
-import { currentUrl, clearHashFragment } from './util'
 
 export const login = (idp: string, options: loginOptions): Promise<any> =>
   getRegisteredRp(idp, options).then(rp => sendAuthRequest(rp, options))
@@ -76,4 +76,4 @@ const registerRp = (idp: string, { storage, redirectUri }: loginOptions): Promis
 
 const sendAuthRequest = (rp: RelyingParty, { redirectUri, storage }: loginOptions): Promise<void> =>
   rp.createRequest({ redirect_uri: redirectUri }, storage)
-    .then(authUrl => { window.location.href = authUrl })
+    .then(navigateTo)

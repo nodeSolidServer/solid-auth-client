@@ -15,3 +15,11 @@ declare module '@trust/oidc-rp' {
     logout (): Promise<void>;
   }
 }
+
+// jest
+
+declare function describe (name: string, fn: () => any): any
+
+declare function it (name: string, fn: () => any): any
+
+declare function expect (target: any): any

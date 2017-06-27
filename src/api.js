@@ -1,11 +1,11 @@
 // @flow
 /* global RequestInfo, Response */
 import { authnFetch } from './authn-fetch'
+import { currentUrlNoParams } from './browser-util'
 import type { session } from './session'
 import { getSession, saveSession, clearSession } from './session'
 import type { Storage } from './storage'
 import { defaultStorage } from './storage'
-import { currentUrlNoParams } from './util'
 import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
 
