@@ -2,10 +2,12 @@
 
 export const NAMESPACE = 'solid-auth-client'
 
-export interface Storage {
+export interface StorageInterface {
   getItem (key: string): ?string;
   setItem (key: string, val: string): void;
 }
+
+export type Storage = Storage | StorageInterface
 
 export const memStorage = (): Storage => {
   const store = {}
