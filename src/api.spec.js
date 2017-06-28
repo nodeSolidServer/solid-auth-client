@@ -6,7 +6,7 @@ import nock from 'nock'
 import rsaPemToJwk from 'rsa-pem-to-jwk'
 import URLSearchParams from 'url-search-params'
 
-import { currentSession, login, logout } from './api'
+import { currentSession, fetch, login, logout } from './api'
 import { getSession, saveSession } from './session'
 import { memStorage } from './storage'
 
@@ -278,9 +278,7 @@ describe('logout', () => {
     it('just removes the current session from the store', () => {
       saveSession(window.localStorage, {
         idp: 'https://localhost',
-        webId: 'https://person.me/#me',
-        accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
+        webId: 'https://person.me/#me'
       })
 
       return logout()
@@ -375,11 +373,29 @@ describe('fetch', () => {
       .matchHeader('authorization', 'Bearer fake_access_token')
       .reply(200)
 
-    return currentSession()
-      .then(({ session, fetch }) => {
-        expect(session.webId).toBe('https://person.me/#me')
-        return fetch('https://third-party.com/protected-resource')
+    return fetch('https://third-party.com/protected-resource')
+      .then(resp => {
+        expect(resp.status).toBe(200)
       })
+  })
+
+  it('merges request headers with the authorization header', () => {
+    saveSession(window.localStorage, {
+      idp: 'https://localhost',
+      webId: 'https://person.me/#me',
+      accessToken: 'fake_access_token',
+      idToken: 'abc.def.ghi'
+    })
+
+    nock('https://third-party.com')
+      .get('/private-resource')
+      .reply(401, '', { 'www-authenticate': 'Bearer scope=openid' })
+      .get('/private-resource')
+      .matchHeader('accept', 'text/plain')
+      .matchHeader('authorization', 'Bearer fake_access_token')
+      .reply(200)
+
+    return fetch('https://third-party.com/private-resource', { headers: { accept: 'text/plain' } })
       .then(resp => {
         expect(resp.status).toBe(200)
       })
@@ -397,11 +413,7 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401)
 
-    return currentSession()
-      .then(({ session, fetch }) => {
-        expect(session.webId).toBe('https://person.me/#me')
-        return fetch('https://third-party.com/protected-resource')
-      })
+    return fetch('https://third-party.com/protected-resource')
       .then(resp => {
         expect(resp.status).toBe(401)
       })
@@ -419,13 +431,35 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Basic token' })
 
-    return currentSession()
-      .then(({ session, fetch }) => {
-        expect(session.webId).toBe('https://person.me/#me')
-        return fetch('https://third-party.com/protected-resource')
-      })
+    return fetch('https://third-party.com/protected-resource')
       .then(resp => {
         expect(resp.status).toBe(401)
+      })
+  })
+
+  it('does not resend with credentials if there is no session', () => {
+    nock('https://third-party.com')
+      .get('/protected-resource')
+      .reply(401, '', { 'www-authenticate': 'Bearer scope=openid' })
+
+    return fetch('https://third-party.com/protected-resource')
+      .then(resp => {
+        expect(resp.status).toBe(401)
+      })
+  })
+
+  it('does not resend with credentials if the requested resource is public', () => {
+    nock('https://third-party.com')
+      .get('/public-resource')
+      .reply(200, 'public content', { 'content-type': 'text/plain' })
+
+    return fetch('https://third-party.com/public-resource')
+      .then(resp => {
+        expect(resp.status).toBe(200)
+        return resp.text()
+      })
+      .then(body => {
+        expect(body).toEqual('public content')
       })
   })
 })

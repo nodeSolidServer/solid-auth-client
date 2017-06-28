@@ -55,5 +55,5 @@ export const logout = (storage: Storage = defaultStorage()): Promise<void> =>
     )
     .then(() => clearSession(storage))
 
-export const fetch: (url: RequestInfo, options?: Object) => Promise<Response> =
-  authnFetch(defaultStorage())
+export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
+  authnFetch(defaultStorage())(url, options)
