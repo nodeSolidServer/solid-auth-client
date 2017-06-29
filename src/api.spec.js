@@ -89,17 +89,32 @@ describe('login', () => {
     nock.enableNetConnect()
   })
 
+  it('returns an anonymous auth response when no recognized auth scheme is present', () => {
+    nock('https://localhost')
+      .head('/')
+      .reply(200)
+      .get('/.well-known/openid-configuration')
+      .reply(404)
+
+    return login('https://localhost')
+      .then(({ session, fetch }) => {
+        expect(session).toBeNull()
+        expect(fetch).toBe(window.fetch)
+        expect(getSession(window.localStorage)).toBeNull()
+      })
+  })
+
   describe('WebID-TLS', () => {
     it('can log in with WebID-TLS', () => {
       const webId = 'https://localhost/profile#me'
       nock('https://localhost/')
-        .options('/')
+        .head('/')
         .reply(200, '', { user: webId })
 
       return login('https://localhost')
         .then(({ session }) => {
           expect(session.webId).toBe(webId)
-          expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
+          expect(getSession(window.localStorage)).toEqual(session)
         })
     })
   })
@@ -108,7 +123,7 @@ describe('login', () => {
     it('can log in with WebID-OIDC', () => {
       nock('https://localhost/')
         // try to log in with WebID-TLS
-        .options('/')
+        .head('/')
         .reply(200)
         // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
@@ -133,7 +148,7 @@ describe('login', () => {
     it('uses the provided redirect uri', () => {
       nock('https://localhost')
         // try to log in with WebID-TLS
-        .options('/')
+        .head('/')
         .reply(200)
         // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
@@ -158,7 +173,7 @@ describe('login', () => {
     it('strips the hash fragment from the current URL when proiding the default redirect URL', () => {
       nock('https://localhost/')
         // try to log in with WebID-TLS
-        .options('/')
+        .head('/')
         .reply(200)
         // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
@@ -199,7 +214,7 @@ describe('currentSession', () => {
     return currentSession()
       .then(({ session }) => {
         expect(session.webId).toBe('https://person.me/#me')
-        expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
+        expect(getSession(window.localStorage)).toEqual(session)
       })
   })
 
@@ -218,7 +233,7 @@ describe('currentSession', () => {
       // back to the app.
       nock('https://localhost/')
         // try to log in with WebID-TLS
-        .options('/')
+        .head('/')
         .reply(200)
         // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
@@ -266,7 +281,7 @@ describe('currentSession', () => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
-          expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
+          expect(getSession(window.localStorage)).toEqual(session)
           expect(window.location.hash).toBe('')
         })
     })
@@ -283,7 +298,7 @@ describe('logout', () => {
 
       return logout()
         .then(() => {
-          expect(getSession(window.localStorage, 'https://localhost')).toBeNull()
+          expect(getSession(window.localStorage)).toBeNull()
         })
     })
   })
@@ -295,7 +310,7 @@ describe('logout', () => {
       // back to the app.
       nock('https://localhost/')
         // try to log in with WebID-TLS
-        .options('/')
+        .head('/')
         .reply(200)
         // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
@@ -347,11 +362,11 @@ describe('logout', () => {
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
           expect(window.location.hash).toBe('')
-          expect(getSession(window.localStorage, 'https://localhost')).toEqual(session)
+          expect(getSession(window.localStorage)).toEqual(session)
         })
         .then(() => logout())
         .then(() => {
-          expect(getSession(window.localStorage, 'https://localhost')).toBeNull()
+          expect(getSession(window.localStorage)).toBeNull()
         })
     })
   })

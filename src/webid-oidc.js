@@ -8,7 +8,13 @@ import type { Storage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
 
 export const login = (idp: string, options: loginOptions): Promise<any> =>
-  getRegisteredRp(idp, options).then(rp => sendAuthRequest(rp, options))
+  getRegisteredRp(idp, options)
+    .then(rp => sendAuthRequest(rp, options))
+    .catch(err => {
+      console.warn('Error logging in with WebID-OIDC')
+      console.error(err)
+      return null
+    })
 
 export const currentSession = (storage: Storage = defaultStorage()): Promise<?session> => {
   return getStoredRp(storage)
@@ -26,11 +32,20 @@ export const currentSession = (storage: Storage = defaultStorage()): Promise<?se
         accessToken: resp.params.access_token
       }
     })
+    .catch(err => {
+      console.warn('Error finding a WebID-OIDC session')
+      console.error(err)
+      return null
+    })
 }
 
 export const logout = (storage: Storage): Promise<void> =>
   getStoredRp(storage)
     .then(rp => rp ? rp.logout() : undefined)
+    .catch(err => {
+      console.warn('Error logging out of the WebID-OIDC session')
+      console.error(err)
+    })
 
 export const getRegisteredRp = (idp: string, options: loginOptions): Promise<RelyingParty> =>
   getStoredRp(options.storage)
