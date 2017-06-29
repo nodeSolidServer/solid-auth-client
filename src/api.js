@@ -30,11 +30,9 @@ const defaultLoginOptions = (): loginOptions => {
 export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
   authnFetch(defaultStorage())(url, options)
 
-const anonymousAuthResponse = { session: null, fetch: window.fetch }
-
 const responseFromFirstSession = (storage: Storage, authFns: Array<() => Promise<?session>>): Promise<authResponse> => {
   if (authFns.length === 0) {
-    return Promise.resolve(anonymousAuthResponse)
+    return Promise.resolve({ session: null, fetch: authnFetch(storage) })
   }
   return authFns[0]()
     .then(session =>

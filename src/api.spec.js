@@ -97,9 +97,8 @@ describe('login', () => {
       .reply(404)
 
     return login('https://localhost')
-      .then(({ session, fetch }) => {
+      .then(({ session }) => {
         expect(session).toBeNull()
-        expect(fetch).toBe(window.fetch)
         expect(getSession(window.localStorage)).toBeNull()
       })
   })
