@@ -27,14 +27,32 @@ const defaultLoginOptions = (): loginOptions => {
   }
 }
 
+export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
+  authnFetch(defaultStorage())(url, options)
+
+const anonymousAuthResponse = { session: null, fetch: window.fetch }
+
+const responseFromFirstSession = (storage: Storage, authFns: Array<() => Promise<?session>>): Promise<authResponse> => {
+  if (authFns.length === 0) {
+    return Promise.resolve(anonymousAuthResponse)
+  }
+  return authFns[0]()
+    .then(session =>
+      session
+        ? { session: saveSession(storage, session), fetch: authnFetch(storage) }
+        : responseFromFirstSession(storage, authFns.slice(1)))
+    .catch(err => {
+      console.error(err)
+      return responseFromFirstSession(storage, authFns.slice(1))
+    })
+}
+
 export const login = (idp: string, options: loginOptions): Promise<authResponse> => {
   options = { ...defaultLoginOptions(), ...options }
-  return WebIdTls.login(idp)
-    .then(session => session ? saveSession(options.storage, session) : null)
-    .then(session => session
-      ? { session, fetch: authnFetch(options.storage) }
-      : WebIdOidc.login(idp, options)
-    )
+  return responseFromFirstSession(options.storage, [
+    WebIdTls.login.bind(null, idp),
+    WebIdOidc.login.bind(null, idp, options)
+  ])
 }
 
 export const currentSession = (storage: Storage = defaultStorage()): Promise<authResponse> => {
@@ -42,9 +60,9 @@ export const currentSession = (storage: Storage = defaultStorage()): Promise<aut
   if (session) {
     return Promise.resolve({ session, fetch: authnFetch(storage) })
   }
-  return WebIdOidc.currentSession(storage)
-    .then(session => session ? saveSession(storage, session) : session)
-    .then(session => ({ session, fetch: authnFetch(storage) }))
+  return responseFromFirstSession(storage, [
+    WebIdOidc.currentSession.bind(null, storage)
+  ])
 }
 
 export const logout = (storage: Storage = defaultStorage()): Promise<void> =>
@@ -54,6 +72,7 @@ export const logout = (storage: Storage = defaultStorage()): Promise<void> =>
       : null
     )
     .then(() => clearSession(storage))
-
-export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
-  authnFetch(defaultStorage())(url, options)
+    .catch(err => {
+      console.warn('Error logging out:')
+      console.error(err)
+    })
