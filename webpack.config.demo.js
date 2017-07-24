@@ -35,9 +35,9 @@ module.exports = {
     new HtmlWebpackPlugin({
       title: 'Solid Auth Client',
       hash: true
-    }),
-    new webpack.optimize.UglifyJsPlugin()
+    })
   ],
+  devtool: 'source-map',
   devServer: {
     contentBase: path.join(__dirname, 'docs'),
     historyApiFallback: true
