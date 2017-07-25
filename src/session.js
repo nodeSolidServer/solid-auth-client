@@ -1,15 +1,17 @@
 // @flow
+
 import type { Storage } from './storage'
 import { getData, updateStorage } from './storage'
+import type { WebIdTls, WebIdOidc } from './types'
 
 export type webIdTlsSession =
-  { type: 'WebID-TLS'
+  { type: WebIdTls
   , idp: string
   , webId: string
   }
 
 export type webIdOidcSession =
-  { type: 'WebID-OIDC'
+  { type: WebIdOidc
   , idp: string
   , webId: string
   , accessToken: string

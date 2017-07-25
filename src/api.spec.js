@@ -7,6 +7,7 @@ import rsaPemToJwk from 'rsa-pem-to-jwk'
 import URLSearchParams from 'url-search-params'
 
 import { currentSession, fetch, login, logout } from './api'
+import type { Auth } from './constants'
 import { getSession, saveSession } from './session'
 import { memStorage } from './storage'
 

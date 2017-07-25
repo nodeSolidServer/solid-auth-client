@@ -1,4 +1,7 @@
 // @flow
+/* global fetch, RequestInfo, Response */
+import 'isomorphic-fetch'
+import * as authorization from 'auth-header'
 import RelyingParty from '@trust/oidc-rp'
 
 import type { loginOptions } from './api'
@@ -93,3 +96,33 @@ const registerRp = (idp: string, { storage, redirectUri }: loginOptions): Promis
 const sendAuthRequest = (rp: RelyingParty, { redirectUri, storage }: loginOptions): Promise<void> =>
   rp.createRequest({ redirect_uri: redirectUri }, storage)
     .then(navigateTo)
+
+/**
+ * Answers whether a HTTP response requires WebID-OIDC authentication.
+ */
+export const requiresAuth = (resp: Response): boolean => {
+  if (resp.status !== 401) { return false }
+  const wwwAuthHeader = resp.headers.get('www-authenticate')
+  if (!wwwAuthHeader) { return false }
+  const auth = authorization.parse(wwwAuthHeader)
+  return (
+    auth.scheme === 'Bearer' &&
+    auth.params &&
+    auth.params.scope === 'openid'
+  )
+}
+
+/**
+ * Fetches a resource, providing the WebID-OIDC ID Token as authentication.
+ * Assumes that the resource has requested those tokens in a previous response.
+ */
+export const fetchWithCredentials = (session: webIdOidcSession) => (url: RequestInfo, options?: Object): Promise<Response> => {
+  const authenticatedOptions = {
+    ...options,
+    headers: {
+      ...(options && options.headers ? options.headers : {}),
+      authorization: `Bearer ${session.idToken}`
+    }
+  }
+  return fetch(url, authenticatedOptions)
+}
