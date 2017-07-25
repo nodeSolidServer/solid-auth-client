@@ -204,6 +204,7 @@ describe('login', () => {
 describe('currentSession', () => {
   it('can find the current session if stored', () => {
     saveSession(window.localStorage, {
+      type: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -374,6 +375,7 @@ describe('logout', () => {
 describe('fetch', () => {
   it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
     saveSession(window.localStorage, {
+      type: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -384,7 +386,7 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Bearer scope=openid' })
       .get('/protected-resource')
-      .matchHeader('authorization', 'Bearer fake_access_token')
+      .matchHeader('authorization', 'Bearer abc.def.ghi')
       .reply(200)
 
     return fetch('https://third-party.com/protected-resource')
@@ -395,6 +397,7 @@ describe('fetch', () => {
 
   it('merges request headers with the authorization header', () => {
     saveSession(window.localStorage, {
+      type: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -406,7 +409,7 @@ describe('fetch', () => {
       .reply(401, '', { 'www-authenticate': 'Bearer scope=openid' })
       .get('/private-resource')
       .matchHeader('accept', 'text/plain')
-      .matchHeader('authorization', 'Bearer fake_access_token')
+      .matchHeader('authorization', 'Bearer abc.def.ghi')
       .reply(200)
 
     return fetch('https://third-party.com/private-resource', { headers: { accept: 'text/plain' } })
@@ -417,6 +420,7 @@ describe('fetch', () => {
 
   it('does not resend with credentials if the www-authenticate header is missing', () => {
     saveSession(window.localStorage, {
+      type: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -435,6 +439,7 @@ describe('fetch', () => {
 
   it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', () => {
     saveSession(window.localStorage, {
+      type: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',

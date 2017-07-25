@@ -2,12 +2,23 @@
 import type { Storage } from './storage'
 import { getData, updateStorage } from './storage'
 
-export type session =
-  { idp: string
+export type webIdTlsSession =
+  { type: 'WebID-TLS'
+  , idp: string
   , webId: string
-  , accessToken?: string
-  , idToken?: string
   }
+
+export type webIdOidcSession =
+  { type: 'WebID-OIDC'
+  , idp: string
+  , webId: string
+  , accessToken: string
+  , idToken: string
+  }
+
+export type session =
+  | webIdTlsSession
+  | webIdOidcSession
 
 export const getSession = (storage: Storage): ?session =>
   getData(storage).session || null

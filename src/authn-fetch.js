@@ -12,12 +12,12 @@ export const authnFetch = (storage: Storage): (url: RequestInfo, options?: Objec
       .then(resp => {
         if (resp.status === 401 && requiresWebIdOidc(resp.headers.get('www-authenticate'))) {
           const session = getSession(storage)
-          if (session && session.accessToken) {
+          if (session && session.type === 'WebID-OIDC') {
             const retryOptions = {
               ...options,
               headers: {
                 ...(options && options.headers ? options.headers : {}),
-                authorization: `Bearer ${session.accessToken}`
+                authorization: `Bearer ${session.idToken}`
               }
             }
             return fetch(url, retryOptions)
