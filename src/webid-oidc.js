@@ -3,7 +3,7 @@ import RelyingParty from '@trust/oidc-rp'
 
 import type { loginOptions } from './api'
 import { currentUrl, clearHashFragment, navigateTo } from './browser-util'
-import type { session } from './session'
+import type { webIdOidcSession } from './session'
 import type { Storage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
 
@@ -16,7 +16,7 @@ export const login = (idp: string, options: loginOptions): Promise<any> =>
       return null
     })
 
-export const currentSession = (storage: Storage = defaultStorage()): Promise<?session> => {
+export const currentSession = (storage: Storage = defaultStorage()): Promise<?webIdOidcSession> => {
   return getStoredRp(storage)
     .then(rp => {
       if (!rp) { return null }
@@ -26,6 +26,7 @@ export const currentSession = (storage: Storage = defaultStorage()): Promise<?se
       if (!resp) { return null }
       clearHashFragment()
       return {
+        type: 'WebID-OIDC',
         idp: resp.decoded.payload.iss,
         webId: resp.decoded.payload.sub,
         idToken: resp.params.id_token,
