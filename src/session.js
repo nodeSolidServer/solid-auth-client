@@ -1,15 +1,17 @@
 // @flow
+
 import type { Storage } from './storage'
 import { getData, updateStorage } from './storage'
+import type { WebIdTls, WebIdOidc } from './types'
 
 export type webIdTlsSession =
-  { type: 'WebID-TLS'
+  { authType: WebIdTls
   , idp: string
   , webId: string
   }
 
 export type webIdOidcSession =
-  { type: 'WebID-OIDC'
+  { authType: WebIdOidc
   , idp: string
   , webId: string
   , accessToken: string
@@ -23,7 +25,7 @@ export type session =
 export const getSession = (storage: Storage): ?session =>
   getData(storage).session || null
 
-export const saveSession = (storage: Storage, session: session): session =>
+export const saveSession = (storage: Storage) => (session: session): session =>
   updateStorage(storage, data => ({ ...data, session })).session
 
 export const clearSession = (storage: Storage): void => {
