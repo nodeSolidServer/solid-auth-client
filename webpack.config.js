@@ -28,7 +28,8 @@ module.exports = {
     'urlutils': 'URL',
     '@trust/webcrypto': 'crypto'
   },
+  devtool: 'source-map',
   plugins: [
-    new webpack.optimize.UglifyJsPlugin()
+    new webpack.optimize.UglifyJsPlugin({ sourceMap: true })
   ]
 }
