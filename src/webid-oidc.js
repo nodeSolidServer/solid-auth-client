@@ -29,7 +29,7 @@ export const currentSession = (storage: Storage = defaultStorage()): Promise<?we
       if (!resp) { return null }
       clearHashFragment()
       return {
-        type: 'WebID-OIDC',
+        authType: 'WebID-OIDC',
         idp: resp.decoded.payload.iss,
         webId: resp.decoded.payload.sub,
         idToken: resp.params.id_token,
@@ -99,6 +99,9 @@ const sendAuthRequest = (rp: RelyingParty, { redirectUri, storage }: loginOption
 
 /**
  * Answers whether a HTTP response requires WebID-OIDC authentication.
+ *
+ * TODO: WebID-OIDC needs additional metadata to distinguish itself from plain
+ * OIDC.
  */
 export const requiresAuth = (resp: Response): boolean => {
   if (resp.status !== 401) { return false }
@@ -108,7 +111,7 @@ export const requiresAuth = (resp: Response): boolean => {
   return (
     auth.scheme === 'Bearer' &&
     auth.params &&
-    auth.params.scope === 'openid'
+    auth.params.scope === 'openid webid'
   )
 }
 

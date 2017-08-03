@@ -37,7 +37,7 @@ const responseFromFirstSession = (storage: Storage, authFns: Array<() => Promise
   return authFns[0]()
     .then(session =>
       session
-        ? { session: saveSession(storage, session), fetch: authnFetch(storage) }
+        ? { session: saveSession(storage)(session), fetch: authnFetch(storage) }
         : responseFromFirstSession(storage, authFns.slice(1)))
     .catch(err => {
       console.error(err)

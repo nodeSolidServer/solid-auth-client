@@ -6,3 +6,7 @@ export type WebIdOidc =
 
 export type WebIdTls =
   'WebID-TLS'
+
+export type Auth =
+  | WebIdOidc
+  | WebIdTls

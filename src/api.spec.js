@@ -7,7 +7,7 @@ import rsaPemToJwk from 'rsa-pem-to-jwk'
 import URLSearchParams from 'url-search-params'
 
 import { currentSession, fetch, login, logout } from './api'
-import type { Auth } from './constants'
+import { saveHost } from './hosts'
 import { getSession, saveSession } from './session'
 import { memStorage } from './storage'
 
@@ -204,8 +204,8 @@ describe('login', () => {
 
 describe('currentSession', () => {
   it('can find the current session if stored', () => {
-    saveSession(window.localStorage, {
-      type: 'WebID-OIDC',
+    saveSession(window.localStorage)({
+      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -292,7 +292,8 @@ describe('currentSession', () => {
 describe('logout', () => {
   describe('WebID-TLS', () => {
     it('just removes the current session from the store', () => {
-      saveSession(window.localStorage, {
+      saveSession(window.localStorage)({
+        authType: 'WebID-TLS',
         idp: 'https://localhost',
         webId: 'https://person.me/#me'
       })
@@ -375,8 +376,8 @@ describe('logout', () => {
 
 describe('fetch', () => {
   it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
-    saveSession(window.localStorage, {
-      type: 'WebID-OIDC',
+    saveSession(window.localStorage)({
+      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -385,7 +386,7 @@ describe('fetch', () => {
 
     nock('https://third-party.com')
       .get('/protected-resource')
-      .reply(401, '', { 'www-authenticate': 'Bearer scope=openid' })
+      .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
       .get('/protected-resource')
       .matchHeader('authorization', 'Bearer abc.def.ghi')
       .reply(200)
@@ -397,8 +398,8 @@ describe('fetch', () => {
   })
 
   it('merges request headers with the authorization header', () => {
-    saveSession(window.localStorage, {
-      type: 'WebID-OIDC',
+    saveSession(window.localStorage)({
+      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -407,7 +408,7 @@ describe('fetch', () => {
 
     nock('https://third-party.com')
       .get('/private-resource')
-      .reply(401, '', { 'www-authenticate': 'Bearer scope=openid' })
+      .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
       .get('/private-resource')
       .matchHeader('accept', 'text/plain')
       .matchHeader('authorization', 'Bearer abc.def.ghi')
@@ -420,8 +421,8 @@ describe('fetch', () => {
   })
 
   it('does not resend with credentials if the www-authenticate header is missing', () => {
-    saveSession(window.localStorage, {
-      type: 'WebID-OIDC',
+    saveSession(window.localStorage)({
+      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -439,8 +440,8 @@ describe('fetch', () => {
   })
 
   it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', () => {
-    saveSession(window.localStorage, {
-      type: 'WebID-OIDC',
+    saveSession(window.localStorage)({
+      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -460,7 +461,7 @@ describe('fetch', () => {
   it('does not resend with credentials if there is no session', () => {
     nock('https://third-party.com')
       .get('/protected-resource')
-      .reply(401, '', { 'www-authenticate': 'Bearer scope=openid' })
+      .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
 
     return fetch('https://third-party.com/protected-resource')
       .then(resp => {
@@ -481,5 +482,87 @@ describe('fetch', () => {
       .then(body => {
         expect(body).toEqual('public content')
       })
+  })
+
+  it('does not resend with credentials if the requested resources uses plain OIDC', () => {
+    nock('https://third-party.com')
+      .get('/protected-resource')
+      .reply(401, '', { 'www-authenticate': 'Bearer scope="openid"' })
+
+    return fetch('https://third-party.com/protected-resource')
+      .then(resp => {
+        expect(resp.status).toBe(401)
+      })
+  })
+
+  describe('familiar domains with WebID-OIDC', () => {
+    it('just sends one request when the RP is also the IDP', () => {
+      saveSession(window.localStorage)({
+        authType: 'WebID-OIDC',
+        idp: 'https://localhost',
+        webId: 'https://person.me/#me',
+        accessToken: 'fake_access_token',
+        idToken: 'abc.def.ghi'
+      })
+
+      nock('https://localhost')
+        .get('/resource')
+        .matchHeader('authorization', 'Bearer abc.def.ghi')
+        .reply(200)
+
+      return fetch('https://localhost/resource')
+        .then(resp => {
+          expect(resp.status).toBe(200)
+        })
+    })
+
+    it('just sends one request to domains it has already encountered', () => {
+      saveSession(window.localStorage)({
+        authType: 'WebID-OIDC',
+        idp: 'https://localhost',
+        webId: 'https://person.me/#me',
+        accessToken: 'fake_access_token',
+        idToken: 'abc.def.ghi'
+      })
+
+      saveHost(window.localStorage)({
+        url: 'third-party.com',
+        authType: 'WebID-OIDC'
+      })
+
+      nock('https://third-party.com')
+        .get('/resource')
+        .matchHeader('authorization', 'Bearer abc.def.ghi')
+        .reply(200)
+
+      return fetch('https://third-party.com/resource')
+        .then(resp => {
+          expect(resp.status).toBe(200)
+        })
+    })
+
+    it('does not send credentials to a familiar domain when that domain uses a different auth type', () => {
+      saveSession(window.localStorage)({
+        authType: 'WebID-OIDC',
+        idp: 'https://localhost',
+        webId: 'https://person.me/#me',
+        accessToken: 'fake_access_token',
+        idToken: 'abc.def.ghi'
+      })
+
+      saveHost(window.localStorage)({
+        url: 'third-party.com',
+        authType: 'WebID-TLS'
+      })
+
+      nock('https://third-party.com')
+        .get('/resource')
+        .reply(401)
+
+      return fetch('https://third-party.com/resource')
+        .then(resp => {
+          expect(resp.status).toBe(401)
+        })
+    })
   })
 })
