@@ -10,6 +10,7 @@ import { currentSession, fetch, login, logout } from './api'
 import { saveHost } from './hosts'
 import { getSession, saveSession } from './session'
 import { memStorage } from './storage'
+import { sessionKeys } from '../test-keys/session-keys'
 
 /*
  * OIDC test data:
@@ -44,6 +45,8 @@ const jwks = {
     )
   ]
 }
+
+const sessionKey = JSON.stringify(sessionKeys.private)
 
 let _href
 let _URL
@@ -377,6 +380,7 @@ describe('logout', () => {
 describe('fetch', () => {
   it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
     saveSession(window.localStorage)({
+      sessionKey,
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -388,7 +392,7 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
       .get('/protected-resource')
-      .matchHeader('authorization', 'Bearer abc.def.ghi')
+      .matchHeader('authorization', /Bearer eyJhbGciO.*/)
       .reply(200)
 
     return fetch('https://third-party.com/protected-resource')
@@ -399,6 +403,7 @@ describe('fetch', () => {
 
   it('merges request headers with the authorization header', () => {
     saveSession(window.localStorage)({
+      sessionKey,
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -411,7 +416,7 @@ describe('fetch', () => {
       .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
       .get('/private-resource')
       .matchHeader('accept', 'text/plain')
-      .matchHeader('authorization', 'Bearer abc.def.ghi')
+      .matchHeader('authorization', /Bearer eyJhbGciO.*/)
       .reply(200)
 
     return fetch('https://third-party.com/private-resource', { headers: { accept: 'text/plain' } })
@@ -498,6 +503,7 @@ describe('fetch', () => {
   describe('familiar domains with WebID-OIDC', () => {
     it('just sends one request when the RP is also the IDP', () => {
       saveSession(window.localStorage)({
+        sessionKey,
         authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
@@ -507,7 +513,7 @@ describe('fetch', () => {
 
       nock('https://localhost')
         .get('/resource')
-        .matchHeader('authorization', 'Bearer abc.def.ghi')
+        .matchHeader('authorization', /Bearer eyJhbGciO.*/)
         .reply(200)
 
       return fetch('https://localhost/resource')
@@ -518,6 +524,7 @@ describe('fetch', () => {
 
     it('just sends one request to domains it has already encountered', () => {
       saveSession(window.localStorage)({
+        sessionKey,
         authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
@@ -532,7 +539,7 @@ describe('fetch', () => {
 
       nock('https://third-party.com')
         .get('/resource')
-        .matchHeader('authorization', 'Bearer abc.def.ghi')
+        .matchHeader('authorization', /Bearer eyJhbGciO.*/)
         .reply(200)
 
       return fetch('https://third-party.com/resource')
