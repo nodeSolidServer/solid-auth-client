@@ -2,7 +2,6 @@
 /* global RequestInfo, Request, Response, URL */
 import { getSession } from './session'
 import type { AsyncStorage } from './storage'
-import { getData, updateStorage } from './storage'
 import type { Auth } from './types'
 import * as WebIdOidc from './webid-oidc'
 import * as WebIdTls from './webid-tls'
@@ -27,7 +26,7 @@ export const getHost = (storage: AsyncStorage) => async (url: RequestInfo): Prom
   if (session && hostNameFromRequestInfo(session.idp) === requestHostName) {
     return { url: requestHostName, authType: session.authType }
   }
-  const { hosts } = getData(storage)
+  const { hosts } = storage.getData()
   if (!hosts) {
     return null
   }
@@ -35,7 +34,7 @@ export const getHost = (storage: AsyncStorage) => async (url: RequestInfo): Prom
 }
 
 export const saveHost = (storage: AsyncStorage) => ({ url, authType }: host): host => {
-  updateStorage(storage, (data) => ({
+  storage.update((data) => ({
     ...data,
     hosts: {
       ...data.hosts,

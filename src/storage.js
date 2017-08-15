@@ -11,6 +11,23 @@ export class AsyncStorage {
       this.setItem(key, hash[key])
     }
   }
+
+  /**
+   * Gets the deserialized stored data
+   */
+  getData (): Object {
+    return JSON.parse(this.getItem(NAMESPACE) || '{}')
+  }
+
+  /**
+   * Updates the storage without mutating the intermediate representation
+   */
+  update (update: (Object) => Object): Object {
+    const currentData = this.getData()
+    const newData = update(currentData)
+    this.setItem(NAMESPACE, JSON.stringify(newData))
+    return newData
+  }
 }
 
 export class MemoryStorage extends AsyncStorage {
@@ -52,20 +69,4 @@ export const defaultStorage = (): AsyncStorage => {
     `Creating a (not very useful) in-memory storage object as the default storage interface.`
   )
   return new MemoryStorage()
-}
-
-/**
- * Gets the deserialized stored data
- */
-export const getData = (store: AsyncStorage) =>
-  JSON.parse(store.getItem(NAMESPACE) || '{}')
-
-/**
- * Updates a Storage object without mutating its intermediate representation.
- */
-export const updateStorage = (store: AsyncStorage, update: (Object) => Object): Object => {
-  const currentData = getData(store)
-  const newData = update(currentData)
-  store.setItem(NAMESPACE, JSON.stringify(newData))
-  return newData
 }

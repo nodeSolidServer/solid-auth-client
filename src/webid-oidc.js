@@ -8,7 +8,7 @@ import type { loginOptions } from './api'
 import { currentUrl, clearHashFragment, navigateTo } from './browser-util'
 import type { webIdOidcSession } from './session'
 import type { AsyncStorage } from './storage'
-import { defaultStorage, getData, updateStorage } from './storage'
+import { defaultStorage } from './storage'
 
 export const login = (idp: string, options: loginOptions): Promise<any> =>
   getRegisteredRp(idp, options)
@@ -60,12 +60,12 @@ export const getRegisteredRp = (idp: string, options: loginOptions): Promise<Rel
     })
 
 const getStoredRp = (storage: AsyncStorage): Promise<?RelyingParty> => {
-  const { rpConfig } = getData(storage)
+  const { rpConfig } = storage.getData()
   return rpConfig ? RelyingParty.from(rpConfig) : Promise.resolve(null)
 }
 
 const storeRp = (storage: AsyncStorage, idp: string, rp: RelyingParty): RelyingParty => {
-  updateStorage(storage, data => ({
+  storage.update(data => ({
     ...data,
     rpConfig: rp
   }))

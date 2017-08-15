@@ -8,6 +8,7 @@ import URLSearchParams from 'url-search-params'
 
 import { currentSession, fetch, login, logout } from './api'
 import { saveHost } from './hosts'
+import { LocalStorage } from './storage'
 import { getSession, saveSession } from './session'
 
 /*
@@ -43,6 +44,8 @@ const jwks = {
     )
   ]
 }
+
+const storage = new LocalStorage()
 
 let _href
 let _URL
@@ -110,7 +113,7 @@ describe('login', () => {
     return login('https://localhost')
       .then(async ({ session }) => {
         expect(session).toBeNull()
-        expect(await getSession(window.localStorage)).toBeNull()
+        expect(await getSession(storage)).toBeNull()
       })
   })
 
@@ -124,7 +127,7 @@ describe('login', () => {
       return login('https://localhost')
         .then(async ({ session }) => {
           expect(session.webId).toBe(webId)
-          expect(await getSession(window.localStorage)).toEqual(session)
+          expect(await getSession(storage)).toEqual(session)
         })
     })
   })
@@ -214,7 +217,7 @@ describe('login', () => {
 
 describe('currentSession', () => {
   it('can find the current session if stored', () => {
-    saveSession(window.localStorage)({
+    saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -225,7 +228,7 @@ describe('currentSession', () => {
     return currentSession()
       .then(async ({ session }) => {
         expect(session.webId).toBe('https://person.me/#me')
-        expect(await getSession(window.localStorage)).toEqual(session)
+        expect(await getSession(storage)).toEqual(session)
       })
   })
 
@@ -233,7 +236,7 @@ describe('currentSession', () => {
     return currentSession()
       .then(async ({ session }) => {
         expect(session).toBeNull()
-        expect(await getSession(window.localStorage)).toBeNull()
+        expect(await getSession(storage)).toBeNull()
       })
   })
 
@@ -292,7 +295,7 @@ describe('currentSession', () => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
-          expect(await getSession(window.localStorage)).toEqual(session)
+          expect(await getSession(storage)).toEqual(session)
           expect(window.location.hash).toBe('')
         })
     })
@@ -302,7 +305,7 @@ describe('currentSession', () => {
 describe('logout', () => {
   describe('WebID-TLS', () => {
     it('just removes the current session from the store', () => {
-      saveSession(window.localStorage)({
+      saveSession(storage)({
         authType: 'WebID-TLS',
         idp: 'https://localhost',
         webId: 'https://person.me/#me'
@@ -310,7 +313,7 @@ describe('logout', () => {
 
       return logout()
         .then(async () => {
-          expect(await getSession(window.localStorage)).toBeNull()
+          expect(await getSession(storage)).toBeNull()
         })
     })
   })
@@ -374,11 +377,11 @@ describe('logout', () => {
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
           expect(window.location.hash).toBe('')
-          expect(await getSession(window.localStorage)).toEqual(session)
+          expect(await getSession(storage)).toEqual(session)
         })
         .then(() => logout())
         .then(async () => {
-          expect(await getSession(window.localStorage)).toBeNull()
+          expect(await getSession(storage)).toBeNull()
         })
     })
   })
@@ -386,7 +389,7 @@ describe('logout', () => {
 
 describe('fetch', () => {
   it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
-    saveSession(window.localStorage)({
+    saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -408,7 +411,7 @@ describe('fetch', () => {
   })
 
   it('merges request headers with the authorization header', () => {
-    saveSession(window.localStorage)({
+    saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -431,7 +434,7 @@ describe('fetch', () => {
   })
 
   it('does not resend with credentials if the www-authenticate header is missing', () => {
-    saveSession(window.localStorage)({
+    saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -450,7 +453,7 @@ describe('fetch', () => {
   })
 
   it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', () => {
-    saveSession(window.localStorage)({
+    saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -507,7 +510,7 @@ describe('fetch', () => {
 
   describe('familiar domains with WebID-OIDC', () => {
     it('just sends one request when the RP is also the IDP', () => {
-      saveSession(window.localStorage)({
+      saveSession(storage)({
         authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
@@ -527,7 +530,7 @@ describe('fetch', () => {
     })
 
     it('just sends one request to domains it has already encountered', () => {
-      saveSession(window.localStorage)({
+      saveSession(storage)({
         authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
@@ -535,7 +538,7 @@ describe('fetch', () => {
         idToken: 'abc.def.ghi'
       })
 
-      saveHost(window.localStorage)({
+      saveHost(storage)({
         url: 'third-party.com',
         authType: 'WebID-OIDC'
       })
@@ -552,7 +555,7 @@ describe('fetch', () => {
     })
 
     it('does not send credentials to a familiar domain when that domain uses a different auth type', () => {
-      saveSession(window.localStorage)({
+      saveSession(storage)({
         authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
@@ -560,7 +563,7 @@ describe('fetch', () => {
         idToken: 'abc.def.ghi'
       })
 
-      saveHost(window.localStorage)({
+      saveHost(storage)({
         url: 'third-party.com',
         authType: 'WebID-TLS'
       })
