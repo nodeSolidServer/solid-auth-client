@@ -22,12 +22,12 @@ export type session =
   | webIdTlsSession
   | webIdOidcSession
 
-export const getSession = (storage: Storage): ?session =>
+export const getSession = async (storage: Storage): Promise<?session> =>
   getData(storage).session || null
 
-export const saveSession = (storage: Storage) => (session: session): session =>
+export const saveSession = (storage: Storage) => async (session: session): Promise<session> =>
   updateStorage(storage, data => ({ ...data, session })).session
 
-export const clearSession = (storage: Storage): void => {
+export const clearSession = async (storage: Storage): Promise<void> => {
   updateStorage(storage, data => ({ ...data, session: null }))
 }

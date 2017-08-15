@@ -30,14 +30,14 @@ const defaultLoginOptions = (): loginOptions => {
 export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
   authnFetch(defaultStorage())(url, options)
 
-const responseFromFirstSession = (storage: Storage, authFns: Array<() => Promise<?session>>): Promise<authResponse> => {
+const responseFromFirstSession = async (storage: Storage, authFns: Array<() => Promise<?session>>): Promise<authResponse> => {
   if (authFns.length === 0) {
-    return Promise.resolve({ session: null, fetch: authnFetch(storage) })
+    return { session: null, fetch: authnFetch(storage) }
   }
   return authFns[0]()
-    .then(session =>
+    .then(async session =>
       session
-        ? { session: saveSession(storage)(session), fetch: authnFetch(storage) }
+        ? { session: await saveSession(storage)(session), fetch: authnFetch(storage) }
         : responseFromFirstSession(storage, authFns.slice(1)))
     .catch(err => {
       console.error(err)
@@ -53,10 +53,10 @@ export const login = (idp: string, options: loginOptions): Promise<authResponse>
   ])
 }
 
-export const currentSession = (storage: Storage = defaultStorage()): Promise<authResponse> => {
-  const session = getSession(storage)
+export const currentSession = async (storage: Storage = defaultStorage()): Promise<authResponse> => {
+  const session = await getSession(storage)
   if (session) {
-    return Promise.resolve({ session, fetch: authnFetch(storage) })
+    return { session, fetch: authnFetch(storage) }
   }
   return responseFromFirstSession(storage, [
     WebIdOidc.currentSession.bind(null, storage)

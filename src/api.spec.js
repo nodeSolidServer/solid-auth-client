@@ -98,9 +98,9 @@ describe('login', () => {
       .reply(404)
 
     return login('https://localhost')
-      .then(({ session }) => {
+      .then(async ({ session }) => {
         expect(session).toBeNull()
-        expect(getSession(window.localStorage)).toBeNull()
+        expect(await getSession(window.localStorage)).toBeNull()
       })
   })
 
@@ -112,9 +112,9 @@ describe('login', () => {
         .reply(200, '', { user: webId })
 
       return login('https://localhost')
-        .then(({ session }) => {
+        .then(async ({ session }) => {
           expect(session.webId).toBe(webId)
-          expect(getSession(window.localStorage)).toEqual(session)
+          expect(await getSession(window.localStorage)).toEqual(session)
         })
     })
   })
@@ -213,17 +213,17 @@ describe('currentSession', () => {
     })
 
     return currentSession()
-      .then(({ session }) => {
+      .then(async ({ session }) => {
         expect(session.webId).toBe('https://person.me/#me')
-        expect(getSession(window.localStorage)).toEqual(session)
+        expect(await getSession(window.localStorage)).toEqual(session)
       })
   })
 
   it('resolves to a `null` session when there is no stored session or OIDC response', () => {
     return currentSession()
-      .then(({ session }) => {
+      .then(async ({ session }) => {
         expect(session).toBeNull()
-        expect(getSession(window.localStorage)).toBeNull()
+        expect(await getSession(window.localStorage)).toBeNull()
       })
   })
 
@@ -278,11 +278,11 @@ describe('currentSession', () => {
             `state=${state}`
         })
         .then(currentSession)
-        .then(({ session }) => {
+        .then(async ({ session }) => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
-          expect(getSession(window.localStorage)).toEqual(session)
+          expect(await getSession(window.localStorage)).toEqual(session)
           expect(window.location.hash).toBe('')
         })
     })
@@ -299,8 +299,8 @@ describe('logout', () => {
       })
 
       return logout()
-        .then(() => {
-          expect(getSession(window.localStorage)).toBeNull()
+        .then(async () => {
+          expect(await getSession(window.localStorage)).toBeNull()
         })
     })
   })
@@ -359,16 +359,16 @@ describe('logout', () => {
             `state=${state}`
         })
         .then(currentSession)
-        .then(({ session }) => {
+        .then(async ({ session }) => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
           expect(window.location.hash).toBe('')
-          expect(getSession(window.localStorage)).toEqual(session)
+          expect(await getSession(window.localStorage)).toEqual(session)
         })
         .then(() => logout())
-        .then(() => {
-          expect(getSession(window.localStorage)).toBeNull()
+        .then(async () => {
+          expect(await getSession(window.localStorage)).toBeNull()
         })
     })
   })

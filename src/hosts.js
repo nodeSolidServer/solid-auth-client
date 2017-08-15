@@ -21,9 +21,9 @@ export const hostNameFromRequestInfo = (url: RequestInfo): string => {
   return _url.host
 }
 
-export const getHost = (storage: Storage) => (url: RequestInfo): ?host => {
+export const getHost = (storage: Storage) => async (url: RequestInfo): Promise<?host> => {
   const requestHostName = hostNameFromRequestInfo(url)
-  const session = getSession(storage)
+  const session = await getSession(storage)
   if (session && hostNameFromRequestInfo(session.idp) === requestHostName) {
     return { url: requestHostName, authType: session.authType }
   }
