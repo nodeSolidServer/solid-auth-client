@@ -7,7 +7,7 @@ import RelyingParty from '@trust/oidc-rp'
 import type { loginOptions } from './api'
 import { currentUrl, clearHashFragment, navigateTo } from './browser-util'
 import type { webIdOidcSession } from './session'
-import type { Storage } from './storage'
+import type { AsyncStorage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
 
 export const login = (idp: string, options: loginOptions): Promise<any> =>
@@ -19,11 +19,11 @@ export const login = (idp: string, options: loginOptions): Promise<any> =>
       return null
     })
 
-export const currentSession = (storage: Storage = defaultStorage()): Promise<?webIdOidcSession> => {
+export const currentSession = (storage: AsyncStorage = defaultStorage()): Promise<?webIdOidcSession> => {
   return getStoredRp(storage)
     .then(rp => {
       if (!rp) { return null }
-      return rp.validateResponse(currentUrl() || '', storage)
+      return rp.validateResponse(currentUrl() || '', storage.getItems())
     })
     .then(resp => {
       if (!resp) { return null }
@@ -43,7 +43,7 @@ export const currentSession = (storage: Storage = defaultStorage()): Promise<?we
     })
 }
 
-export const logout = (storage: Storage): Promise<void> =>
+export const logout = (storage: AsyncStorage): Promise<void> =>
   getStoredRp(storage)
     .then(rp => rp ? rp.logout() : undefined)
     .catch(err => {
@@ -59,12 +59,12 @@ export const getRegisteredRp = (idp: string, options: loginOptions): Promise<Rel
         .then(rp => storeRp(options.storage, idp, rp))
     })
 
-const getStoredRp = (storage: Storage): Promise<?RelyingParty> => {
+const getStoredRp = (storage: AsyncStorage): Promise<?RelyingParty> => {
   const { rpConfig } = getData(storage)
   return rpConfig ? RelyingParty.from(rpConfig) : Promise.resolve(null)
 }
 
-const storeRp = (storage: Storage, idp: string, rp: RelyingParty): RelyingParty => {
+const storeRp = (storage: AsyncStorage, idp: string, rp: RelyingParty): RelyingParty => {
   updateStorage(storage, data => ({
     ...data,
     rpConfig: rp
@@ -88,14 +88,17 @@ const registerRp = (idp: string, { storage, redirectUri }: loginOptions): Promis
         response_type: responseType
       }
     },
-    store: storage
+    store: storage.getItems()
   }
   return RelyingParty.register(idp, registration, options)
 }
 
-const sendAuthRequest = (rp: RelyingParty, { redirectUri, storage }: loginOptions): Promise<void> =>
-  rp.createRequest({ redirect_uri: redirectUri }, storage)
-    .then(navigateTo)
+const sendAuthRequest = async (rp: RelyingParty, { redirectUri, storage }: loginOptions): Promise<void> => {
+  const session = storage.getItems()
+  const url = await rp.createRequest({ redirect_uri: redirectUri }, session)
+  storage.setItems(session)
+  navigateTo(url)
+}
 
 /**
  * Answers whether a HTTP response requires WebID-OIDC authentication.

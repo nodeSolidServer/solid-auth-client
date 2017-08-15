@@ -9,7 +9,6 @@ import URLSearchParams from 'url-search-params'
 import { currentSession, fetch, login, logout } from './api'
 import { saveHost } from './hosts'
 import { getSession, saveSession } from './session'
-import { memStorage } from './storage'
 
 /*
  * OIDC test data:
@@ -70,7 +69,18 @@ beforeEach(() => {
     return url
   }
   window.URLSearchParams = URLSearchParams
-  window.localStorage = memStorage()
+  const store = {}
+  window.localStorage = {
+    length: 0,
+    key: (i) => Object.keys(store)[i],
+    getItem: (key) => key in store ? store[key] : null,
+    setItem: (key, val) => {
+      if (!(key in store)) {
+        window.localStorage.length++
+      }
+      store[key] = val
+    }
+  }
 })
 
 afterEach(() => {

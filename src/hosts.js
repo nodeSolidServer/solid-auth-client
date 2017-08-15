@@ -1,7 +1,7 @@
 // @flow
 /* global RequestInfo, Request, Response, URL */
 import { getSession } from './session'
-import type { Storage } from './storage'
+import type { AsyncStorage } from './storage'
 import { getData, updateStorage } from './storage'
 import type { Auth } from './types'
 import * as WebIdOidc from './webid-oidc'
@@ -21,7 +21,7 @@ export const hostNameFromRequestInfo = (url: RequestInfo): string => {
   return _url.host
 }
 
-export const getHost = (storage: Storage) => async (url: RequestInfo): Promise<?host> => {
+export const getHost = (storage: AsyncStorage) => async (url: RequestInfo): Promise<?host> => {
   const requestHostName = hostNameFromRequestInfo(url)
   const session = await getSession(storage)
   if (session && hostNameFromRequestInfo(session.idp) === requestHostName) {
@@ -34,7 +34,7 @@ export const getHost = (storage: Storage) => async (url: RequestInfo): Promise<?
   return hosts[requestHostName] || null
 }
 
-export const saveHost = (storage: Storage) => ({ url, authType }: host): host => {
+export const saveHost = (storage: AsyncStorage) => ({ url, authType }: host): host => {
   updateStorage(storage, (data) => ({
     ...data,
     hosts: {
@@ -45,7 +45,7 @@ export const saveHost = (storage: Storage) => ({ url, authType }: host): host =>
   return { url, authType }
 }
 
-export const updateHostFromResponse = (storage: Storage) => (resp: Response): void => {
+export const updateHostFromResponse = (storage: AsyncStorage) => (resp: Response): void => {
   let authType
   if (WebIdOidc.requiresAuth(resp)) {
     authType = 'WebID-OIDC'

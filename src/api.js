@@ -4,7 +4,7 @@ import { authnFetch } from './authn-fetch'
 import { currentUrlNoParams } from './browser-util'
 import type { session } from './session'
 import { getSession, saveSession, clearSession } from './session'
-import type { Storage } from './storage'
+import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
 import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
@@ -16,7 +16,7 @@ export type authResponse =
 
 export type loginOptions = {
   redirectUri: ?string,
-  storage: Storage
+  storage: AsyncStorage
 }
 
 const defaultLoginOptions = (): loginOptions => {
@@ -30,7 +30,7 @@ const defaultLoginOptions = (): loginOptions => {
 export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
   authnFetch(defaultStorage())(url, options)
 
-const responseFromFirstSession = async (storage: Storage, authFns: Array<() => Promise<?session>>): Promise<authResponse> => {
+const responseFromFirstSession = async (storage: AsyncStorage, authFns: Array<() => Promise<?session>>): Promise<authResponse> => {
   if (authFns.length === 0) {
     return { session: null, fetch: authnFetch(storage) }
   }
@@ -53,7 +53,7 @@ export const login = (idp: string, options: loginOptions): Promise<authResponse>
   ])
 }
 
-export const currentSession = async (storage: Storage = defaultStorage()): Promise<authResponse> => {
+export const currentSession = async (storage: AsyncStorage = defaultStorage()): Promise<authResponse> => {
   const session = await getSession(storage)
   if (session) {
     return { session, fetch: authnFetch(storage) }
@@ -63,7 +63,7 @@ export const currentSession = async (storage: Storage = defaultStorage()): Promi
   ])
 }
 
-export const logout = (storage: Storage = defaultStorage()): Promise<void> =>
+export const logout = (storage: AsyncStorage = defaultStorage()): Promise<void> =>
   Promise.resolve(getSession(storage))
     .then(session => session && session.idToken && session.accessToken
       ? WebIdOidc.logout(storage)

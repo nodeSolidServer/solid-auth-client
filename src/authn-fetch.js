@@ -5,10 +5,10 @@ import 'isomorphic-fetch'
 import { getHost, updateHostFromResponse } from './hosts'
 import type { session } from './session'
 import { getSession } from './session'
-import type { Storage } from './storage'
+import type { AsyncStorage } from './storage'
 import * as WebIdOidc from './webid-oidc'
 
-export const authnFetch = (storage: Storage) => async (url: RequestInfo, options?: Object): Promise<Response> => {
+export const authnFetch = (storage: AsyncStorage) => async (url: RequestInfo, options?: Object): Promise<Response> => {
   const session = await getSession(storage)
   if (session && await shouldShareCredentials(storage)(url)) {
     return fetchWithCredentials(session, url, options)
@@ -25,7 +25,7 @@ export const authnFetch = (storage: Storage) => async (url: RequestInfo, options
     })
 }
 
-const shouldShareCredentials = (storage: Storage) => async (url: RequestInfo): Promise<boolean> => {
+const shouldShareCredentials = (storage: AsyncStorage) => async (url: RequestInfo): Promise<boolean> => {
   const session = await getSession(storage)
   if (!session) {
     return false
