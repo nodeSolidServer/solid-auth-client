@@ -13,16 +13,14 @@ export const authnFetch = (storage: AsyncStorage) => async (url: RequestInfo, op
   if (session && await shouldShareCredentials(storage)(url)) {
     return fetchWithCredentials(session, url, options)
   }
-  return fetch(url, options)
-    .then(async (resp) => {
-      if (resp.status === 401) {
-        await updateHostFromResponse(storage)(resp)
-        if (session && await shouldShareCredentials(storage)(url)) {
-          return fetchWithCredentials(session, url, options)
-        }
-      }
-      return resp
-    })
+  const resp = await fetch(url, options)
+  if (resp.status === 401) {
+    await updateHostFromResponse(storage)(resp)
+    if (session && await shouldShareCredentials(storage)(url)) {
+      return fetchWithCredentials(session, url, options)
+    }
+  }
+  return resp
 }
 
 const shouldShareCredentials = (storage: AsyncStorage) => async (url: RequestInfo): Promise<boolean> => {

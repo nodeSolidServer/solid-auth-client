@@ -10,54 +10,62 @@ import type { webIdOidcSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
 
-export const login = (idp: string, options: loginOptions): Promise<any> =>
-  getRegisteredRp(idp, options)
-    .then(rp => sendAuthRequest(rp, options))
-    .catch(err => {
-      console.warn('Error logging in with WebID-OIDC')
-      console.error(err)
-      return null
-    })
-
-export const currentSession = (storage: AsyncStorage = defaultStorage()): Promise<?webIdOidcSession> => {
-  return getStoredRp(storage)
-    .then(async rp => {
-      if (!rp) { return null }
-      return rp.validateResponse(currentUrl() || '', await storage.getItems())
-    })
-    .then(resp => {
-      if (!resp) { return null }
-      clearHashFragment()
-      return {
-        authType: 'WebID-OIDC',
-        idp: resp.decoded.payload.iss,
-        webId: resp.decoded.payload.sub,
-        idToken: resp.params.id_token,
-        accessToken: resp.params.access_token
-      }
-    })
-    .catch(err => {
-      console.warn('Error finding a WebID-OIDC session')
-      console.error(err)
-      return null
-    })
+export const login = async (idp: string, options: loginOptions): Promise<any> => {
+  try {
+    const rp = await getRegisteredRp(idp, options)
+    return sendAuthRequest(rp, options)
+  } catch (err) {
+    console.warn('Error logging in with WebID-OIDC')
+    console.error(err)
+    return null
+  }
 }
 
-export const logout = (storage: AsyncStorage): Promise<void> =>
-  getStoredRp(storage)
-    .then(rp => rp ? rp.logout() : undefined)
-    .catch(err => {
-      console.warn('Error logging out of the WebID-OIDC session')
-      console.error(err)
-    })
+export const currentSession = async (storage: AsyncStorage = defaultStorage()): Promise<?webIdOidcSession> => {
+  try {
+    const rp = await getStoredRp(storage)
+    if (!rp) { return null }
 
-export const getRegisteredRp = (idp: string, options: loginOptions): Promise<RelyingParty> =>
-  getStoredRp(options.storage)
-    .then(rp => {
-      if (rp && rp.provider.url === idp) { return rp }
-      return registerRp(idp, options)
-        .then(rp => storeRp(options.storage, idp, rp))
-    })
+    const items = await storage.getItems()
+    const resp = await rp.validateResponse(currentUrl() || '', items)
+    if (!resp) { return null }
+
+    clearHashFragment()
+    return {
+      authType: 'WebID-OIDC',
+      idp: resp.decoded.payload.iss,
+      webId: resp.decoded.payload.sub,
+      idToken: resp.params.id_token,
+      accessToken: resp.params.access_token
+    }
+  } catch (err) {
+    console.warn('Error finding a WebID-OIDC session')
+    console.error(err)
+    return null
+  }
+}
+
+export const logout = async (storage: AsyncStorage): Promise<void> => {
+  try {
+    const rp = await getStoredRp(storage)
+    if (rp) {
+      await rp.logout()
+    }
+  } catch (err) {
+    console.warn('Error logging out of the WebID-OIDC session')
+    console.error(err)
+  }
+}
+
+export const getRegisteredRp = async (idp: string, options: loginOptions): Promise<RelyingParty> => {
+  let rp = await getStoredRp(options.storage)
+  if (rp && rp.provider.url === idp) {
+    return rp
+  } else {
+    rp = await registerRp(idp, options)
+    return storeRp(options.storage, idp, rp)
+  }
+}
 
 const getStoredRp = async (storage: AsyncStorage): Promise<?RelyingParty> => {
   const { rpConfig } = await storage.getData()

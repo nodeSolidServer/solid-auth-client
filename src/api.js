@@ -34,15 +34,15 @@ const responseFromFirstSession = async (storage: AsyncStorage, authFns: Array<()
   if (authFns.length === 0) {
     return { session: null, fetch: authnFetch(storage) }
   }
-  return authFns[0]()
-    .then(async session =>
-      session
-        ? { session: await saveSession(storage)(session), fetch: authnFetch(storage) }
-        : responseFromFirstSession(storage, authFns.slice(1)))
-    .catch(err => {
+  const session = await authFns[0]()
+  if (session) {
+    try {
+      return { session: await saveSession(storage)(session), fetch: authnFetch(storage) }
+    } catch (err) {
       console.error(err)
-      return responseFromFirstSession(storage, authFns.slice(1))
-    })
+    }
+  }
+  return responseFromFirstSession(storage, authFns.slice(1))
 }
 
 export const login = (idp: string, options: loginOptions): Promise<authResponse> => {
@@ -63,14 +63,15 @@ export const currentSession = async (storage: AsyncStorage = defaultStorage()): 
   ])
 }
 
-export const logout = (storage: AsyncStorage = defaultStorage()): Promise<void> =>
-  Promise.resolve(getSession(storage))
-    .then(session => session && session.idToken && session.accessToken
-      ? WebIdOidc.logout(storage)
-      : null
-    )
-    .then(() => clearSession(storage))
-    .catch(err => {
-      console.warn('Error logging out:')
-      console.error(err)
-    })
+export const logout = async (storage: AsyncStorage = defaultStorage()): Promise<void> => {
+  try {
+    const session = await getSession(storage)
+    if (session && session.idToken && session.accessToken) {
+      await WebIdOidc.logout(storage)
+    }
+    await clearSession(storage)
+  } catch (err) {
+    console.warn('Error logging out:')
+    console.error(err)
+  }
+}
