@@ -21,9 +21,9 @@ export const login = (idp: string, options: loginOptions): Promise<any> =>
 
 export const currentSession = (storage: AsyncStorage = defaultStorage()): Promise<?webIdOidcSession> => {
   return getStoredRp(storage)
-    .then(rp => {
+    .then(async rp => {
       if (!rp) { return null }
-      return rp.validateResponse(currentUrl() || '', storage.getItems())
+      return rp.validateResponse(currentUrl() || '', await storage.getItems())
     })
     .then(resp => {
       if (!resp) { return null }
@@ -59,9 +59,9 @@ export const getRegisteredRp = (idp: string, options: loginOptions): Promise<Rel
         .then(rp => storeRp(options.storage, idp, rp))
     })
 
-const getStoredRp = (storage: AsyncStorage): Promise<?RelyingParty> => {
-  const { rpConfig } = storage.getData()
-  return rpConfig ? RelyingParty.from(rpConfig) : Promise.resolve(null)
+const getStoredRp = async (storage: AsyncStorage): Promise<?RelyingParty> => {
+  const { rpConfig } = await storage.getData()
+  return rpConfig ? RelyingParty.from(rpConfig) : null
 }
 
 const storeRp = (storage: AsyncStorage, idp: string, rp: RelyingParty): RelyingParty => {
@@ -72,7 +72,7 @@ const storeRp = (storage: AsyncStorage, idp: string, rp: RelyingParty): RelyingP
   return rp
 }
 
-const registerRp = (idp: string, { storage, redirectUri }: loginOptions): Promise<RelyingParty> => {
+const registerRp = async (idp: string, { storage, redirectUri }: loginOptions): Promise<RelyingParty> => {
   const responseType = 'id_token token'
   const registration = {
     issuer: idp,
@@ -88,15 +88,15 @@ const registerRp = (idp: string, { storage, redirectUri }: loginOptions): Promis
         response_type: responseType
       }
     },
-    store: storage.getItems()
+    store: await storage.getItems()
   }
   return RelyingParty.register(idp, registration, options)
 }
 
 const sendAuthRequest = async (rp: RelyingParty, { redirectUri, storage }: loginOptions): Promise<void> => {
-  const session = storage.getItems()
+  const session = await storage.getItems()
   const url = await rp.createRequest({ redirect_uri: redirectUri }, session)
-  storage.setItems(session)
+  await storage.setItems(session)
   navigateTo(url)
 }
 

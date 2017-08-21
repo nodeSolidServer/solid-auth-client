@@ -16,7 +16,7 @@ export const authnFetch = (storage: AsyncStorage) => async (url: RequestInfo, op
   return fetch(url, options)
     .then(async (resp) => {
       if (resp.status === 401) {
-        updateHostFromResponse(storage)(resp)
+        await updateHostFromResponse(storage)(resp)
         if (session && await shouldShareCredentials(storage)(url)) {
           return fetchWithCredentials(session, url, options)
         }

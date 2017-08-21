@@ -26,15 +26,15 @@ export const getHost = (storage: AsyncStorage) => async (url: RequestInfo): Prom
   if (session && hostNameFromRequestInfo(session.idp) === requestHostName) {
     return { url: requestHostName, authType: session.authType }
   }
-  const { hosts } = storage.getData()
+  const { hosts } = await storage.getData()
   if (!hosts) {
     return null
   }
   return hosts[requestHostName] || null
 }
 
-export const saveHost = (storage: AsyncStorage) => ({ url, authType }: host): host => {
-  storage.update((data) => ({
+export const saveHost = (storage: AsyncStorage) => async ({ url, authType }: host): Promise<host> => {
+  await storage.update((data) => ({
     ...data,
     hosts: {
       ...data.hosts,
@@ -44,7 +44,7 @@ export const saveHost = (storage: AsyncStorage) => ({ url, authType }: host): ho
   return { url, authType }
 }
 
-export const updateHostFromResponse = (storage: AsyncStorage) => (resp: Response): void => {
+export const updateHostFromResponse = (storage: AsyncStorage) => async (resp: Response): Promise<void> => {
   let authType
   if (WebIdOidc.requiresAuth(resp)) {
     authType = 'WebID-OIDC'
@@ -56,6 +56,6 @@ export const updateHostFromResponse = (storage: AsyncStorage) => (resp: Response
 
   const hostName = hostNameFromRequestInfo(resp.url)
   if (authType) {
-    saveHost(storage)({ url: hostName, authType })
+    await saveHost(storage)({ url: hostName, authType })
   }
 }

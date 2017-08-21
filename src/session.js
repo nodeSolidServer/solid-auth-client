@@ -21,12 +21,16 @@ export type session =
   | webIdTlsSession
   | webIdOidcSession
 
-export const getSession = async (storage: AsyncStorage): Promise<?session> =>
-  storage.getData().session || null
+export const getSession = async (storage: AsyncStorage): Promise<?session> => {
+  const data = await storage.getData()
+  return data.session || null
+}
 
-export const saveSession = (storage: AsyncStorage) => async (session: session): Promise<session> =>
-  storage.update(data => ({ ...data, session })).session
+export const saveSession = (storage: AsyncStorage) => async (session: session): Promise<session> => {
+  const updated = await storage.update(data => ({ ...data, session }))
+  return updated.session
+}
 
 export const clearSession = async (storage: AsyncStorage): Promise<void> => {
-  storage.update(data => ({ ...data, session: null }))
+  await storage.update(data => ({ ...data, session: null }))
 }

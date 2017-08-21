@@ -216,8 +216,8 @@ describe('login', () => {
 })
 
 describe('currentSession', () => {
-  it('can find the current session if stored', () => {
-    saveSession(storage)({
+  it('can find the current session if stored', async () => {
+    await saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -304,8 +304,8 @@ describe('currentSession', () => {
 
 describe('logout', () => {
   describe('WebID-TLS', () => {
-    it('just removes the current session from the store', () => {
-      saveSession(storage)({
+    it('just removes the current session from the store', async () => {
+      await saveSession(storage)({
         authType: 'WebID-TLS',
         idp: 'https://localhost',
         webId: 'https://person.me/#me'
@@ -388,8 +388,8 @@ describe('logout', () => {
 })
 
 describe('fetch', () => {
-  it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
-    saveSession(storage)({
+  it('handles 401s from WebID-OIDC resources by resending with credentials', async () => {
+    await saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -410,8 +410,8 @@ describe('fetch', () => {
       })
   })
 
-  it('merges request headers with the authorization header', () => {
-    saveSession(storage)({
+  it('merges request headers with the authorization header', async () => {
+    await saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -433,8 +433,8 @@ describe('fetch', () => {
       })
   })
 
-  it('does not resend with credentials if the www-authenticate header is missing', () => {
-    saveSession(storage)({
+  it('does not resend with credentials if the www-authenticate header is missing', async () => {
+    await saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -452,8 +452,8 @@ describe('fetch', () => {
       })
   })
 
-  it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', () => {
-    saveSession(storage)({
+  it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', async () => {
+    await saveSession(storage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -509,8 +509,8 @@ describe('fetch', () => {
   })
 
   describe('familiar domains with WebID-OIDC', () => {
-    it('just sends one request when the RP is also the IDP', () => {
-      saveSession(storage)({
+    it('just sends one request when the RP is also the IDP', async () => {
+      await saveSession(storage)({
         authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
@@ -529,8 +529,8 @@ describe('fetch', () => {
         })
     })
 
-    it('just sends one request to domains it has already encountered', () => {
-      saveSession(storage)({
+    it('just sends one request to domains it has already encountered', async () => {
+      await saveSession(storage)({
         authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
@@ -554,8 +554,8 @@ describe('fetch', () => {
         })
     })
 
-    it('does not send credentials to a familiar domain when that domain uses a different auth type', () => {
-      saveSession(storage)({
+    it('does not send credentials to a familiar domain when that domain uses a different auth type', async () => {
+      await saveSession(storage)({
         authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
