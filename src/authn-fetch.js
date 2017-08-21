@@ -5,32 +5,30 @@ import 'isomorphic-fetch'
 import { getHost, updateHostFromResponse } from './hosts'
 import type { session } from './session'
 import { getSession } from './session'
-import type { Storage } from './storage'
+import type { AsyncStorage } from './storage'
 import * as WebIdOidc from './webid-oidc'
 
-export const authnFetch = (storage: Storage) => (url: RequestInfo, options?: Object): Promise<Response> => {
-  const session = getSession(storage)
-  if (session && shouldShareCredentials(storage)(url)) {
+export const authnFetch = (storage: AsyncStorage) => async (url: RequestInfo, options?: Object): Promise<Response> => {
+  const session = await getSession(storage)
+  if (session && await shouldShareCredentials(storage)(url)) {
     return fetchWithCredentials(session, url, options)
   }
-  return fetch(url, options)
-    .then((resp) => {
-      if (resp.status === 401) {
-        updateHostFromResponse(storage)(resp)
-        if (session && shouldShareCredentials(storage)(url)) {
-          return fetchWithCredentials(session, url, options)
-        }
-      }
-      return resp
-    })
+  const resp = await fetch(url, options)
+  if (resp.status === 401) {
+    await updateHostFromResponse(storage)(resp)
+    if (session && await shouldShareCredentials(storage)(url)) {
+      return fetchWithCredentials(session, url, options)
+    }
+  }
+  return resp
 }
 
-const shouldShareCredentials = (storage: Storage) => (url: RequestInfo): boolean => {
-  const session = getSession(storage)
+const shouldShareCredentials = (storage: AsyncStorage) => async (url: RequestInfo): Promise<boolean> => {
+  const session = await getSession(storage)
   if (!session) {
     return false
   }
-  const requestHost = getHost(storage)(url)
+  const requestHost = await getHost(storage)(url)
   return requestHost != null &&
     session.authType === requestHost.authType
 }

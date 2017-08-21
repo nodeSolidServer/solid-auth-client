@@ -7,72 +7,80 @@ import RelyingParty from '@trust/oidc-rp'
 import type { loginOptions } from './api'
 import { currentUrl, clearHashFragment, navigateTo } from './browser-util'
 import type { webIdOidcSession } from './session'
-import type { Storage } from './storage'
-import { defaultStorage, getData, updateStorage } from './storage'
+import type { AsyncStorage } from './storage'
+import { defaultStorage } from './storage'
 
-export const login = (idp: string, options: loginOptions): Promise<any> =>
-  getRegisteredRp(idp, options)
-    .then(rp => sendAuthRequest(rp, options))
-    .catch(err => {
-      console.warn('Error logging in with WebID-OIDC')
-      console.error(err)
-      return null
-    })
-
-export const currentSession = (storage: Storage = defaultStorage()): Promise<?webIdOidcSession> => {
-  return getStoredRp(storage)
-    .then(rp => {
-      if (!rp) { return null }
-      return rp.validateResponse(currentUrl() || '', storage)
-    })
-    .then(resp => {
-      if (!resp) { return null }
-      clearHashFragment()
-      return {
-        authType: 'WebID-OIDC',
-        idp: resp.decoded.payload.iss,
-        webId: resp.decoded.payload.sub,
-        idToken: resp.params.id_token,
-        accessToken: resp.params.access_token
-      }
-    })
-    .catch(err => {
-      console.warn('Error finding a WebID-OIDC session')
-      console.error(err)
-      return null
-    })
+export const login = async (idp: string, options: loginOptions): Promise<any> => {
+  try {
+    const rp = await getRegisteredRp(idp, options)
+    return sendAuthRequest(rp, options)
+  } catch (err) {
+    console.warn('Error logging in with WebID-OIDC')
+    console.error(err)
+    return null
+  }
 }
 
-export const logout = (storage: Storage): Promise<void> =>
-  getStoredRp(storage)
-    .then(rp => rp ? rp.logout() : undefined)
-    .catch(err => {
-      console.warn('Error logging out of the WebID-OIDC session')
-      console.error(err)
-    })
+export const currentSession = async (storage: AsyncStorage = defaultStorage()): Promise<?webIdOidcSession> => {
+  try {
+    const rp = await getStoredRp(storage)
+    if (!rp) { return null }
 
-export const getRegisteredRp = (idp: string, options: loginOptions): Promise<RelyingParty> =>
-  getStoredRp(options.storage)
-    .then(rp => {
-      if (rp && rp.provider.url === idp) { return rp }
-      return registerRp(idp, options)
-        .then(rp => storeRp(options.storage, idp, rp))
-    })
+    const items = await storage.getItems()
+    const resp = await rp.validateResponse(currentUrl() || '', items)
+    if (!resp) { return null }
 
-const getStoredRp = (storage: Storage): Promise<?RelyingParty> => {
-  const { rpConfig } = getData(storage)
-  return rpConfig ? RelyingParty.from(rpConfig) : Promise.resolve(null)
+    clearHashFragment()
+    return {
+      authType: 'WebID-OIDC',
+      idp: resp.decoded.payload.iss,
+      webId: resp.decoded.payload.sub,
+      idToken: resp.params.id_token,
+      accessToken: resp.params.access_token
+    }
+  } catch (err) {
+    console.warn('Error finding a WebID-OIDC session')
+    console.error(err)
+    return null
+  }
 }
 
-const storeRp = (storage: Storage, idp: string, rp: RelyingParty): RelyingParty => {
-  updateStorage(storage, data => ({
+export const logout = async (storage: AsyncStorage): Promise<void> => {
+  try {
+    const rp = await getStoredRp(storage)
+    if (rp) {
+      await rp.logout()
+    }
+  } catch (err) {
+    console.warn('Error logging out of the WebID-OIDC session')
+    console.error(err)
+  }
+}
+
+export const getRegisteredRp = async (idp: string, options: loginOptions): Promise<RelyingParty> => {
+  let rp = await getStoredRp(options.storage)
+  if (rp && rp.provider.url === idp) {
+    return rp
+  } else {
+    rp = await registerRp(idp, options)
+    return storeRp(options.storage, idp, rp)
+  }
+}
+
+const getStoredRp = async (storage: AsyncStorage): Promise<?RelyingParty> => {
+  const { rpConfig } = await storage.getData()
+  return rpConfig ? RelyingParty.from(rpConfig) : null
+}
+
+const storeRp = (storage: AsyncStorage, idp: string, rp: RelyingParty): RelyingParty => {
+  storage.update(data => ({
     ...data,
     rpConfig: rp
   }))
   return rp
 }
 
-const registerRp = (idp: string, { storage, redirectUri }: loginOptions): Promise<RelyingParty> => {
+const registerRp = async (idp: string, { storage, redirectUri }: loginOptions): Promise<RelyingParty> => {
   const responseType = 'id_token token'
   const registration = {
     issuer: idp,
@@ -88,14 +96,17 @@ const registerRp = (idp: string, { storage, redirectUri }: loginOptions): Promis
         response_type: responseType
       }
     },
-    store: storage
+    store: await storage.getItems()
   }
   return RelyingParty.register(idp, registration, options)
 }
 
-const sendAuthRequest = (rp: RelyingParty, { redirectUri, storage }: loginOptions): Promise<void> =>
-  rp.createRequest({ redirect_uri: redirectUri }, storage)
-    .then(navigateTo)
+const sendAuthRequest = async (rp: RelyingParty, { redirectUri, storage }: loginOptions): Promise<void> => {
+  const session = await storage.getItems()
+  const url = await rp.createRequest({ redirect_uri: redirectUri }, session)
+  await storage.setItems(session)
+  navigateTo(url)
+}
 
 /**
  * Answers whether a HTTP response requires WebID-OIDC authentication.

@@ -2,52 +2,71 @@
 
 export const NAMESPACE = 'solid-auth-client'
 
-export interface StorageInterface {
-  getItem (key: string): ?string;
-  setItem (key: string, val: string): void;
+export class AsyncStorage {
+  async getItem (key: string): Promise<?string> {}
+  async setItem (key: string, val: string): Promise<void> {}
+  async getItems (): Promise<{ [string]: string }> { throw new Error() }
+  async setItems (hash: { [string]: string }): Promise<void> {
+    const setters = Object.keys(hash).map(k => this.setItem(k, hash[k]))
+    await Promise.all(setters)
+  }
+
+  /**
+   * Gets the deserialized stored data
+   */
+  async getData (): Promise<Object> {
+    const item = await this.getItem(NAMESPACE)
+    return item ? JSON.parse(item) : {}
+  }
+
+  /**
+   * Updates the storage without mutating the intermediate representation
+   */
+  async update (update: (Object) => Object): Promise<Object> {
+    const currentData = await this.getData()
+    const newData = update(currentData)
+    await this.setItem(NAMESPACE, JSON.stringify(newData))
+    return newData
+  }
 }
 
-export type Storage = Storage | StorageInterface
-
-export const memStorage = (): Storage => {
-  const store = {}
-  store.getItem = (key: string): ?string => {
-    if (typeof store[key] === 'undefined') return null
-    return store[key]
+export class MemoryStorage extends AsyncStorage {
+  store = {}
+  async getItem (key: string): Promise<?string> {
+    return key in this.store ? this.store[key] : null
   }
-  store.setItem = (key: string, val: string) => {
-    store[key] = val
+  async setItem (key: string, val: string): Promise<void> {
+    this.store[key] = val
   }
-  return store
+  async getItems (): Promise<{ [string]: string }> {
+    return this.store
+  }
 }
 
-export const defaultStorage = () => {
-  try {
-    if (window && window.localStorage) {
-      return window.localStorage
+export class LocalStorage extends AsyncStorage {
+  async getItem (key: string): Promise<?string> {
+    return window.localStorage.getItem(key)
+  }
+  async setItem (key: string, val: string): Promise<void> {
+    window.localStorage.setItem(key, val)
+  }
+  async getItems (): Promise<{ [string]: string }> {
+    const hash = {}
+    for (var i = 0; i < window.localStorage.length; i++) {
+      const key = window.localStorage.key(i)
+      hash[key] = window.localStorage.getItem(key)
     }
-  } catch (e) {
-    if (!(e instanceof ReferenceError)) { throw e }
+    return hash
+  }
+}
+
+export const defaultStorage = (): AsyncStorage => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    return new LocalStorage()
   }
   console.warn(
     `'window.localStorage' unavailable.  ` +
     `Creating a (not very useful) in-memory storage object as the default storage interface.`
   )
-  return memStorage()
-}
-
-/**
- * Gets the deserialized stored data
- */
-export const getData = (store: Storage) =>
-  JSON.parse(store.getItem(NAMESPACE) || '{}')
-
-/**
- * Updates a Storage object without mutating its intermediate representation.
- */
-export const updateStorage = (store: Storage, update: (Object) => Object): Object => {
-  const currentData = getData(store)
-  const newData = update(currentData)
-  store.setItem(NAMESPACE, JSON.stringify(newData))
-  return newData
+  return new MemoryStorage()
 }
