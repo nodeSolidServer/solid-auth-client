@@ -7,35 +7,25 @@ import Nav from './Nav'
 import PersonalInfo from './PersonalInfo'
 import Footer from './Footer'
 
-import type { authResponse } from '../../src/api'
 import type { session } from '../../src/session'
-import { login, logout, currentSession } from '../../src/'
+import { popupLogin, logout, currentSession } from '../../src/'
 
 export default class App extends React.Component {
   state : {
-    session: ?session,
-    choosingProvider: boolean
+    session: ?session
   } = {
-    session: null,
-    choosingProvider: false
+    session: null
   }
 
-  fetch = fetch
-
-  saveCredentials = ({ session, fetch }: authResponse): void => {
+  saveCredentials = (session: session): void => {
     this.setState({ session })
-    this.fetch = fetch
   }
 
   onClickLogIn = (event: Event) =>
-    this.setState({ choosingProvider: true })
-
-  onClickCancelLogin = () =>
-    this.setState({ choosingProvider: false })
-
-  onSubmitIdp = (idp: string) => {
-    login(idp.trim()).then(this.saveCredentials)
-  }
+    popupLogin({
+      idpSelectUri: 'http://localhost:8081/idp-select.html',
+      redirectUri: 'http://localhost:8081/idp-callback.html'
+    }).then(this.saveCredentials)
 
   onClickLogOut = (event: Event) =>
     logout()
@@ -54,14 +44,11 @@ export default class App extends React.Component {
       <div>
         <Nav
           loggedIn={loggedIn}
-          choosingProvider={this.state.choosingProvider}
           onClickLogIn={this.onClickLogIn}
-          onClickCancelLogin={this.onClickCancelLogin}
-          onSubmitIdp={this.onSubmitIdp}
           onClickLogOut={this.onClickLogOut}
         />
         <Copy loggedIn={loggedIn} />
-        <PersonalInfo session={this.state.session} fetch={this.fetch} />
+        <PersonalInfo session={this.state.session} />
         <Footer />
       </div>
     )

@@ -1,6 +1,6 @@
 // @flow
 
-import type { Storage } from './storage'
+import type { AsyncStorage } from './storage'
 import { getData, updateStorage } from './storage'
 import type { WebIdTls, WebIdOidc } from './types'
 
@@ -22,12 +22,18 @@ export type session =
   | webIdTlsSession
   | webIdOidcSession
 
-export const getSession = (storage: Storage): ?session =>
-  getData(storage).session || null
+export async function getSession (storage: AsyncStorage): Promise<?session> {
+  const data = await getData(storage)
+  return data.session || null
+}
 
-export const saveSession = (storage: Storage) => (session: session): session =>
-  updateStorage(storage, data => ({ ...data, session })).session
+export function saveSession (storage: AsyncStorage): (session: session) => Promise<session> {
+  return async (session) => {
+    const data = await updateStorage(storage, data => ({ ...data, session }))
+    return data.session
+  }
+}
 
-export const clearSession = (storage: Storage): void => {
-  updateStorage(storage, data => ({ ...data, session: null }))
+export async function clearSession (storage: AsyncStorage): Promise<void> {
+  await updateStorage(storage, data => ({ ...data, session: null }))
 }
