@@ -3,9 +3,7 @@ import { startPopupServer } from './popup'
 import { defaultStorage } from './storage'
 
 describe('startPopupServer', () => {
-  it(`rejects messages missing the 'solid-auth-client' namespace`, () => {
-    
-  })
+  it(`rejects messages missing the 'solid-auth-client' namespace`, () => {})
 
   it('rejects messages from unexpected domains')
 

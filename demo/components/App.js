@@ -11,7 +11,7 @@ import type { session } from '../../src/session'
 import { popupLogin, logout, currentSession } from '../../src/'
 
 export default class App extends React.Component {
-  state : {
+  state: {
     session: ?session
   } = {
     session: null
@@ -28,17 +28,16 @@ export default class App extends React.Component {
     }).then(this.saveCredentials)
 
   onClickLogOut = (event: Event) =>
-    logout()
-      .then(() => {
-        this.setState({ session: null })
-      })
+    logout().then(() => {
+      this.setState({ session: null })
+    })
 
-  constructor (props: {}) {
+  constructor(props: {}) {
     super(props)
     currentSession().then(this.saveCredentials)
   }
 
-  render () {
+  render() {
     const loggedIn = this.state.session !== null
     return (
       <div>

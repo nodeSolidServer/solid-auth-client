@@ -7,22 +7,21 @@ import type { Auth } from './types'
 import * as WebIdOidc from './webid-oidc'
 import * as WebIdTls from './webid-tls'
 
-export type host =
-  { authType: Auth
-  , url: string
-  }
+export type host = {
+  authType: Auth,
+  url: string
+}
 
 export const hostNameFromRequestInfo = (url: RequestInfo): string => {
-  const _url = url instanceof URL
-    ? url
-    : url instanceof Request
-      ? new URL(url.url)
-      : new URL(url)
+  const _url =
+    url instanceof URL
+      ? url
+      : url instanceof Request ? new URL(url.url) : new URL(url)
   return _url.host
 }
 
-export function getHost (storage: AsyncStorage): (RequestInfo) => Promise<?host> {
-  return async (url) => {
+export function getHost(storage: AsyncStorage): RequestInfo => Promise<?host> {
+  return async url => {
     const requestHostName = hostNameFromRequestInfo(url)
     const session = await getSession(storage)
     if (session && hostNameFromRequestInfo(session.idp) === requestHostName) {
@@ -36,9 +35,9 @@ export function getHost (storage: AsyncStorage): (RequestInfo) => Promise<?host>
   }
 }
 
-export function saveHost (storage: AsyncStorage): (host) => Promise<host> {
+export function saveHost(storage: AsyncStorage): host => Promise<host> {
   return async ({ url, authType }) => {
-    await updateStorage(storage, (data) => ({
+    await updateStorage(storage, data => ({
       ...data,
       hosts: {
         ...data.hosts,
@@ -49,8 +48,10 @@ export function saveHost (storage: AsyncStorage): (host) => Promise<host> {
   }
 }
 
-export function updateHostFromResponse (storage: AsyncStorage): (Response) => Promise<void> {
-  return async (resp) => {
+export function updateHostFromResponse(
+  storage: AsyncStorage
+): Response => Promise<void> {
+  return async resp => {
     let authType
     if (WebIdOidc.requiresAuth(resp)) {
       authType = 'WebID-OIDC'

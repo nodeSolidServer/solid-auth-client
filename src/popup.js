@@ -29,18 +29,24 @@ const NS = 'solid-auth-client'
 /**
  * Sets up a little IPC server
  */
-export const startPopupServer = (store: Storage, childWindow: window, childOrigin: string): Promise<?session> => {
-  const respond = (response) => {
+export const startPopupServer = (
+  store: Storage,
+  childWindow: window,
+  childOrigin: string
+): Promise<?session> => {
+  const respond = response => {
     childWindow.postMessage({ 'solid-auth-client': response }, childOrigin)
   }
   return new Promise((resolve, reject) => {
-    window.addEventListener('message', async function messageHandler (event) {
+    window.addEventListener('message', async function messageHandler(event) {
       const { data, origin } = event
-      if (!data[NS]) { return }
+      if (!data[NS]) {
+        return
+      }
       if (origin !== childOrigin) {
         console.warn(
           `SECURITY WARNING: solid-auth-client is listening for messages from ${childOrigin},` +
-          ` but received a message from ${origin}.`
+            ` but received a message from ${origin}.`
         )
         return
       }
@@ -75,9 +81,22 @@ export const startPopupServer = (store: Storage, childWindow: window, childOrigi
 export const openIdpSelector = (options: loginOptions): window => {
   const width = 750
   const height = 500
-  const w = window.open(options.idpSelectUri, '_blank', `width=${width},height=${height},left=${(window.innerWidth - width) / 2},top=${(window.innerHeight - height) / 2}`)
+  const w = window.open(
+    options.idpSelectUri,
+    '_blank',
+    `width=${width},height=${height},left=${(window.innerWidth - width) /
+      2},top=${(window.innerHeight - height) / 2}`
+  )
   w.addEventListener('load', () => {
-    w.postMessage({ loginOptions: { idpSelectUri: options.idpSelectUri, redirectUri: options.redirectUri } }, '*')
+    w.postMessage(
+      {
+        loginOptions: {
+          idpSelectUri: options.idpSelectUri,
+          redirectUri: options.redirectUri
+        }
+      },
+      '*'
+    )
   })
   return w
 }

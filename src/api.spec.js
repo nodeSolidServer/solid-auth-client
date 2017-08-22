@@ -38,7 +38,7 @@ const jwks = {
       // the PEM-encoded key
       pem,
       // extra data for the JWK
-      { kid: '1', alg: 'RS256', use: 'sig', key_ops: [ 'verify' ] },
+      { kid: '1', alg: 'RS256', use: 'sig', key_ops: ['verify'] },
       // serialize just the public key
       'public'
     )
@@ -66,7 +66,7 @@ beforeEach(() => {
     value: '/'
   })
   _URL = window.URL
-  window.URL = function (urlStr) {
+  window.URL = function(urlStr) {
     const url = new _URL(urlStr)
     url.searchParams = new URLSearchParams(url.search)
     return url
@@ -109,9 +109,7 @@ describe('login', () => {
     it('can log in with WebID-TLS', async () => {
       expect.assertions(2)
       const webId = 'https://localhost/profile#me'
-      nock('https://localhost/')
-        .head('/')
-        .reply(200, '', { user: webId })
+      nock('https://localhost/').head('/').reply(200, '', { user: webId })
 
       const session = await login('https://localhost')
       expect(session.webId).toBe(webId)
@@ -138,8 +136,12 @@ describe('login', () => {
       const location = new window.URL(window.location.href)
       expect(location.origin).toEqual('https://localhost')
       expect(location.pathname).toEqual('/authorize')
-      expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/')
-      expect(location.searchParams.get('response_type')).toEqual('id_token token')
+      expect(location.searchParams.get('redirect_uri')).toEqual(
+        'https://app.biz/'
+      )
+      expect(location.searchParams.get('response_type')).toEqual(
+        'id_token token'
+      )
       expect(location.searchParams.get('scope')).toEqual('openid')
       expect(location.searchParams.get('client_id')).toEqual('the-client-id')
     })
@@ -158,12 +160,18 @@ describe('login', () => {
         .post('/register')
         .reply(200, oidcRegistration)
 
-      await login('https://localhost', { redirectUri: 'https://app.biz/welcome/' })
+      await login('https://localhost', {
+        redirectUri: 'https://app.biz/welcome/'
+      })
       const location = new window.URL(window.location.href)
       expect(location.origin).toEqual('https://localhost')
       expect(location.pathname).toEqual('/authorize')
-      expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/welcome/')
-      expect(location.searchParams.get('response_type')).toEqual('id_token token')
+      expect(location.searchParams.get('redirect_uri')).toEqual(
+        'https://app.biz/welcome/'
+      )
+      expect(location.searchParams.get('response_type')).toEqual(
+        'id_token token'
+      )
       expect(location.searchParams.get('scope')).toEqual('openid')
       expect(location.searchParams.get('client_id')).toEqual('the-client-id')
     })
@@ -188,14 +196,20 @@ describe('login', () => {
       const location = new window.URL(window.location.href)
       expect(location.origin).toEqual('https://localhost')
       expect(location.pathname).toEqual('/authorize')
-      expect(location.searchParams.get('redirect_uri')).toEqual('https://app.biz/')
-      expect(location.searchParams.get('response_type')).toEqual('id_token token')
+      expect(location.searchParams.get('redirect_uri')).toEqual(
+        'https://app.biz/'
+      )
+      expect(location.searchParams.get('response_type')).toEqual(
+        'id_token token'
+      )
       expect(location.searchParams.get('scope')).toEqual('openid')
       expect(location.searchParams.get('client_id')).toEqual('the-client-id')
     })
 
     // TODO: this is broken due to https://github.com/anvilresearch/oidc-rp/issues/26
-    it('resolves to a `null` session when none of the recognized auth schemes are available')
+    it(
+      'resolves to a `null` session when none of the recognized auth schemes are available'
+    )
   })
 })
 
@@ -257,7 +271,7 @@ describe('currentSession', () => {
         {
           iss: oidcConfiguration.issuer,
           aud: oidcRegistration.client_id,
-          exp: Math.floor(Date.now() / 1000) + (60 * 60), // one hour
+          exp: Math.floor(Date.now() / 1000) + 60 * 60, // one hour
           sub: 'https://person.me/#me',
           nonce
         },
@@ -266,7 +280,8 @@ describe('currentSession', () => {
       )
       expectedIdToken = idToken
       expectedAccessToken = accessToken
-      window.location.href = `${redirectUri}#` +
+      window.location.href =
+        `${redirectUri}#` +
         `access_token=${accessToken}&` +
         `token_type=Bearer&` +
         `id_token=${idToken}&` +
@@ -333,7 +348,7 @@ describe('logout', () => {
         {
           iss: oidcConfiguration.issuer,
           aud: oidcRegistration.client_id,
-          exp: Math.floor(Date.now() / 1000) + (60 * 60), // one hour
+          exp: Math.floor(Date.now() / 1000) + 60 * 60, // one hour
           sub: 'https://person.me/#me',
           nonce
         },
@@ -342,7 +357,8 @@ describe('logout', () => {
       )
       expectedIdToken = idToken
       expectedAccessToken = accessToken
-      window.location.href = `${redirectUri}#` +
+      window.location.href =
+        `${redirectUri}#` +
         `access_token=${accessToken}&` +
         `token_type=Bearer&` +
         `id_token=${idToken}&` +
@@ -399,7 +415,9 @@ describe('fetch', () => {
       .matchHeader('authorization', 'Bearer abc.def.ghi')
       .reply(200)
 
-    const resp = await fetch('https://third-party.com/private-resource', { headers: { accept: 'text/plain' } })
+    const resp = await fetch('https://third-party.com/private-resource', {
+      headers: { accept: 'text/plain' }
+    })
     expect(resp.status).toBe(200)
   })
 
@@ -413,9 +431,7 @@ describe('fetch', () => {
       idToken: 'abc.def.ghi'
     })
 
-    nock('https://third-party.com')
-      .get('/protected-resource')
-      .reply(401)
+    nock('https://third-party.com').get('/protected-resource').reply(401)
 
     const resp = await fetch('https://third-party.com/protected-resource')
     expect(resp.status).toBe(401)
@@ -529,9 +545,7 @@ describe('fetch', () => {
         authType: 'WebID-TLS'
       })
 
-      nock('https://third-party.com')
-        .get('/resource')
-        .reply(401)
+      nock('https://third-party.com').get('/resource').reply(401)
 
       const resp = await fetch('https://third-party.com/resource')
       expect(resp.status).toBe(401)

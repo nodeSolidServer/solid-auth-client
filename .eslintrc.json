@@ -1,0 +1,16 @@
+{
+  "extends": ["standard", "prettier"],
+  "plugins": ["flowtype", "prettier"],
+  "parser": "babel-eslint",
+  "rules": {
+    "prettier/prettier": [
+      "error",
+      {
+        "parser": "flow",
+        "singleQuote": true,
+        "bracketSpacing": true,
+        "semi": false
+      }
+    ]
+  }
+}

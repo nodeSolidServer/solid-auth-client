@@ -8,7 +8,9 @@ import { getSession } from './session'
 import type { AsyncStorage } from './storage'
 import * as WebIdOidc from './webid-oidc'
 
-export function authnFetch (storage: AsyncStorage): (RequestInfo, ?Object) => Promise<Response> {
+export function authnFetch(
+  storage: AsyncStorage
+): (RequestInfo, ?Object) => Promise<Response> {
   return async (url, options) => {
     options = options || {}
     const session = await getSession(storage)
@@ -28,19 +30,24 @@ export function authnFetch (storage: AsyncStorage): (RequestInfo, ?Object) => Pr
   }
 }
 
-function shouldShareCredentials (storage: AsyncStorage): (url: RequestInfo) => Promise<boolean> {
-  return async (url) => {
+function shouldShareCredentials(
+  storage: AsyncStorage
+): (url: RequestInfo) => Promise<boolean> {
+  return async url => {
     const session = await getSession(storage)
     if (!session) {
       return false
     }
     const requestHost = await getHost(storage)(url)
-    return requestHost != null &&
-      session.authType === requestHost.authType
+    return requestHost != null && session.authType === requestHost.authType
   }
 }
 
-const fetchWithCredentials = (session: session, url: RequestInfo, options?: Object): Promise<Response> => {
+const fetchWithCredentials = async (
+  session: session,
+  url: RequestInfo,
+  options?: Object
+): Promise<Response> => {
   switch (session.authType) {
     case 'WebID-OIDC':
       return WebIdOidc.fetchWithCredentials(session)(url, options)
