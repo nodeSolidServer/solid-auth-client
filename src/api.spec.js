@@ -132,7 +132,8 @@ describe('login', () => {
         .post('/register')
         .reply(200, oidcRegistration)
 
-      await login('https://localhost')
+      const redirectFn = await login('https://localhost')
+      await redirectFn()
       const location = new window.URL(window.location.href)
       expect(location.origin).toEqual('https://localhost')
       expect(location.pathname).toEqual('/authorize')
@@ -160,9 +161,10 @@ describe('login', () => {
         .post('/register')
         .reply(200, oidcRegistration)
 
-      await login('https://localhost', {
+      const redirectFn = await login('https://localhost', {
         redirectUri: 'https://app.biz/welcome/'
       })
+      await redirectFn()
       const location = new window.URL(window.location.href)
       expect(location.origin).toEqual('https://localhost')
       expect(location.pathname).toEqual('/authorize')
@@ -192,7 +194,8 @@ describe('login', () => {
 
       window.location.href += '#foo-bar'
 
-      await login('https://localhost')
+      const redirectFn = await login('https://localhost')
+      await redirectFn()
       const location = new window.URL(window.location.href)
       expect(location.origin).toEqual('https://localhost')
       expect(location.pathname).toEqual('/authorize')
@@ -259,7 +262,8 @@ describe('currentSession', () => {
 
       let expectedIdToken, expectedAccessToken
 
-      await login('https://localhost')
+      const redirectFn = await login('https://localhost')
+      await redirectFn()
       // generate the auth response
       const location = new window.URL(window.location.href)
       const state = location.searchParams.get('state')
@@ -336,7 +340,8 @@ describe('logout', () => {
 
       let expectedIdToken, expectedAccessToken
 
-      await login('https://localhost')
+      const redirectFn = await login('https://localhost')
+      await redirectFn()
       // generate the auth response
       const location = new window.URL(window.location.href)
       const state = location.searchParams.get('state')

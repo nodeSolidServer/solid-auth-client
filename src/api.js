@@ -55,7 +55,7 @@ export async function login(
   options = { ...defaultLoginOptions(), ...options }
   const webIdTlsSession = await WebIdTls.login(idp)
   if (webIdTlsSession) {
-    return webIdTlsSession
+    return saveSession(options.storage)(webIdTlsSession)
   }
   const webIdOidcLoginRedirectFn = await WebIdOidc.login(idp, options)
   return webIdOidcLoginRedirectFn
