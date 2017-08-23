@@ -1,10 +1,11 @@
 // @flow
 import { login } from '../src/api'
+import { client } from '../src/ipc'
 import { postMessageStorage } from '../src/storage'
 
 import './idp-select.css'
 
-export type idp = {
+type idp = {
   displayName: string,
   url: string,
   iconUrl: string
@@ -62,17 +63,12 @@ const idpsUI = (idps: idp[]): string =>
     ''
   )
 
-let loginOptions = null
-window.addEventListener('message', event => {
-  try {
-    const message = event.data
-    if (message.loginOptions) {
-      loginOptions = message.loginOptions
-    }
-  } catch (e) {
-    loginOptions = null
-  }
-})
+if (!process.env.TRUSTED_APP_ORIGIN) {
+  throw new Error(
+    'IDP Select App not provided with "process.env.TRUSTED_APP_ORIGIN".  Due to security reasons, cannot log in.'
+  )
+}
+const request = client(window.opener, process.env.TRUSTED_APP_ORIGIN)
 
 const container = document.getElementById('idp-list')
 if (container) {
@@ -80,6 +76,10 @@ if (container) {
 
   container.querySelectorAll('.idp__select').forEach(button => {
     button.addEventListener('click', async () => {
+      let loginOptions = await request({
+        method: 'getLoginOptions',
+        args: []
+      })
       if (!loginOptions) {
         console.warn(
           'Cannot log in - have not yet received loginOptions from parent window'
@@ -93,19 +93,14 @@ if (container) {
       }
       loginOptions = {
         ...loginOptions,
-        storage: postMessageStorage(window.opener, window.location.origin)
+        storage: postMessageStorage(
+          window.opener,
+          process.env.TRUSTED_APP_ORIGIN || ''
+        )
       }
       const maybeSession = await login(button.dataset.url, loginOptions)
       if (typeof maybeSession === 'object') {
-        window.opener.postMessage(
-          {
-            'solid-auth-client': {
-              method: 'foundSession',
-              args: [maybeSession]
-            }
-          },
-          '*'
-        )
+        await request({ method: 'foundSession', args: [maybeSession] })
         window.close()
       } else if (typeof maybeSession === 'function') {
         maybeSession()

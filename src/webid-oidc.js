@@ -5,7 +5,7 @@ import * as authorization from 'auth-header'
 import RelyingParty from 'oidc-rp/src'
 
 import type { loginOptions } from './api'
-import { currentUrl, clearHashFragment, navigateTo } from './browser-util'
+import { currentUrl, clearHashFragment, navigateTo } from './url-util'
 import type { webIdOidcSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'

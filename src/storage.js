@@ -1,5 +1,5 @@
 // @flow
-import uuid from 'uuid/v4'
+import { client } from './ipc'
 
 export const NAMESPACE = 'solid-auth-client'
 
@@ -99,7 +99,7 @@ export const postMessageStorage = (
   storageWindow: window,
   storageOrigin: string
 ): AsyncStorage => {
-  const request = requestFactory(storageWindow, storageOrigin)
+  const request = client(storageWindow, storageOrigin)
   return {
     getItem: (key: string): Promise<?string> => {
       return request({ method: 'storage/getItem', args: [key] })
@@ -113,44 +113,4 @@ export const postMessageStorage = (
       return request({ method: 'storage/removeItem', args: [key] })
     }
   }
-}
-
-type response = {
-  id: string,
-  ret: any
-}
-
-const requestFactory = (w: window, reqOrigin: string) => (options: {
-  method: string,
-  args: string[]
-}): Promise<response> => {
-  return new Promise((resolve, reject) => {
-    const reqId = uuid()
-    const responseListener = event => {
-      const { data, origin } = event
-      if (origin !== reqOrigin) {
-        return
-      }
-      if (!data['solid-auth-client']) {
-        return
-      }
-      const response = data['solid-auth-client']
-      if (response.id !== reqId) {
-        return
-      }
-      resolve(response.ret)
-      window.removeEventListener('message', responseListener)
-    }
-    window.addEventListener('message', responseListener)
-    w.postMessage(
-      {
-        'solid-auth-client': {
-          id: reqId,
-          method: options.method,
-          args: options.args
-        }
-      },
-      reqOrigin
-    )
-  })
 }

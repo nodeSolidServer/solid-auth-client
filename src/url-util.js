@@ -15,3 +15,5 @@ export const clearHashFragment = () =>
 export const navigateTo = (url: string) => {
   window.location.href = url
 }
+
+export const originOf = (url: string): string => new URL(url).origin

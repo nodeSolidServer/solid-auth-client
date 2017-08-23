@@ -23,8 +23,8 @@ export default class App extends React.Component {
 
   onClickLogIn = (event: Event) =>
     popupLogin({
-      idpSelectUri: 'http://localhost:8081/idp-select.html',
-      redirectUri: 'http://localhost:8081/idp-callback.html'
+      idpSelectUri: 'http://localhost:8082/idp-select.html',
+      redirectUri: 'http://localhost:8082/idp-callback.html'
     }).then(this.saveCredentials)
 
   onClickLogOut = (event: Event) =>

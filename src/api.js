@@ -1,12 +1,12 @@
 // @flow
 /* global RequestInfo, Response */
 import { authnFetch } from './authn-fetch'
-import { currentUrlNoParams } from './browser-util'
 import { openIdpSelector, startPopupServer } from './popup'
 import type { session } from './session'
 import { getSession, saveSession, clearSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
+import { currentUrlNoParams, originOf } from './url-util'
 import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
 
@@ -68,8 +68,8 @@ export async function popupLogin(options: loginOptions): Promise<?session> {
   }
   const { storage, idpSelectUri } = options
   const childWindow = openIdpSelector(options)
-  const childOrigin = new URL(idpSelectUri).origin
-  const session = await startPopupServer(storage, childWindow, childOrigin)
+  const childOrigin = originOf(idpSelectUri)
+  const session = await startPopupServer(storage, childWindow, options)
   return session
 }
 

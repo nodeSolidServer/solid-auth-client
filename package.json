@@ -8,7 +8,8 @@
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start": "webpack-dev-server --config=./webpack.config.js",
+    "start:demo": "webpack-dev-server --env development --config=./webpack/webpack.demo.config.js",
+    "start:popup": "webpack-dev-server --env development --config=./webpack/webpack.popup.config.js",
     "jest": "jest src --coverage",
     "format": "prettier --parser flow --no-semi --single-quote --write '{src,demo,popup-app}/**/*.js'",
     "prelint": "yarn format",
@@ -20,7 +21,7 @@
     "coverage:report": "cat ./coverage/lcov.info | coveralls",
     "build": "yarn build:lib && yarn build:dist && yarn docs",
     "build:lib": "rm -rf lib && babel --ignore '**.spec.js' src -d lib",
-    "build:dist": "webpack -p",
+    "build:dist": "webpack --config=./webpack/webpack.lib.config.js -p",
     "docs": "[ $(ls -l ./docs | wc -l) -gt 0 ] && rm -r ./docs/*; mkdir -p ./docs && cp ./dist/demo.html ./docs/index.html && cp ./dist/demo.bundle.js ./docs/demo.bundle.js && cp ./dist/demo.bundle.js.map ./docs/demo.bundle.js.map",
     "preversion": "yarn test",
     "postversion": "git push --follow-tags",

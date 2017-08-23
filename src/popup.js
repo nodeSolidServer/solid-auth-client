@@ -1,84 +1,85 @@
 // @flow
 import type { loginOptions } from './api'
+import type { handler, request, response } from './ipc'
+import { combineHandlers, server } from './ipc'
 import type { session } from './session'
-import type { Storage } from './storage'
-/*
+import type { AsyncStorage } from './storage'
+import { originOf } from './url-util'
 
-request:
-  - origin: https://app.io
-  - data:
-    { 'solid-auth-client':
-      { id: 12345
-      , call: 'setItem'
-      , args: [ 'key', 'value' ]
-      }
-    }
-response:
-  - origin: https://popup.app.io
-  - data:
-    { 'solid-auth-client':
-      { id: 12345
-      , ret: null
-      }
-    }
+const popupAppRequestHandler = (
+  store: AsyncStorage,
+  options: loginOptions,
+  foundSessionCb: session => void
+): handler =>
+  combineHandlers(storageHandler(store), loginHandler(options, foundSessionCb))
 
-*/
-
-const NS = 'solid-auth-client'
-
-/**
- * Sets up a little IPC server
- */
-export const startPopupServer = (
-  store: Storage,
-  childWindow: window,
-  childOrigin: string
-): Promise<?session> => {
-  const respond = response => {
-    childWindow.postMessage({ 'solid-auth-client': response }, childOrigin)
+const storageHandler = (store: AsyncStorage) => (
+  req: request
+): ?Promise<response> => {
+  const { id, method, args } = req
+  switch (method) {
+    case 'storage/getItem':
+      return store.getItem(...args).then(item => ({ id, ret: item }))
+    case 'storage/setItem':
+      return store.setItem(...args).then(() => ({ id, ret: null }))
+    case 'storage/removeItem':
+      return store.removeItem(...args).then(() => ({ id, ret: null }))
+    default:
+      return null
   }
+}
+
+const loginHandler = (
+  options: loginOptions,
+  foundSessionCb: session => void
+) => (req: request): ?Promise<response> => {
+  const { id, method, args } = req
+  switch (method) {
+    case 'getLoginOptions':
+      return Promise.resolve({
+        id,
+        ret: {
+          idpSelectUri: options.idpSelectUri,
+          redirectUri: options.redirectUri
+        }
+      })
+    case 'foundSession':
+      foundSessionCb(args[0])
+      return Promise.resolve({ id, ret: args[0] })
+    default:
+      return null
+  }
+}
+
+export const startPopupServer = (
+  store: AsyncStorage,
+  childWindow: window,
+  options: loginOptions
+): Promise<?session> => {
   return new Promise((resolve, reject) => {
-    window.addEventListener('message', async function messageHandler(event) {
-      const { data, origin } = event
-      if (!data[NS]) {
-        return
-      }
-      if (origin !== childOrigin) {
-        console.warn(
-          `SECURITY WARNING: solid-auth-client is listening for messages from ${childOrigin},` +
-            ` but received a message from ${origin}.`
+    if (!(options.idpSelectUri && options.redirectUri)) {
+      return reject(
+        new Error(
+          'Cannot serve a popup without both "options.idpSelectUri" and "options.redirectUri"'
         )
-        return
-      }
-      const { id, method, args } = data[NS]
-      switch (method) {
-        case 'storage/getItem':
-          const item = await store.getItem(...args)
-          respond({ id, ret: item })
-          break
-        case 'storage/setItem':
-          await store.setItem(...args)
-          respond({ id, ret: null })
-          break
-        case 'storage/removeItem':
-          await store.removeItem(...args)
-          respond({ id, ret: null })
-          break
-        case 'foundSession':
-          respond({ id, ret: null })
-          resolve(args[0])
-          window.removeEventListener('message', messageHandler)
-          break
-        default:
-          console.warn(
-            `Child ${childOrigin} requested unsupported method ${method} with arguments ${args}`
-          )
-      }
-    })
+      )
+    }
+    const popupServer = server(childWindow, originOf(options.idpSelectUri))(
+      popupAppRequestHandler(store, options, (session: session) => {
+        popupServer.stop()
+        resolve(session)
+      })
+    )
+    popupServer.start()
   })
 }
 
 export const openIdpSelector = (options: loginOptions): window => {
+  if (!(options.idpSelectUri && options.redirectUri)) {
+    throw new Error(
+      'Cannot open IDP select UI.  Must provide both "options.idpSelectUri" and "options.redirectUri".'
+    )
+  }
   const width = 750
   const height = 500
   const w = window.open(
@@ -87,16 +88,5 @@ export const openIdpSelector = (options: loginOptions): window => {
     `width=${width},height=${height},left=${(window.innerWidth - width) /
       2},top=${(window.innerHeight - height) / 2}`
   )
-  w.addEventListener('load', () => {
-    w.postMessage(
-      {
-        loginOptions: {
-          idpSelectUri: options.idpSelectUri,
-          redirectUri: options.redirectUri
-        }
-      },
-      '*'
-    )
-  })
   return w
 }
