@@ -38,8 +38,8 @@ export type response = {
 export type handler = request => ?Promise<response>
 
 export interface Server {
-  start: () => void,
-  stop: () => void
+  start: () => Server,
+  stop: () => Server
 }
 
 const NAMESPACE = 'solid-auth-client'
@@ -87,7 +87,7 @@ const getRequest = (eventData: mixed): ?request => {
 export const client = (
   serverWindow: window,
   serverOrigin: string
-) => (options: { method: string, args: any[] }): Promise<any> => {
+) => (request: { method: string, args: any[] }): Promise<response> => {
   return new Promise((resolve, reject) => {
     const reqId = uuid()
     const responseListener = event => {
@@ -107,8 +107,8 @@ export const client = (
       {
         'solid-auth-client': {
           id: reqId,
-          method: options.method,
-          args: options.args
+          method: request.method,
+          args: request.args
         }
       },
       serverOrigin
@@ -137,14 +137,17 @@ export const server = (childWindow: window, childOrigin: string) => (
       childWindow.postMessage(namespace(resp), childOrigin)
     }
   }
-  return {
+  const s = {
     start: () => {
       window.addEventListener('message', messageListener)
+      return s
     },
     stop: () => {
       window.removeEventListener('message', messageListener)
+      return s
     }
   }
+  return s
 }
 
 export const combineHandlers = (...handlers: handler[]) => (
