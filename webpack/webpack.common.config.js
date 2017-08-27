@@ -1,11 +1,4 @@
-const path = require('path')
-const CleanWebpackPlugin = require('clean-webpack-plugin')
-
 module.exports = {
-  output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist')
-  },
   module: {
     rules: [
       {
@@ -29,6 +22,5 @@ module.exports = {
     urlutils: 'URL',
     '@trust/webcrypto': 'crypto'
   },
-  devtool: 'source-map',
-  plugins: [new CleanWebpackPlugin(['dist'])]
+  devtool: 'source-map'
 }

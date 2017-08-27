@@ -1,9 +1,13 @@
-// @flow
-/* eslint-env mocha */
 /* global expect */
+/* eslint-env jest */
 
+import { polyfillWindow, polyunfillWindow } from './spec-helpers'
 import type { AsyncStorage } from './storage'
-import { defaultStorage } from './storage'
+import { defaultStorage, postMessageStorage } from './storage'
+
+beforeEach(polyfillWindow)
+
+afterEach(polyunfillWindow)
 
 describe('defaultStorage', () => {
   it('returns a memStorage if window is not available', async () => {
@@ -15,5 +19,56 @@ describe('defaultStorage', () => {
     const val = await storage.getItem('foo')
     expect(val).toBe('bar')
     global.window = window
+  })
+})
+
+describe('postMessage storage', () => {
+  ;[
+    {
+      expectedMethod: 'getItem',
+      expectedArgs: ['foo'],
+      expectedRet: 'bar'
+    },
+    {
+      expectedMethod: 'setItem',
+      expectedArgs: ['foo', 'bar'],
+      expectedRet: null
+    },
+    {
+      expectedMethod: 'removeItem',
+      expectedArgs: ['foo'],
+      expectedRet: null
+    }
+  ].forEach(({ expectedMethod, expectedArgs, expectedRet }) => {
+    it(`requests '${expectedMethod}' over window.postMessage`, async done => {
+      expect.assertions(3)
+      window.addEventListener('message', function listener(event) {
+        try {
+          const storageRequest = event.data['solid-auth-client']
+          const { id, method, args } = storageRequest
+          if (!(id && method && args)) {
+            return
+          }
+          expect(method).toBe(`storage/${expectedMethod}`)
+          expect(args).toEqual(expectedArgs)
+          window.postMessage(
+            {
+              'solid-auth-client': {
+                id,
+                ret: expectedRet
+              }
+            },
+            window.location.origin
+          )
+          window.removeEventListener('message', listener)
+        } catch (e) {
+          done.fail(e)
+        }
+      })
+      const store = postMessageStorage(window, window.location.origin)
+      const item = await store[expectedMethod](...expectedArgs)
+      expect(item).toBe(expectedRet)
+      done()
+    })
   })
 })

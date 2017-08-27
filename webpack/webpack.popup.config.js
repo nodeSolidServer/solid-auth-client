@@ -1,29 +1,35 @@
+const CleanWebpackPlugin = require('clean-webpack-plugin')
+const DotenvPlugin = require('dotenv-webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 const path = require('path')
 const webpack = require('webpack')
 
 const {
-  output,
   module: _module,
   externals,
-  plugins,
   devtool
-} = require('./common')
+} = require('./webpack.common.config')
+
+const outputDir = path.resolve('./dist-popup')
 
 module.exports = {
   entry: {
     idpSelect: './popup-app/idp-select.js',
     idpCallback: './popup-app/idp-callback.js'
   },
-  output,
+  output: {
+    filename: '[name].bundle.js',
+    path: outputDir
+  },
   module: _module,
   externals,
   plugins: [
-    ...plugins,
-    new webpack.DefinePlugin({
-      'process.env.TRUSTED_APP_ORIGIN': "'http://localhost:8081'"
+    new DotenvPlugin({
+      path: './.env.popup',
+      safe: './.env.popup.example'
     }),
+    new CleanWebpackPlugin([outputDir]),
     new HtmlWebpackPlugin({
       chunks: ['idpSelect'],
       template: 'popup-app/idp-select.ejs',
@@ -36,9 +42,10 @@ module.exports = {
       filename: 'idp-callback.html',
       inlineSource: '.(js|css)$'
     }),
-    new HtmlWebpackInlineSourcePlugin()
+    new HtmlWebpackInlineSourcePlugin(),
+    new webpack.HotModuleReplacementPlugin(outputDir)
   ],
-  devtool: 'source-map',
+  devtool,
   devServer: {
     contentBase: path.join(__dirname, 'dist')
   }

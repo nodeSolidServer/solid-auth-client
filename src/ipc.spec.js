@@ -1,20 +1,12 @@
 // @flow
+/* eslint-env jest */
 
+import { polyfillWindow, polyunfillWindow } from './spec-helpers'
 import { client, server } from './ipc'
 
-beforeEach(() => {
-  // this is fixed in the latest jsdom, but jest has not yet updated the jsdom dependency
-  window.origin = window.location.origin
-  Object.defineProperty(MessageEvent.prototype, 'origin', {
-    writable: true,
-    value: window.origin
-  })
-  MessageEvent.prototype.origin = window.location.origin
-})
+beforeEach(polyfillWindow)
 
-afterEach(() => {
-  delete window.origin
-})
+afterEach(polyunfillWindow)
 
 describe('client', () => {
   it('takes a request, sets up a channel to the parent window, and promises a response from the parent', async () => {
@@ -36,8 +28,8 @@ describe('client', () => {
         const request = data['solid-auth-client']
         const { id, method, args } = request
         expect(typeof id).toBe('string')
-        expect(request.method).toBe('foo')
-        expect(request.args).toEqual(['bar', 'baz'])
+        expect(method).toBe('foo')
+        expect(args).toEqual(['bar', 'baz'])
         child.postMessage(
           {
             'solid-auth-client': {
@@ -73,8 +65,8 @@ describe('client', () => {
         const request = data['solid-auth-client']
         const { id, method, args } = request
         expect(typeof id).toBe('string')
-        expect(request.method).toBe('foo')
-        expect(request.args).toEqual(['bar', 'baz'])
+        expect(method).toBe('foo')
+        expect(args).toEqual(['bar', 'baz'])
         child.postMessage(
           {
             'solid-auth-client': {
@@ -122,6 +114,7 @@ describe('server', () => {
   })
 
   it('delegates to a handler to compute responses', done => {
+    expect.assertions(3)
     const testHandler = jest.fn(request =>
       Promise.resolve({
         id: request.id,

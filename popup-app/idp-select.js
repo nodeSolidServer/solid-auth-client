@@ -1,17 +1,10 @@
-// @flow
 import { login } from '../src/api'
 import { client } from '../src/ipc'
 import { postMessageStorage } from '../src/storage'
 
 import './idp-select.css'
 
-type idp = {
-  displayName: string,
-  url: string,
-  iconUrl: string
-}
-
-const idps: idp[] = [
+const idps = [
   {
     displayName: 'Databox',
     url: 'https://databox.me/',
@@ -25,7 +18,7 @@ const idps: idp[] = [
 ]
 
 // from http://2ality.com/2015/01/template-strings-html.html
-const html = (literals: string[], ...substs) =>
+const html = (literals, ...substs) =>
   literals.raw.reduce((acc, lit, i) => {
     let subst = substs[i - 1]
     if (Array.isArray(subst)) {
@@ -39,7 +32,7 @@ const html = (literals: string[], ...substs) =>
   })
 
 // from http://2ality.com/2015/01/template-strings-html.html
-const htmlEscape = (str: string): string =>
+const htmlEscape = str =>
   str
     .replace(/&/g, '&amp;') // first!
     .replace(/>/g, '&gt;')
@@ -48,7 +41,7 @@ const htmlEscape = (str: string): string =>
     .replace(/'/g, '&#39;')
     .replace(/`/g, '&#96;')
 
-const idpsUI = (idps: idp[]): string =>
+const idpsUI = idps =>
   idps.reduce(
     (_html, idp) =>
       _html +
@@ -95,7 +88,7 @@ if (container) {
         ...loginOptions,
         storage: postMessageStorage(
           window.opener,
-          process.env.TRUSTED_APP_ORIGIN || ''
+          process.env.TRUSTED_APP_ORIGIN
         )
       }
       const maybeSession = await login(button.dataset.url, loginOptions)

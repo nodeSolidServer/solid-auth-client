@@ -6,12 +6,12 @@ import type { session } from './session'
 import { getSession, saveSession, clearSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
-import { currentUrlNoParams, originOf } from './url-util'
+import { currentUrlNoParams } from './url-util'
 import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
 
 export type loginOptions = {
-  redirectUri: ?string,
+  callbackUri: ?string,
   idpSelectUri: ?string,
   storage: AsyncStorage
 }
@@ -19,7 +19,7 @@ export type loginOptions = {
 const defaultLoginOptions = (): loginOptions => {
   const url = currentUrlNoParams()
   return {
-    redirectUri: url ? url.split('#')[0] : null,
+    callbackUri: url ? url.split('#')[0] : null,
     idpSelectUri: null,
     storage: defaultStorage()
   }
@@ -66,10 +66,8 @@ export async function popupLogin(options: loginOptions): Promise<?session> {
   if (!options.idpSelectUri) {
     throw new Error('Must provide options.idpSelectUri')
   }
-  const { storage, idpSelectUri } = options
   const childWindow = openIdpSelector(options)
-  const childOrigin = originOf(idpSelectUri)
-  const session = await startPopupServer(storage, childWindow, options)
+  const session = await startPopupServer(options.storage, childWindow, options)
   return session
 }
 
@@ -98,8 +96,10 @@ export async function logout(
         console.warn('Error logging out:')
         console.error(err)
       }
+      break
     case 'WebID-TLS':
     default:
-      return clearSession(storage)
+      break
   }
+  return clearSession(storage)
 }

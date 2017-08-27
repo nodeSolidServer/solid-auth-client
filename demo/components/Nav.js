@@ -1,8 +1,6 @@
 // @flow
 import React from 'react'
 
-import TextForm from './TextForm'
-
 type propTypes = {
   loggedIn: boolean,
   onClickLogIn: (event: Event) => any,

@@ -67,4 +67,7 @@ typings/
 
 # build
 lib
-dist
+dist-lib
+dist-popup
+.env.demo
+.env.popup

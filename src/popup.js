@@ -13,7 +13,7 @@ const popupAppRequestHandler = (
 ): handler =>
   combineHandlers(storageHandler(store), loginHandler(options, foundSessionCb))
 
-const storageHandler = (store: AsyncStorage) => (
+export const storageHandler = (store: AsyncStorage) => (
   req: request
 ): ?Promise<response> => {
   const { id, method, args } = req
@@ -29,7 +29,7 @@ const storageHandler = (store: AsyncStorage) => (
   }
 }
 
-const loginHandler = (
+export const loginHandler = (
   options: loginOptions,
   foundSessionCb: session => void
 ) => (req: request): ?Promise<response> => {
@@ -40,12 +40,12 @@ const loginHandler = (
         id,
         ret: {
           idpSelectUri: options.idpSelectUri,
-          redirectUri: options.redirectUri
+          callbackUri: options.callbackUri
         }
       })
     case 'foundSession':
       foundSessionCb(args[0])
-      return Promise.resolve({ id, ret: args[0] })
+      return Promise.resolve({ id, ret: null })
     default:
       return null
   }
@@ -57,10 +57,10 @@ export const startPopupServer = (
   options: loginOptions
 ): Promise<?session> => {
   return new Promise((resolve, reject) => {
-    if (!(options.idpSelectUri && options.redirectUri)) {
+    if (!(options.idpSelectUri && options.callbackUri)) {
       return reject(
         new Error(
-          'Cannot serve a popup without both "options.idpSelectUri" and "options.redirectUri"'
+          'Cannot serve a popup without both "options.idpSelectUri" and "options.callbackUri"'
         )
       )
     }
@@ -75,9 +75,9 @@ export const startPopupServer = (
 }
 
 export const openIdpSelector = (options: loginOptions): window => {
-  if (!(options.idpSelectUri && options.redirectUri)) {
+  if (!(options.idpSelectUri && options.callbackUri)) {
     throw new Error(
-      'Cannot open IDP select UI.  Must provide both "options.idpSelectUri" and "options.redirectUri".'
+      'Cannot open IDP select UI.  Must provide both "options.idpSelectUri" and "options.callbackUri".'
     )
   }
   const width = 750

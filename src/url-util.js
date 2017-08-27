@@ -1,4 +1,5 @@
 // @flow
+/* eslint-env browser */
 
 export const currentUrl = (): ?string => window.location.href
 

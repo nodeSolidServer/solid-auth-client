@@ -1,15 +1,15 @@
-/* eslint-env mocha */
+/* eslint-env jest */
 /* global expect */
 import fs from 'fs'
 import jwt from 'jsonwebtoken'
 import nock from 'nock'
 import rsaPemToJwk from 'rsa-pem-to-jwk'
-import URLSearchParams from 'url-search-params'
 
 import { currentSession, fetch, login, logout } from './api'
 import { saveHost } from './host'
 import { getSession, saveSession } from './session'
-import { asyncStorage, memStorage } from './storage'
+import { polyfillWindow, polyunfillWindow } from './spec-helpers'
+import { asyncStorage } from './storage'
 
 /*
  * OIDC test data:
@@ -45,42 +45,11 @@ const jwks = {
   ]
 }
 
+beforeEach(polyfillWindow)
+
+afterEach(polyunfillWindow)
+
 const getStoredSession = () => getSession(asyncStorage(window.localStorage))
-
-let _href
-let _URL
-
-// polyfill missing/incomplete web apis
-beforeEach(() => {
-  _href = window.location.href
-  Object.defineProperty(window.location, 'href', {
-    writable: true,
-    value: 'https://app.biz/'
-  })
-  Object.defineProperty(window.location, 'origin', {
-    writable: true,
-    value: 'https://app.biz'
-  })
-  Object.defineProperty(window.location, 'pathname', {
-    writable: true,
-    value: '/'
-  })
-  _URL = window.URL
-  window.URL = function(urlStr) {
-    const url = new _URL(urlStr)
-    url.searchParams = new URLSearchParams(url.search)
-    return url
-  }
-  window.URLSearchParams = URLSearchParams
-  window.localStorage = memStorage()
-})
-
-afterEach(() => {
-  delete window.localStorage
-  delete window.URLSearchParams
-  window.URL = _URL
-  window.location.href = _href
-})
 
 describe('login', () => {
   beforeEach(() => {
@@ -162,7 +131,7 @@ describe('login', () => {
         .reply(200, oidcRegistration)
 
       const redirectFn = await login('https://localhost', {
-        redirectUri: 'https://app.biz/welcome/'
+        callbackUri: 'https://app.biz/welcome/'
       })
       await redirectFn()
       const location = new window.URL(window.location.href)
@@ -267,7 +236,7 @@ describe('currentSession', () => {
       // generate the auth response
       const location = new window.URL(window.location.href)
       const state = location.searchParams.get('state')
-      const redirectUri = location.searchParams.get('redirect_uri')
+      const callbackUri = location.searchParams.get('redirect_uri')
       const nonce = location.searchParams.get('nonce')
       const accessToken = 'example_access_token'
       const { alg } = jwks.keys[0]
@@ -285,7 +254,7 @@ describe('currentSession', () => {
       expectedIdToken = idToken
       expectedAccessToken = accessToken
       window.location.href =
-        `${redirectUri}#` +
+        `${callbackUri}#` +
         `access_token=${accessToken}&` +
         `token_type=Bearer&` +
         `id_token=${idToken}&` +
@@ -345,7 +314,7 @@ describe('logout', () => {
       // generate the auth response
       const location = new window.URL(window.location.href)
       const state = location.searchParams.get('state')
-      const redirectUri = location.searchParams.get('redirect_uri')
+      const callbackUri = location.searchParams.get('redirect_uri')
       const nonce = location.searchParams.get('nonce')
       const accessToken = 'example_access_token'
       const { alg } = jwks.keys[0]
@@ -363,7 +332,7 @@ describe('logout', () => {
       expectedIdToken = idToken
       expectedAccessToken = accessToken
       window.location.href =
-        `${redirectUri}#` +
+        `${callbackUri}#` +
         `access_token=${accessToken}&` +
         `token_type=Bearer&` +
         `id_token=${idToken}&` +

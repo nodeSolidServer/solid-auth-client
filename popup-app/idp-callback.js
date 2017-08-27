@@ -1,4 +1,3 @@
-// @flow
 import { currentSession } from '../src/api'
 import { client } from '../src/ipc'
 import { postMessageStorage } from '../src/storage'

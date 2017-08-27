@@ -1,7 +1,5 @@
 // @flow
 import uuid from 'uuid/v4'
-import type { loginOptions } from './api'
-import type { AsyncStorage } from './storage'
 
 /*
   This module describes a simple IPC interface for communicating between browser windows.
@@ -87,7 +85,7 @@ const getRequest = (eventData: mixed): ?request => {
 export const client = (
   serverWindow: window,
   serverOrigin: string
-) => (request: { method: string, args: any[] }): Promise<response> => {
+) => (request: { method: string, args: any[] }): Promise<any> => {
   return new Promise((resolve, reject) => {
     const reqId = uuid()
     const responseListener = event => {

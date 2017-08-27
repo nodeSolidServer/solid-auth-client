@@ -9,9 +9,7 @@ export interface AsyncStorage {
   removeItem(key: string): Promise<void>
 }
 
-export type SyncStorage = Storage
-
-export type Storage = SyncStorage | AsyncStorage
+export type Storage = Storage | AsyncStorage
 
 export const defaultStorage = () => {
   try {
@@ -101,8 +99,14 @@ export const postMessageStorage = (
 ): AsyncStorage => {
   const request = client(storageWindow, storageOrigin)
   return {
-    getItem: (key: string): Promise<?string> => {
-      return request({ method: 'storage/getItem', args: [key] })
+    getItem: async (key: string): Promise<?string> => {
+      const ret = await request({ method: 'storage/getItem', args: [key] })
+      if (typeof ret !== 'string') {
+        throw new Error(
+          `expected postMessage call for 'storage/getItem' to return a string, but got value ${ret}`
+        )
+      }
+      return ret
     },
 
     setItem: (key: string, val: string): Promise<void> => {

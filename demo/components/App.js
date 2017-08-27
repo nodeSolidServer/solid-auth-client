@@ -21,13 +21,13 @@ export default class App extends React.Component {
     this.setState({ session })
   }
 
-  onClickLogIn = (event: Event) =>
+  onClickLogIn = () =>
     popupLogin({
-      idpSelectUri: 'http://localhost:8082/idp-select.html',
-      redirectUri: 'http://localhost:8082/idp-callback.html'
+      idpSelectUri: process.env.IDP_SELECT_URI,
+      callbackUri: process.env.CALLBACK_URI
     }).then(this.saveCredentials)
 
-  onClickLogOut = (event: Event) =>
+  onClickLogOut = () =>
     logout().then(() => {
       this.setState({ session: null })
     })

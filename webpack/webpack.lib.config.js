@@ -1,22 +1,25 @@
 const path = require('path')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
 const {
-  output,
   module: _module,
   externals,
-  plugins,
   devtool
-} = require('./common')
+} = require('./webpack.common.config')
+
+const outputDir = path.resolve('./dist-lib')
 
 module.exports = {
   entry: {
     'solid-auth-client': './src/index.js'
   },
-  output: Object.assign({}, output, {
+  output: {
+    filename: '[name].bundle.js',
+    path: outputDir,
     library: 'SolidAuthClient',
     libraryTarget: 'umd'
-  }),
+  },
   module: _module,
   externals,
-  plugins,
+  plugins: [new CleanWebpackPlugin([outputDir])],
   devtool
 }

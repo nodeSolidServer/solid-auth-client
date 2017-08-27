@@ -1,5 +1,5 @@
-/* eslint-env mocha */
 /* global expect */
+/* eslint-env jest */
 import { currentUrl, currentUrlNoParams } from './url-util'
 
 describe('currentUrl', () => {

@@ -101,20 +101,20 @@ async function storeRp(
 
 const registerRp = (
   idp: string,
-  { storage, redirectUri }: loginOptions
+  { storage, callbackUri }: loginOptions
 ): Promise<RelyingParty> => {
   const responseType = 'id_token token'
   const registration = {
     issuer: idp,
     grant_types: ['implicit'],
-    redirect_uris: [redirectUri],
+    redirect_uris: [callbackUri],
     response_types: [responseType],
     scope: 'openid profile'
   }
   const options = {
     defaults: {
       authenticate: {
-        redirect_uri: redirectUri,
+        redirect_uri: callbackUri,
         response_type: responseType
       }
     },
@@ -125,9 +125,9 @@ const registerRp = (
 
 const sendAuthRequest = (
   rp: RelyingParty,
-  { redirectUri, storage }: loginOptions
+  { callbackUri, storage }: loginOptions
 ): Promise<void> =>
-  rp.createRequest({ redirect_uri: redirectUri }, storage).then(navigateTo)
+  rp.createRequest({ redirect_uri: callbackUri }, storage).then(navigateTo)
 
 /**
  * Answers whether a HTTP response requires WebID-OIDC authentication.
