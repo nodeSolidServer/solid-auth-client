@@ -1,4 +1,5 @@
 import { login } from '../src/api'
+import { html, render } from './html'
 import { client } from '../src/ipc'
 import { postMessageStorage } from '../src/storage'
 
@@ -17,30 +18,6 @@ const idps = [
     iconUrl: 'https://solidtest.space/favicon.ico'
   }
 ]
-
-// from http://2ality.com/2015/01/template-strings-html.html
-const html = (literals, ...substs) =>
-  literals.raw.reduce((acc, lit, i) => {
-    let subst = substs[i - 1]
-    if (Array.isArray(subst)) {
-      subst = subst.join('')
-    }
-    if (acc.endsWith('$')) {
-      subst = htmlEscape(subst)
-      acc = acc.slice(0, -1)
-    }
-    return acc + subst + lit
-  })
-
-// from http://2ality.com/2015/01/template-strings-html.html
-const htmlEscape = str =>
-  str
-    .replace(/&/g, '&amp;') // first!
-    .replace(/>/g, '&gt;')
-    .replace(/</g, '&lt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-    .replace(/`/g, '&#96;')
 
 const idpsUI = idps =>
   html`
@@ -74,7 +51,7 @@ const request = client(window.opener, process.env.TRUSTED_APP_ORIGIN)
 
 const container = document.getElementById('app-container')
 if (container) {
-  container.innerHTML = idpsUI(idps)
+  render(idpsUI(idps), container)
 
   container.querySelectorAll('.idp__select').forEach(button => {
     button.addEventListener('click', async () => {

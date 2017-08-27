@@ -11,7 +11,12 @@ const {
   devtool
 } = require('./webpack.common.config')
 
-const outputDir = path.resolve('./dist-popup')
+const outputDir = './dist-popup'
+
+const dotEnvPlugin = new DotenvPlugin({
+  path: './.env.popup',
+  safe: './.env.popup.example'
+})
 
 module.exports = {
   entry: {
@@ -20,16 +25,13 @@ module.exports = {
   },
   output: {
     filename: '[name].bundle.js',
-    path: outputDir
+    path: path.resolve(outputDir)
   },
   module: _module,
   externals,
   plugins: [
-    new DotenvPlugin({
-      path: './.env.popup',
-      safe: './.env.popup.example'
-    }),
-    new CleanWebpackPlugin([outputDir]),
+    dotEnvPlugin,
+    new CleanWebpackPlugin(['./dist-popup']),
     new HtmlWebpackPlugin({
       chunks: ['idpSelect'],
       template: 'popup-app/idp-select.ejs',
@@ -40,7 +42,8 @@ module.exports = {
       chunks: ['idpCallback'],
       template: 'popup-app/idp-callback.ejs',
       filename: 'idp-callback.html',
-      inlineSource: '.(js|css)$'
+      inlineSource: '.(js|css)$',
+      fontAwesomeUrl: dotEnvPlugin.definitions['process.env.FONT_AWESOME_URL']
     }),
     new HtmlWebpackInlineSourcePlugin(),
     new webpack.HotModuleReplacementPlugin(outputDir)

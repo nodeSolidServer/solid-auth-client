@@ -6,7 +6,7 @@ const {
   devtool
 } = require('./webpack.common.config')
 
-const outputDir = path.resolve('./dist-lib')
+const outputDir = './dist-lib'
 
 module.exports = {
   entry: {
@@ -14,7 +14,7 @@ module.exports = {
   },
   output: {
     filename: '[name].bundle.js',
-    path: outputDir,
+    path: path.resolve(outputDir),
     library: 'SolidAuthClient',
     libraryTarget: 'umd'
   },

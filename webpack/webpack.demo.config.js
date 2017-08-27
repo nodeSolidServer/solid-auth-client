@@ -11,7 +11,7 @@ const {
   devtool
 } = require('./webpack.common.config')
 
-const outputDir = path.resolve('./docs')
+const outputDir = './docs'
 
 module.exports = {
   entry: {
@@ -19,7 +19,7 @@ module.exports = {
   },
   output: {
     filename: '[name].bundle.js',
-    path: outputDir
+    path: path.resolve(outputDir)
   },
   module: _module,
   externals,
@@ -28,7 +28,7 @@ module.exports = {
       path: './.env.demo',
       safe: './.env.demo.example'
     }),
-    new CleanWebpackPlugin([outputDir]),
+    new CleanWebpackPlugin(['./docs']),
     new HtmlWebpackPlugin({
       chunks: ['demo'],
       filename: 'demo.html',
