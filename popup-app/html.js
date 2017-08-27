@@ -1,3 +1,4 @@
+/* eslint-env browser */
 // from http://2ality.com/2015/01/template-strings-html.html
 export const html = (literals, ...substs) =>
   literals.raw.reduce((acc, lit, i) => {
