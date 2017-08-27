@@ -56,12 +56,15 @@ When the user is successfully authenticated, the session will be non-null.  When
 the user is not authenticated by the IDP, the session will be `null`.
 
 Auth flows like OIDC require the user to give consent on their identity
-provider.  In such cases, this function will return _a function which redirects the user to their auth
-provider_, so as not to break the promise.  All you have to do is call that function in order to send the user on their way.  Then, call
-`currentSession` when the user gives consent and lands back in your app.
+provider.  In such cases, this function will return _a function which
+redirects the user to their auth provider_, so as not to break the promise.
+All you have to do is call that function in order to send the user on their
+way.  Then, call `currentSession` when the user gives consent and lands back
+in your app.
 
-If you're using an auth flow with redirections, and don't want to take the user
-away from your app, consider using the [popup workflow](#Using-the-popup-login-flow).
+If you're using an auth flow with redirections, and don't want to take the
+user away from your app, consider using the [popup workflow](#Using-the-popup-
+login-flow).
 
 If there's an error during the auth handshake, the Promise will reject.
 
@@ -81,7 +84,8 @@ popupLogin({
 }): Promise<?session>
 ```
 
-Logs the user in using a popup window so that your app doesn't lose state.  See [Using the popup login flow](#Using-the-popup-login-flow).
+Logs the user in using a popup window so that your app doesn't lose state.
+See [Using the popup login flow](#Using-the-popup-login-flow).
 
 ### `currentSession`
 
@@ -89,8 +93,8 @@ Logs the user in using a popup window so that your app doesn't lose state.  See 
 currentSession (storage?: Storage): Promise<?session>
 ```
 
-Finds the current session, and returns it if
-it is still active, otherwise `null`.
+Finds the current session, and returns it if it is still active, otherwise
+`null`.
 
 ### `logout`
 
@@ -117,20 +121,33 @@ fetch: (url: RequestInfo, options?: Object) => Promise<Response>
 
 ## Using the popup login flow
 
-If you want to offer a login experience that doesn't redirect away from your app, you should use the popup login flow, which works as follows:
+If you want to offer a login experience that doesn't redirect away from your
+app, you should use the popup login flow, which works as follows:
 
-1. When prompted to log in, the app opens a popup window for the user to select their IDP
+1. When prompted to log in, the app opens a popup window for the user to
+   select their IDP
 2. Within the popup, the the user is sent to their IDP
 3. Within the popup, now at the IDP, the user logs in
-3. Within the popup, the IDP sends the user back to the callback URI, which captures the user credentials
-4. Within the popup, the callback URI app sends the credentials back to the main app window
+3. Within the popup, the IDP sends the user back to the callback URI, which
+   captures the user credentials
+4. Within the popup, the callback URI app sends the credentials back to the
+   main app window
 5. The popup closes once the app receives the credentials
 
-It's essential that the applications for selecting an IDP and capturing credentials runs on a *trusted domain*, since the IDP select app needs to be trusted to send the user to the right place(s), and the callback app needs to be trusted to handle user credentials.  The best way to do this is to serve these apps from a domain that you control.  For example, if your app is located at https://example.com, consider deploying the idp select app to https://auth.example.com/idp-select and the callback app to https://auth.example.com/idp-callback.
+It's essential that the applications for selecting an IDP and capturing
+credentials runs on a *trusted domain*, since the IDP select app needs to be
+trusted to send the user to the right place(s), and the callback app needs to
+be trusted to handle user credentials.  The best way to do this is to serve
+these apps from a domain that you control.  For example, if your app is
+located at https://example.com, consider deploying the idp select app to
+https://auth.example.com/idp-select and the callback app to
+https://auth.example.com/idp-callback.
 
 ### Building the popup apps
 
-In order to use the popup login flow, you will have to generate static builds of the idp select and idp callback apps so that those apps only communicate to your trusted app origin.
+In order to use the popup login flow, you will have to generate static builds
+of the idp select and idp callback apps so that those apps only communicate to
+your trusted app origin.
 
 #### Clone the repo
 
