@@ -2,6 +2,7 @@ import { login } from '../src/api'
 import { client } from '../src/ipc'
 import { postMessageStorage } from '../src/storage'
 
+import './common.css'
 import './idp-select.css'
 
 const idps = [
@@ -42,19 +43,27 @@ const htmlEscape = str =>
     .replace(/`/g, '&#96;')
 
 const idpsUI = idps =>
+  html`
+  <h1 class="center">Log in to $${process.env.TRUSTED_APP_NAME}</h1>
+  <p class="center copy-gentle">Choose where you log in</p>
+  <div class="idp-list">
+  ` +
   idps.reduce(
     (_html, idp) =>
       _html +
       html`
-      <section class="idp">
+      <div class="idp">
         <button type="button" class="idp__select" data-url=$${idp.url}>
-          <h1>$${idp.displayName}</h1>
-          <img src="$${idp.iconUrl}">
+          <span class="idp__copy">Log in with $${idp.displayName}</span>
+          <span class="idp__icon-container">
+            <img class="idp__icon" src="$${idp.iconUrl}" alt="">
+          </span>
         </button>
-      </section>
+      </div>
     `,
     ''
-  )
+  ) +
+  html`</div>`
 
 if (!process.env.TRUSTED_APP_ORIGIN) {
   throw new Error(
@@ -63,7 +72,7 @@ if (!process.env.TRUSTED_APP_ORIGIN) {
 }
 const request = client(window.opener, process.env.TRUSTED_APP_ORIGIN)
 
-const container = document.getElementById('idp-list')
+const container = document.getElementById('app-container')
 if (container) {
   container.innerHTML = idpsUI(idps)
 

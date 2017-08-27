@@ -80,8 +80,8 @@ export const openIdpSelector = (options: loginOptions): window => {
       'Cannot open IDP select UI.  Must provide both "options.idpSelectUri" and "options.callbackUri".'
     )
   }
-  const width = 750
-  const height = 500
+  const width = 650
+  const height = 400
   const w = window.open(
     options.idpSelectUri,
     '_blank',

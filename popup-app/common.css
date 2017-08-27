@@ -1,0 +1,19 @@
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+  font-weight: normal;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d8d8d8;
+}
+
+.center {
+  text-align: center;
+}
+
+.copy-gentle {
+  color: #494949;
+  font-size: 0.9em;
+  font-weight: lighter;
+}
