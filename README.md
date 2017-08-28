@@ -159,7 +159,7 @@ $ cd solid-auth-client
 #### Install the dependencies
 
 ```sh
-$ npm i
+$ yarn
 ```
 
 #### Create and edit your `.env` file
@@ -171,5 +171,5 @@ $ $EDITOR .env # change the value of TRUSTED_APP_ORIGIN to your actual app origi
 
 #### Build the app
 ```sh
-$ npm run build:popup # done! your apps are in ./dist-popup
+$ yarn build:popup # done! your apps are in ./dist-popup
 ```
