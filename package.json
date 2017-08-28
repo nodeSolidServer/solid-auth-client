@@ -3,10 +3,7 @@
   "version": "0.3.4",
   "description": "Opaquely authenticates solid clients",
   "main": "lib/index.js",
-  "files": [
-    "lib",
-    "dist-lib"
-  ],
+  "files": ["lib", "dist-lib"],
   "repository": "git@github.com:solid/solid-auth-client.git",
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
   "license": "MIT",
@@ -70,6 +67,7 @@
     "jest": "^20.0.4",
     "jsonwebtoken": "^7.4.1",
     "nock": "^9.0.14",
+    "pre-commit": "^1.2.2",
     "prettier": "^1.5.3",
     "prettier-eslint": "^6.4.2",
     "react": "^15.5.4",
@@ -82,5 +80,6 @@
   },
   "jest": {
     "testURL": "https://app.biz/page?foo=bar#more-params"
-  }
+  },
+  "pre-commit": ["test"]
 }
