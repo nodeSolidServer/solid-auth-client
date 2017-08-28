@@ -3,9 +3,11 @@
 [![Build Status](https://travis-ci.org/solid/solid-auth-client.svg?branch=master)](https://travis-ci.org/solid/solid-auth-client)
 [![Coverage Status](https://coveralls.io/repos/github/solid/solid-auth-client/badge.svg?branch=master)](https://coveralls.io/github/solid/solid-auth-client?branch=master)
 
-Opaquely authenticates solid clients
+Opaquely authenticates [Solid](https://github.com/solid/) clients
 
 ## About
+
+### What is this?
 
 Solid currently supports two cross-origin authentication protocols,
 [WebID-TLS](https://www.w3.org/2005/Incubator/webid/spec/tls/) and
@@ -13,6 +15,17 @@ Solid currently supports two cross-origin authentication protocols,
 
 This library abstracts away the implementation details of these specs so that
 clients don't have to handle different authentication protocols.
+
+### Why might I need this?
+
+If you're building a web app and want to identify users with Solid, or store
+personal information on your user's solid account, you'll have to authenticate
+them.  This library provides a simple API for logging in, logging out, and
+fetching resources with authenticated credentials.
+
+### How can I use this?
+
+The simplest way to use this library is to install it via `npm` or `yarn`.  You can then use the ES6 module (`import { login, currentUser, logout } from 'solid-auth-client'`), or you can grab the transpiled UMD bundle from `node_modules/solid-auth-client/dist-lib/solid-auth-client.bundle.js`.
 
 ## API
 
@@ -119,6 +132,57 @@ authenticate scheme.
 fetch: (url: RequestInfo, options?: Object) => Promise<Response>
 ```
 
+## Developing
+
+### Prerequisites
+
+This library assumes you have [node](https://nodejs.org/en/) >= v7.10.1  and
+[yarn](https://yarnpkg.com/) 0.24.6 installed.  It may work with earlier
+versions, but that hasn't been tested thus far.
+
+### Setting up the development environment
+
+```sh
+$ git clone https://github.com/solid/solid-auth-client.git
+$ cd solid-auth-client
+$ yarn
+$ yarn build # build the library and UMD bundle
+$ yarn test # run the code formatter, linter, and test suite
+$ yarn test:dev # just run the tests in watch mode
+```
+
+### Building the demo app
+
+```sh
+$ cp .env.demo.example .env.demo && $EDITOR .env.demo # configure the demo app
+$ yarn start:demo
+```
+
+#### Configuration
+
+The demo app is configurable via the `.env.demo` file.  The important fields are:
+
+- IDP_SELECT_URI: URI for the popup-based IDP select app.  When testing
+  locally, this will be something like 'http://localhost:XXXX/idp-select.html'
+- CALLBACK_URI: URI for the popup-based callback app.  When testing locally,
+  this will be something like 'http://localhost:XXXX/idp-callback.html'
+
+### Building the popup app
+
+```sh
+$ cp .env.popup.example .env.popup && $EDITOR .env.popup # configure the popup app
+$ yarn start:popup
+```
+
+#### Configuration
+
+The popup app is configurable via the `.env.popup` file.  The important fields are:
+
+- IDP_SELECT_URI: URI for the popup-based IDP select app.  When testing
+  locally, this will be something like 'http://localhost:XXXX/idp-select.html'
+- CALLBACK_URI: URI for the popup-based callback app.  When testing locally,
+  this will be something like 'http://localhost:XXXX/idp-callback.html'
+
 ## Using the popup login flow
 
 If you want to offer a login experience that doesn't redirect away from your
@@ -143,33 +207,4 @@ located at https://example.com, consider deploying the idp select app to
 https://auth.example.com/idp-select and the callback app to
 https://auth.example.com/idp-callback.
 
-### Building the popup apps
-
-In order to use the popup login flow, you will have to generate static builds
-of the idp select and idp callback apps so that those apps only communicate to
-your trusted app origin.
-
-#### Clone the repo
-
-```sh
-$ git clone https://github.com/solid/solid-auth-client.git
-$ cd solid-auth-client
-```
-
-#### Install the dependencies
-
-```sh
-$ yarn
-```
-
-#### Create and edit your `.env` file
-
-```sh
-$ cp .env.example .env
-$ $EDITOR .env # change the value of TRUSTED_APP_ORIGIN to your actual app origin
-```
-
-#### Build the app
-```sh
-$ yarn build:popup # done! your apps are in ./dist-popup
-```
+To build the popup app, see [Building the popup app](#building-the-popup-app).
