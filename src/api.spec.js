@@ -173,7 +173,7 @@ describe('login', () => {
         })
     })
 
-    it('strips the hash fragment from the current URL when proiding the default redirect URL', () => {
+    it('strips the hash fragment from the current URL when providing the default redirect URL', () => {
       nock('https://localhost/')
         // try to log in with WebID-TLS
         .head('/')
@@ -208,6 +208,7 @@ describe('login', () => {
 describe('currentSession', () => {
   it('can find the current session if stored', () => {
     saveSession(window.localStorage)({
+      sessionKey,
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
@@ -285,6 +286,7 @@ describe('currentSession', () => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
+          expect(session.sessionKey).toBeTruthy()
           expect(getSession(window.localStorage)).toEqual(session)
           expect(window.location.hash).toBe('')
         })
@@ -366,6 +368,7 @@ describe('logout', () => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
+          expect(session.sessionKey).toBeTruthy()
           expect(window.location.hash).toBe('')
           expect(getSession(window.localStorage)).toEqual(session)
         })
