@@ -23,6 +23,12 @@ module.exports = {
   },
   module: _module,
   externals,
+  resolve: {
+    alias: {
+      react: 'preact-compat',
+      'react-dom': 'preact-compat'
+    }
+  },
   plugins: [
     new DotenvPlugin({
       path: './.env.demo',

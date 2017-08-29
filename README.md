@@ -163,9 +163,9 @@ $ yarn start:demo
 The demo app is configurable via the `.env.demo` file.  The important fields are:
 
 - IDP_SELECT_URI: URI for the popup-based IDP select app.  When testing
-  locally, this will be something like 'http://localhost:XXXX/idp-select.html'
+  locally, this will be something like 'http://localhost:XXXX/popup.html'
 - CALLBACK_URI: URI for the popup-based callback app.  When testing locally,
-  this will be something like 'http://localhost:XXXX/idp-callback.html'
+  this will be something like 'http://localhost:XXXX/popup.html'
 
 ### Building the popup app
 
@@ -178,10 +178,10 @@ $ yarn start:popup
 
 The popup app is configurable via the `.env.popup` file.  The important fields are:
 
-- IDP_SELECT_URI: URI for the popup-based IDP select app.  When testing
-  locally, this will be something like 'http://localhost:XXXX/idp-select.html'
-- CALLBACK_URI: URI for the popup-based callback app.  When testing locally,
-  this will be something like 'http://localhost:XXXX/idp-callback.html'
+- TRUSTED_APP_NAME: Name of the trusted application the popup is working on
+  behalf of.
+- TRUSTED_APP_ORIGIN: Origin of the trusted application the popup is working
+  on behalf of.
 
 ## Using the popup login flow
 

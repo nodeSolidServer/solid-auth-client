@@ -20,8 +20,7 @@ const dotEnvPlugin = new DotenvPlugin({
 
 module.exports = {
   entry: {
-    idpSelect: './popup-app/idp-select.js',
-    idpCallback: './popup-app/idp-callback.js'
+    popup: './popup-app/index.js'
   },
   output: {
     filename: '[name].bundle.js',
@@ -29,21 +28,19 @@ module.exports = {
   },
   module: _module,
   externals,
+  resolve: {
+    alias: {
+      react: 'preact-compat',
+      'react-dom': 'preact-compat'
+    }
+  },
   plugins: [
     dotEnvPlugin,
     new CleanWebpackPlugin(['./dist-popup']),
     new HtmlWebpackPlugin({
-      chunks: ['idpSelect'],
-      template: 'popup-app/idp-select.ejs',
-      filename: 'idp-select.html',
+      template: 'popup-app/index.ejs',
+      filename: 'popup.html',
       inlineSource: '.(js|css)$'
-    }),
-    new HtmlWebpackPlugin({
-      chunks: ['idpCallback'],
-      template: 'popup-app/idp-callback.ejs',
-      filename: 'idp-callback.html',
-      inlineSource: '.(js|css)$',
-      fontAwesomeUrl: dotEnvPlugin.definitions['process.env.FONT_AWESOME_URL']
     }),
     new HtmlWebpackInlineSourcePlugin(),
     new webpack.HotModuleReplacementPlugin(outputDir)
