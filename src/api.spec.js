@@ -10,6 +10,7 @@ import { currentSession, fetch, login, logout } from './api'
 import { saveHost } from './hosts'
 import { getSession, saveSession } from './session'
 import { memStorage } from './storage'
+import { sessionKeys } from '../test-keys/session-keys'
 
 /*
  * OIDC test data:
@@ -45,6 +46,15 @@ const jwks = {
   ]
 }
 
+const sessionKey = JSON.stringify(sessionKeys.private)
+
+const verifySerializedKey = (ssk) => {
+  const key = JSON.parse(ssk)
+  const actualFields = Object.keys(key)
+  const expectedFields = ['kty', 'alg', 'n', 'e', 'd', 'p', 'q', 'dp', 'dq', 'qi', 'key_ops', 'ext']
+  expect(new Set(actualFields)).toEqual(new Set(expectedFields))
+}
+
 let _href
 let _URL
 
@@ -71,6 +81,7 @@ beforeEach(() => {
   }
   window.URLSearchParams = URLSearchParams
   window.localStorage = memStorage()
+  nock.disableNetConnect()
 })
 
 afterEach(() => {
@@ -78,18 +89,11 @@ afterEach(() => {
   delete window.URLSearchParams
   window.URL = _URL
   window.location.href = _href
+  nock.cleanAll()
+  nock.enableNetConnect()
 })
 
 describe('login', () => {
-  beforeEach(() => {
-    nock.disableNetConnect()
-  })
-
-  afterEach(() => {
-    nock.cleanAll()
-    nock.enableNetConnect()
-  })
-
   it('returns an anonymous auth response when no recognized auth scheme is present', () => {
     nock('https://localhost')
       .head('/')
@@ -170,7 +174,7 @@ describe('login', () => {
         })
     })
 
-    it('strips the hash fragment from the current URL when proiding the default redirect URL', () => {
+    it('strips the hash fragment from the current URL when providing the default redirect URL', () => {
       nock('https://localhost/')
         // try to log in with WebID-TLS
         .head('/')
@@ -209,7 +213,8 @@ describe('currentSession', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     return currentSession()
@@ -282,6 +287,7 @@ describe('currentSession', () => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
+          verifySerializedKey(session.sessionKey)
           expect(getSession(window.localStorage)).toEqual(session)
           expect(window.location.hash).toBe('')
         })
@@ -363,6 +369,7 @@ describe('logout', () => {
           expect(session.webId).toBe('https://person.me/#me')
           expect(session.accessToken).toBe(expectedAccessToken)
           expect(session.idToken).toBe(expectedIdToken)
+          verifySerializedKey(session.sessionKey)
           expect(window.location.hash).toBe('')
           expect(getSession(window.localStorage)).toEqual(session)
         })
@@ -375,20 +382,28 @@ describe('logout', () => {
 })
 
 describe('fetch', () => {
+  const matchAuthzHeader = (origin) => (headerVal) => {
+    const popToken = jwt.decode(headerVal[0].split(' ')[1])
+    return popToken.aud === origin &&
+      popToken.id_token === 'abc.def.ghi' &&
+      popToken.token_type === 'pop'
+  }
+
   it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
     saveSession(window.localStorage)({
       authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     nock('https://third-party.com')
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
       .get('/protected-resource')
-      .matchHeader('authorization', 'Bearer abc.def.ghi')
+      .matchHeader('authorization', matchAuthzHeader('https://third-party.com'))
       .reply(200)
 
     return fetch('https://third-party.com/protected-resource')
@@ -403,7 +418,8 @@ describe('fetch', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     nock('https://third-party.com')
@@ -411,7 +427,7 @@ describe('fetch', () => {
       .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
       .get('/private-resource')
       .matchHeader('accept', 'text/plain')
-      .matchHeader('authorization', 'Bearer abc.def.ghi')
+      .matchHeader('authorization', matchAuthzHeader('https://third-party.com'))
       .reply(200)
 
     return fetch('https://third-party.com/private-resource', { headers: { accept: 'text/plain' } })
@@ -426,7 +442,8 @@ describe('fetch', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     nock('https://third-party.com')
@@ -445,7 +462,8 @@ describe('fetch', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     nock('https://third-party.com')
@@ -502,12 +520,13 @@ describe('fetch', () => {
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
+        idToken: 'abc.def.ghi',
+        sessionKey
       })
 
       nock('https://localhost')
         .get('/resource')
-        .matchHeader('authorization', 'Bearer abc.def.ghi')
+        .matchHeader('authorization', matchAuthzHeader('https://localhost'))
         .reply(200)
 
       return fetch('https://localhost/resource')
@@ -522,7 +541,8 @@ describe('fetch', () => {
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
+        idToken: 'abc.def.ghi',
+        sessionKey
       })
 
       saveHost(window.localStorage)({
@@ -532,7 +552,7 @@ describe('fetch', () => {
 
       nock('https://third-party.com')
         .get('/resource')
-        .matchHeader('authorization', 'Bearer abc.def.ghi')
+        .matchHeader('authorization', matchAuthzHeader('https://third-party.com'))
         .reply(200)
 
       return fetch('https://third-party.com/resource')
@@ -547,7 +567,8 @@ describe('fetch', () => {
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
+        idToken: 'abc.def.ghi',
+        sessionKey
       })
 
       saveHost(window.localStorage)({

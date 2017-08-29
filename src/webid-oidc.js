@@ -3,6 +3,7 @@
 import 'isomorphic-fetch'
 import * as authorization from 'auth-header'
 import RelyingParty from '@trust/oidc-rp'
+import PoPToken from '@trust/oidc-rp/lib/PoPToken'
 
 import type { loginOptions } from './api'
 import { currentUrl, clearHashFragment, navigateTo } from './browser-util'
@@ -30,10 +31,12 @@ export const currentSession = (storage: Storage = defaultStorage()): Promise<?we
       clearHashFragment()
       return {
         authType: 'WebID-OIDC',
-        idp: resp.decoded.payload.iss,
+        idp: resp.idp,
         webId: resp.decoded.payload.sub,
-        idToken: resp.params.id_token,
-        accessToken: resp.params.access_token
+        idToken: resp.idToken,
+        accessToken: resp.accessToken,
+        clientId: resp.clientId,
+        sessionKey: resp.sessionKey
       }
     })
     .catch(err => {
@@ -120,12 +123,15 @@ export const requiresAuth = (resp: Response): boolean => {
  * Assumes that the resource has requested those tokens in a previous response.
  */
 export const fetchWithCredentials = (session: webIdOidcSession) => (url: RequestInfo, options?: Object): Promise<Response> => {
-  const authenticatedOptions = {
-    ...options,
-    headers: {
-      ...(options && options.headers ? options.headers : {}),
-      authorization: `Bearer ${session.idToken}`
-    }
-  }
-  return fetch(url, authenticatedOptions)
+  return PoPToken.issueFor(url, session)
+    .then(popToken => {
+      const authenticatedOptions = {
+        ...options,
+        headers: {
+          ...(options && options.headers ? options.headers : {}),
+          authorization: `Bearer ${popToken}`
+        }
+      }
+      return fetch(url, authenticatedOptions)
+    })
 }

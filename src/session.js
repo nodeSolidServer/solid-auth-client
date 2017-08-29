@@ -16,6 +16,8 @@ export type webIdOidcSession =
   , webId: string
   , accessToken: string
   , idToken: string
+  , clientId: string
+  , sessionKey: string
   }
 
 export type session =

@@ -28,7 +28,7 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
-    "@trust/oidc-rp": "^0.3.0",
+    "@trust/oidc-rp": "^0.4.3",
     "auth-header": "^0.3.1",
     "isomorphic-fetch": "^2.2.1"
   },
