@@ -50,10 +50,9 @@ const sessionKey = JSON.stringify(sessionKeys.private)
 
 const verifySerializedKey = (ssk) => {
   const key = JSON.parse(ssk)
-  const actualFields = new Set(Object.keys(key))
+  const actualFields = Object.keys(key)
   const expectedFields = ['kty', 'alg', 'n', 'e', 'd', 'p', 'q', 'dp', 'dq', 'qi', 'key_ops', 'ext']
-  expect(actualFields.size).toBe(expectedFields.length)
-  expectedFields.forEach((field) => expect(actualFields).toContain(field))
+  expect(new Set(actualFields)).toEqual(new Set(expectedFields))
 }
 
 let _href
@@ -384,10 +383,10 @@ describe('logout', () => {
 
 describe('fetch', () => {
   const matchAuthzHeader = (origin) => (headerVal) => {
-    const { aud, id_token, token_type } = jwt.decode(headerVal[0].split(' ')[1])
-    return aud === origin &&
-      id_token === 'abc.def.ghi' &&
-      token_type === 'pop'
+    const popToken = jwt.decode(headerVal[0].split(' ')[1])
+    return popToken.aud === origin &&
+      popToken.id_token === 'abc.def.ghi' &&
+      popToken.token_type === 'pop'
   }
 
   it('handles 401s from WebID-OIDC resources by resending with credentials', () => {
