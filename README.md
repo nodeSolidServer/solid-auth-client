@@ -23,7 +23,7 @@ personal information on your user's solid account, you'll have to authenticate
 them.  This library provides a simple API for logging in, logging out, and
 fetching resources with authenticated credentials.
 
-### How can I use this?
+### How do I get this?
 
 The simplest way to use this library is to install it via `npm` or `yarn`.  You can then use the ES6 module (`import { login, currentUser, logout } from 'solid-auth-client'`), or you can grab the transpiled UMD bundle from `node_modules/solid-auth-client/dist-lib/solid-auth-client.bundle.js`.
 
@@ -91,8 +91,7 @@ Options:
 
 ```
 popupLogin({
-  callbackUri: ?string,
-  idpSelectUri: ?string,
+  popupUri: ?string,
   storage: AsyncStorage
 }): Promise<?session>
 ```
@@ -131,6 +130,44 @@ authenticate scheme.
 ```
 fetch: (url: RequestInfo, options?: Object) => Promise<Response>
 ```
+
+## Using the popup login flow
+
+To use the popup login flow, you'll need a popup application running on a
+trusted domain which authenticates the user, handles redirects, and messages the
+authenticated session back to your application.
+
+Due to the possible redirects and the security model of `window.postMessage`,
+you'll need to build a static popup app bound to your application's origin.
+
+Keeping this in mind, here's how to get things working.
+
+0. Clone this repo and set up your development environment according to the
+   [Developing](#developing) section.
+
+1. Create your `.env.popup` file.  This file declares your application name and
+   origin.
+```sh
+$ cp .env.popup.example .env.popup
+```
+
+2. Edit the `TRUSTED_APP_NAME` and `TRUSTED_APP_ORIGIN` fields of the new
+`.env.popup` file to match your app's name and origin.
+```sh
+$ $EDITOR .env.popup # Change TRUSTED_APP_NAME and TRUSTED_APP_ORIGIN
+```
+
+3. Run the build script to generate the app as a static HTML bundle.
+section.
+```sh
+$ yarn build:popup
+```
+
+4. The app now lives in `dist-popup/popup.html`.  You can now set up a route in
+your application to the popup app.
+
+5. If your popup now lives at e.g. 'https://localhost:8080/popup.html',
+call `popupLogin('https://localhost:8080/popup.html')`.
 
 ## Developing
 
@@ -182,29 +219,3 @@ The popup app is configurable via the `.env.popup` file.  The important fields a
   behalf of.
 - TRUSTED_APP_ORIGIN: Origin of the trusted application the popup is working
   on behalf of.
-
-## Using the popup login flow
-
-If you want to offer a login experience that doesn't redirect away from your
-app, you should use the popup login flow, which works as follows:
-
-1. When prompted to log in, the app opens a popup window for the user to
-   select their IDP
-2. Within the popup, the the user is sent to their IDP
-3. Within the popup, now at the IDP, the user logs in
-3. Within the popup, the IDP sends the user back to the callback URI, which
-   captures the user credentials
-4. Within the popup, the callback URI app sends the credentials back to the
-   main app window
-5. The popup closes once the app receives the credentials
-
-It's essential that the applications for selecting an IDP and capturing
-credentials runs on a *trusted domain*, since the IDP select app needs to be
-trusted to send the user to the right place(s), and the callback app needs to
-be trusted to handle user credentials.  The best way to do this is to serve
-these apps from a domain that you control.  For example, if your app is
-located at https://example.com, consider deploying the idp select app to
-https://auth.example.com/idp-select and the callback app to
-https://auth.example.com/idp-callback.
-
-To build the popup app, see [Building the popup app](#building-the-popup-app).

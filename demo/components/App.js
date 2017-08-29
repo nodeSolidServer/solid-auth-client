@@ -23,7 +23,7 @@ export default class App extends React.Component {
 
   onClickLogIn = () =>
     popupLogin({
-      idpSelectUri: process.env.IDP_SELECT_URI,
+      popupUri: process.env.IDP_SELECT_URI,
       callbackUri: process.env.CALLBACK_URI
     }).then(this.saveCredentials)
 
