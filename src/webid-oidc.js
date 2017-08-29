@@ -28,7 +28,6 @@ export const currentSession = (storage: Storage = defaultStorage()): Promise<?we
     })
     .then(resp => {
       if (!resp) { return null }
-
       clearHashFragment()
       return {
         authType: 'WebID-OIDC',

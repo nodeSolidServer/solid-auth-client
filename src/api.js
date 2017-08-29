@@ -34,7 +34,6 @@ const responseFromFirstSession = (storage: Storage, authFns: Array<() => Promise
   if (authFns.length === 0) {
     return Promise.resolve({ session: null, fetch: authnFetch(storage) })
   }
-
   return authFns[0]()
     .then(session =>
       session
