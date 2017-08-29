@@ -19,7 +19,7 @@ clients don't have to handle different authentication protocols.
 ### Why might I need this?
 
 If you're building a web app and want to identify users with Solid, or store
-personal information on your user's solid account, you'll have to authenticate
+personal information on your user's Solid account, you'll have to authenticate
 them.  This library provides a simple API for logging in, logging out, and
 fetching resources with authenticated credentials.
 
@@ -32,26 +32,6 @@ The simplest way to use this library is to install it via `npm` or `yarn`.  You 
 *This API doc uses [flow](https://flow.org/) type annotations for clarity.
 They're just here to show you the types of arguments expected by exported
 functions.  You don't have to know anything about flow.*
-
-### types
-
-```
-type webIdTlsSession = {
-  authType: WebIdTls,
-  idp: string,
-  webId: string
-}
-
-type webIdOidcSession = {
-  authType: WebIdOidc,
-  idp: string,
-  webId: string,
-  accessToken: string,
-  idToken: string
-}
-
-type session = webIdTlsSession | webIdOidcSession
-```
 
 ### `login`
 
@@ -129,6 +109,26 @@ authenticate scheme.
 
 ```
 fetch: (url: RequestInfo, options?: Object) => Promise<Response>
+```
+
+### types
+
+```
+type webIdTlsSession = {
+  authType: WebIdTls,
+  idp: string,
+  webId: string
+}
+
+type webIdOidcSession = {
+  authType: WebIdOidc,
+  idp: string,
+  webId: string,
+  accessToken: string,
+  idToken: string
+}
+
+type session = webIdTlsSession | webIdOidcSession
 ```
 
 ## Using the popup login flow
