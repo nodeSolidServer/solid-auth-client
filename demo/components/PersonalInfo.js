@@ -44,15 +44,13 @@ export default class PersonalInfo extends React.Component {
     const name = this.state.profile['foaf:name']
       ? this.state.profile['foaf:name']['@value']
       : 'unnamed person'
-    return session
-      ? <div>
-          Hey there, <span>{name}</span>! Your WebID is:{' '}
-          <a href={session.webId} target="_blank">
-            <code>
-              {session.webId}
-            </code>
-          </a>
-        </div>
-      : null
+    return session ? (
+      <div>
+        Hey there, <span>{name}</span>! Your WebID is:{' '}
+        <a href={session.webId} target="_blank">
+          <code>{session.webId}</code>
+        </a>
+      </div>
+    ) : null
   }
 }

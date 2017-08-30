@@ -28,9 +28,7 @@ export default class TextForm extends React.Component {
       <form className="form-inline" onSubmit={onSubmit}>
         <div className="form-group">
           <label>
-            <span className="sr-only">
-              {this.props.label}
-            </span>
+            <span className="sr-only">{this.props.label}</span>
             <input
               type="text"
               className="form-control mr-1"

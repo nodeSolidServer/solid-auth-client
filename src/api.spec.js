@@ -10,6 +10,7 @@ import { saveHost } from './host'
 import { getSession, saveSession } from './session'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
 import { asyncStorage } from './storage'
+import { sessionKeys } from '../test-keys/session-keys'
 
 /*
  * OIDC test data:
@@ -45,9 +46,38 @@ const jwks = {
   ]
 }
 
-beforeEach(polyfillWindow)
+const sessionKey = JSON.stringify(sessionKeys.private)
 
-afterEach(polyunfillWindow)
+const verifySerializedKey = ssk => {
+  const key = JSON.parse(ssk)
+  const actualFields = Object.keys(key)
+  const expectedFields = [
+    'kty',
+    'alg',
+    'n',
+    'e',
+    'd',
+    'p',
+    'q',
+    'dp',
+    'dq',
+    'qi',
+    'key_ops',
+    'ext'
+  ]
+  expect(new Set(actualFields)).toEqual(new Set(expectedFields))
+}
+
+beforeEach(() => {
+  polyfillWindow()
+  nock.disableNetConnect()
+})
+
+afterEach(() => {
+  polyunfillWindow()
+  nock.cleanAll()
+  nock.enableNetConnect()
+})
 
 const getStoredSession = () => getSession(asyncStorage(window.localStorage))
 
@@ -78,7 +108,9 @@ describe('login', () => {
     it('can log in with WebID-TLS', async () => {
       expect.assertions(2)
       const webId = 'https://localhost/profile#me'
-      nock('https://localhost/').head('/').reply(200, '', { user: webId })
+      nock('https://localhost/')
+        .head('/')
+        .reply(200, '', { user: webId })
 
       const session = await login('https://localhost')
       expect(session.webId).toBe(webId)
@@ -147,7 +179,7 @@ describe('login', () => {
       expect(location.searchParams.get('client_id')).toEqual('the-client-id')
     })
 
-    it('strips the hash fragment from the current URL when proiding the default redirect URL', async () => {
+    it('strips the hash fragment from the current URL when providing the default redirect URL', async () => {
       expect.assertions(6)
       nock('https://localhost/')
         // try to log in with WebID-TLS
@@ -193,7 +225,8 @@ describe('currentSession', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     const session = await currentSession()
@@ -210,7 +243,7 @@ describe('currentSession', () => {
 
   describe('WebID-OIDC', () => {
     it('can find the current session from the URL auth response', async () => {
-      expect.assertions(5)
+      expect.assertions(6)
       // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
@@ -263,6 +296,7 @@ describe('currentSession', () => {
       expect(session.webId).toBe('https://person.me/#me')
       expect(session.accessToken).toBe(expectedAccessToken)
       expect(session.idToken).toBe(expectedIdToken)
+      verifySerializedKey(session.sessionKey)
       expect(await getStoredSession()).toEqual(session)
       expect(window.location.hash).toBe('')
     })
@@ -285,7 +319,7 @@ describe('logout', () => {
 
   describe('WebID-OIDC', () => {
     it('hits the end_session_endpoint and clears the current session from the store', async () => {
-      expect.assertions(6)
+      expect.assertions(7)
       // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
@@ -341,6 +375,7 @@ describe('logout', () => {
       expect(session.webId).toBe('https://person.me/#me')
       expect(session.accessToken).toBe(expectedAccessToken)
       expect(session.idToken).toBe(expectedIdToken)
+      verifySerializedKey(session.sessionKey)
       expect(window.location.hash).toBe('')
       const storedSession = await getStoredSession()
       expect(storedSession).toEqual(session)
@@ -351,6 +386,15 @@ describe('logout', () => {
 })
 
 describe('fetch', () => {
+  const matchAuthzHeader = origin => headerVal => {
+    const popToken = jwt.decode(headerVal[0].split(' ')[1])
+    return (
+      popToken.aud === origin &&
+      popToken.id_token === 'abc.def.ghi' &&
+      popToken.token_type === 'pop'
+    )
+  }
+
   it('handles 401s from WebID-OIDC resources by resending with credentials', async () => {
     expect.assertions(1)
     await saveSession(window.localStorage)({
@@ -358,14 +402,15 @@ describe('fetch', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     nock('https://third-party.com')
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
       .get('/protected-resource')
-      .matchHeader('authorization', 'Bearer abc.def.ghi')
+      .matchHeader('authorization', matchAuthzHeader('https://third-party.com'))
       .reply(200)
 
     const resp = await fetch('https://third-party.com/protected-resource')
@@ -378,7 +423,8 @@ describe('fetch', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     nock('https://third-party.com')
@@ -386,7 +432,7 @@ describe('fetch', () => {
       .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
       .get('/private-resource')
       .matchHeader('accept', 'text/plain')
-      .matchHeader('authorization', 'Bearer abc.def.ghi')
+      .matchHeader('authorization', matchAuthzHeader('https://third-party.com'))
       .reply(200)
 
     const resp = await fetch('https://third-party.com/private-resource', {
@@ -402,10 +448,13 @@ describe('fetch', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
-    nock('https://third-party.com').get('/protected-resource').reply(401)
+    nock('https://third-party.com')
+      .get('/protected-resource')
+      .reply(401)
 
     const resp = await fetch('https://third-party.com/protected-resource')
     expect(resp.status).toBe(401)
@@ -417,7 +466,8 @@ describe('fetch', () => {
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi'
+      idToken: 'abc.def.ghi',
+      sessionKey
     })
 
     nock('https://third-party.com')
@@ -468,12 +518,13 @@ describe('fetch', () => {
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
+        idToken: 'abc.def.ghi',
+        sessionKey
       })
 
       nock('https://localhost')
         .get('/resource')
-        .matchHeader('authorization', 'Bearer abc.def.ghi')
+        .matchHeader('authorization', matchAuthzHeader('https://localhost'))
         .reply(200)
 
       const resp = await fetch('https://localhost/resource')
@@ -487,7 +538,8 @@ describe('fetch', () => {
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
+        idToken: 'abc.def.ghi',
+        sessionKey
       })
 
       await saveHost(window.localStorage)({
@@ -497,7 +549,10 @@ describe('fetch', () => {
 
       nock('https://third-party.com')
         .get('/resource')
-        .matchHeader('authorization', 'Bearer abc.def.ghi')
+        .matchHeader(
+          'authorization',
+          matchAuthzHeader('https://third-party.com')
+        )
         .reply(200)
 
       const resp = await fetch('https://third-party.com/resource')
@@ -511,7 +566,8 @@ describe('fetch', () => {
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi'
+        idToken: 'abc.def.ghi',
+        sessionKey
       })
 
       await saveHost(window.localStorage)({
@@ -519,7 +575,9 @@ describe('fetch', () => {
         authType: 'WebID-TLS'
       })
 
-      nock('https://third-party.com').get('/resource').reply(401)
+      nock('https://third-party.com')
+        .get('/resource')
+        .reply(401)
 
       const resp = await fetch('https://third-party.com/resource')
       expect(resp.status).toBe(401)

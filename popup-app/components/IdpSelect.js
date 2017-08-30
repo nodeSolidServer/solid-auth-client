@@ -32,27 +32,25 @@ const handleSelectIdp = idp => async event => {
   }
 }
 
-const IdpSelect = ({ appName, idps }) =>
+const IdpSelect = ({ appName, idps }) => (
   <div>
-    <h1 className="center">
-      Log in to {appName}
-    </h1>
+    <h1 className="center">Log in to {appName}</h1>
     <p className="copy-gentle center">Choose where you log in</p>
     <div className="idp-list">
       {idps.map(idp => <Idp idp={idp} key={idp.url} />)}
     </div>
   </div>
+)
 
-const Idp = ({ idp }) =>
+const Idp = ({ idp }) => (
   <div className="idp">
     <button className="idp__select" onClick={handleSelectIdp(idp)}>
-      <span className="idp__copy">
-        Log in with {idp.displayName}
-      </span>
+      <span className="idp__copy">Log in with {idp.displayName}</span>
       <span className="idp__icon-container">
         <img className="idp__icon" src={idp.iconUrl} alt="" />
       </span>
     </button>
   </div>
+)
 
 export default IdpSelect

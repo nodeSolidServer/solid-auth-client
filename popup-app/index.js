@@ -20,8 +20,10 @@ const idps = [
 ]
 
 ReactDOM.render(
-  window.location.hash
-    ? <IdpCallback afterLoggedIn={() => setTimeout(window.close, 750)} />
-    : <IdpSelect idps={idps} />,
+  window.location.hash ? (
+    <IdpCallback afterLoggedIn={() => setTimeout(window.close, 750)} />
+  ) : (
+    <IdpSelect idps={idps} />
+  ),
   document.getElementById('app-container')
 )

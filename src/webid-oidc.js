@@ -3,6 +3,7 @@
 import 'isomorphic-fetch'
 import * as authorization from 'auth-header'
 import RelyingParty from 'oidc-rp/src'
+import PoPToken from 'oidc-rp/src/PoPToken'
 
 import type { loginOptions } from './api'
 import { currentUrl, clearHashFragment, navigateTo } from './url-util'
@@ -41,13 +42,15 @@ export const currentSession = (
         return null
       }
       clearHashFragment()
-      const { idp, idToken, accessToken } = resp
+      const { idp, idToken, accessToken, clientId, sessionKey } = resp
       return {
         authType: 'WebID-OIDC',
         webId: resp.decoded.payload.sub,
         idp,
         idToken,
-        accessToken
+        accessToken,
+        clientId,
+        sessionKey
       }
     })
     .catch(err => {
@@ -58,10 +61,12 @@ export const currentSession = (
 }
 
 export const logout = (storage: AsyncStorage): Promise<void> =>
-  getStoredRp(storage).then(rp => (rp ? rp.logout() : undefined)).catch(err => {
-    console.warn('Error logging out of the WebID-OIDC session')
-    console.error(err)
-  })
+  getStoredRp(storage)
+    .then(rp => (rp ? rp.logout() : undefined))
+    .catch(err => {
+      console.warn('Error logging out of the WebID-OIDC session')
+      console.error(err)
+    })
 
 export const getRegisteredRp = (
   idp: string,
@@ -152,15 +157,16 @@ export const requiresAuth = (resp: Response): boolean => {
  * Fetches a resource, providing the WebID-OIDC ID Token as authentication.
  * Assumes that the resource has requested those tokens in a previous response.
  */
-export const fetchWithCredentials = (session: webIdOidcSession) => (
+export const fetchWithCredentials = (session: webIdOidcSession) => async (
   url: RequestInfo,
   options?: Object
 ): Promise<Response> => {
+  const popToken = await PoPToken.issueFor(url, session)
   const authenticatedOptions = {
     ...options,
     headers: {
       ...(options && options.headers ? options.headers : {}),
-      authorization: `Bearer ${session.idToken}`
+      authorization: `Bearer ${popToken}`
     }
   }
   return fetch(url, authenticatedOptions)
