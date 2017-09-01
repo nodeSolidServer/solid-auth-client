@@ -1,7 +1,20 @@
 .idp-list {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.idp {
+  flex: 1 100%;
+  margin-bottom: 16px;
+  padding: 2px;
+}
+
+@media all and (min-width: 500px) {
+  .idp {
+    flex: 1;
+  }
 }
 
 .idp .idp__select {
@@ -11,8 +24,7 @@
   border: none;
   border-radius: 2px;
   height: 50px;
-  width: 250px;
-  margin-bottom: 16px;
+  width: 100%;
   padding: 4px;
   background-color: rgb(61, 109, 211);
   transition: background-color 0.4s, box-shadow 0.4s;
