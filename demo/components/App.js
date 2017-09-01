@@ -11,11 +11,7 @@ import type { session } from '../../src/session'
 import { popupLogin, logout, currentSession } from '../../src/'
 
 export default class App extends React.Component {
-  state: {
-    session: ?session
-  } = {
-    session: null
-  }
+  state: { session: ?session } = { session: null }
 
   saveCredentials = (session: session): void => {
     this.setState({ session })
@@ -23,8 +19,7 @@ export default class App extends React.Component {
 
   onClickLogIn = () =>
     popupLogin({
-      popupUri: process.env.IDP_SELECT_URI,
-      callbackUri: process.env.CALLBACK_URI
+      popupUri: process.env.POPUP_URI
     }).then(this.saveCredentials)
 
   onClickLogOut = () =>
