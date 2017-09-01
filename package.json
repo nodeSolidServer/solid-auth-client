@@ -12,7 +12,7 @@
       "webpack-dev-server --env development --config=./webpack/webpack.demo.config.js",
     "start:popup":
       "webpack-dev-server --env development --config=./webpack/webpack.popup.config.js",
-    "jest": "jest src --coverage",
+    "jest": "jest src",
     "format":
       "prettier --parser flow --no-semi --single-quote --write '{src,demo,popup-app}/**/*.js'",
     "prelint": "yarn format",
@@ -83,7 +83,9 @@
     "webpack-dev-server": "^2.6.1"
   },
   "jest": {
-    "testURL": "https://app.biz/page?foo=bar#more-params"
+    "testURL": "https://app.biz/page?foo=bar#more-params",
+    "collectCoverage": true,
+    "coveragePathIgnorePatterns": ["demo", "popup-app"]
   },
   "pre-commit": ["test"]
 }
