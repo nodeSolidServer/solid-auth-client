@@ -3,13 +3,8 @@ const DotenvPlugin = require('dotenv-webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 const path = require('path')
-const webpack = require('webpack')
 
-const {
-  module: _module,
-  externals,
-  devtool
-} = require('./webpack.common.config')
+const { module: _module, externals } = require('./webpack.common.config')
 
 const outputDir = './dist-popup'
 
@@ -42,10 +37,8 @@ module.exports = {
       filename: 'popup.html',
       inlineSource: '.(js|css)$'
     }),
-    new HtmlWebpackInlineSourcePlugin(),
-    new webpack.HotModuleReplacementPlugin(outputDir)
+    new HtmlWebpackInlineSourcePlugin()
   ],
-  devtool,
   devServer: {
     contentBase: path.join(__dirname, 'dist')
   }

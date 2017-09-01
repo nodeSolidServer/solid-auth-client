@@ -3,18 +3,18 @@
   "version": "0.4.0",
   "description": "Opaquely authenticates solid clients",
   "main": "lib/index.js",
-  "files": [
-    "lib",
-    "dist-lib"
-  ],
+  "files": ["lib", "dist-lib"],
   "repository": "git@github.com:solid/solid-auth-client.git",
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "start:demo": "webpack-dev-server --env development --config=./webpack/webpack.demo.config.js",
-    "start:popup": "webpack-dev-server --env development --config=./webpack/webpack.popup.config.js",
+    "start:demo":
+      "webpack-dev-server --env development --config=./webpack/webpack.demo.config.js",
+    "start:popup":
+      "webpack-dev-server --env development --config=./webpack/webpack.popup.config.js",
     "jest": "jest src --coverage",
-    "format": "prettier --parser flow --no-semi --single-quote --write '{src,demo,popup-app}/**/*.js'",
+    "format":
+      "prettier --parser flow --no-semi --single-quote --write '{src,demo,popup-app}/**/*.js'",
     "prelint": "yarn format",
     "lint": "eslint '{src,demo,popup-app}/**/*.js'",
     "pretest": "flow && yarn lint",
@@ -26,7 +26,8 @@
     "build:lib": "rm -rf lib && babel --ignore '**.spec.js' src -d lib",
     "build:lib:umd": "webpack --config=./webpack/webpack.lib.config.js -p",
     "build:demo": "webpack --config=./webpack/webpack.demo.config.js -p",
-    "build:popup": "webpack --config=./webpack/webpack.popup.config.js -p",
+    "build:popup":
+      "webpack --config=./webpack/webpack.popup.config.js -p && rm ./dist-popup/popup.bundle.js",
     "preversion": "yarn test",
     "postversion": "git push --follow-tags",
     "prepublishOnly": "yarn build"
@@ -84,7 +85,5 @@
   "jest": {
     "testURL": "https://app.biz/page?foo=bar#more-params"
   },
-  "pre-commit": [
-    "test"
-  ]
+  "pre-commit": ["test"]
 }
