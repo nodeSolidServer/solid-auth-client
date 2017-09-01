@@ -2,51 +2,55 @@
 import 'isomorphic-fetch'
 import React from 'react'
 
-import type { authResponse } from '../../src/api'
+import { fetch } from '../../src/'
+import type { session } from '../../src/session'
 
-type profile =
-  { 'foaf:name': ?{ '@value': string }
-  }
+type profile = {
+  'foaf:name': ?{ '@value': string }
+}
 
 export default class PersonalInfo extends React.Component {
-  props : authResponse
+  props: { session: ?session }
 
   defaultProps = {
-    session: null,
-    fetch: fetch
+    session: null
   }
 
-  state : { profile: profile } = {
+  state: { profile: profile } = {
     profile: { 'foaf:name': null }
   }
 
   fetchProfile = (webId: string): Promise<profile> => {
-    const { fetch } = this.props
     const query = `
       @prefix foaf http://xmlns.com/foaf/0.1/
       ${webId} { foaf:name }
     `
-    return fetch('https://databox.me/,query', { method: 'POST', body: query })
-      .then(resp => resp.json())
+    return fetch('https://databox.me/,query', {
+      method: 'POST',
+      body: query
+    }).then(resp => resp.json())
   }
 
-  saveProfile = (profile: profile): void =>
-    this.setState({ profile })
+  saveProfile = (profile: profile): void => this.setState({ profile })
 
-  componentWillReceiveProps (props: authResponse) {
+  componentWillReceiveProps(props: { session: ?session }) {
     if (props.session) {
       this.fetchProfile(props.session.webId).then(this.saveProfile)
     }
   }
 
-  render () {
+  render() {
     const { session } = this.props
-    const name = this.state.profile['foaf:name'] ? this.state.profile['foaf:name']['@value'] : 'unnamed person'
-    return session
-      ? <div>
-        Hey there, <span>{name}</span>!
-        Your WebID is: <a href={session.webId} target='_blank'><code>{session.webId}</code></a>
+    const name = this.state.profile['foaf:name']
+      ? this.state.profile['foaf:name']['@value']
+      : 'unnamed person'
+    return session ? (
+      <div>
+        Hey there, <span>{name}</span>! Your WebID is:{' '}
+        <a href={session.webId} target="_blank">
+          <code>{session.webId}</code>
+        </a>
       </div>
-      : null
+    ) : null
   }
 }

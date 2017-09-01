@@ -1,0 +1,60 @@
+.idp-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.idp {
+  flex: 1 100%;
+  margin-bottom: 16px;
+  padding: 2px;
+}
+
+@media all and (min-width: 500px) {
+  .idp {
+    flex: 1;
+  }
+}
+
+.idp .idp__select {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: none;
+  border-radius: 2px;
+  height: 50px;
+  width: 100%;
+  padding: 4px;
+  background-color: rgb(61, 109, 211);
+  transition: background-color 0.4s, box-shadow 0.4s;
+}
+
+.idp .idp__select:hover,
+.idp .idp__select:focus {
+  cursor: pointer;
+  background-color: rgb(55, 97, 188);
+  box-shadow: 1px 1px rgb(46, 80, 151);
+}
+
+.idp .idp__select:active {
+  cursor: pointer;
+  box-shadow: inset 1px 1px rgb(46, 80, 152);
+}
+
+.idp .idp__copy {
+  color: #fff;
+  margin-left: 4px;
+  font-size: 1em;
+}
+
+.idp .idp__icon-container {
+  display: flex;
+  height: 42px;
+  border-radius: 2px;
+  background-color: #fff;
+}
+
+.idp .idp__icon {
+  margin: auto;
+}

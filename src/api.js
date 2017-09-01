@@ -1,28 +1,26 @@
 // @flow
 /* global RequestInfo, Response */
 import { authnFetch } from './authn-fetch'
-import { currentUrlNoParams } from './browser-util'
+import { openIdpSelector, startPopupServer } from './popup'
 import type { session } from './session'
 import { getSession, saveSession, clearSession } from './session'
-import type { Storage } from './storage'
+import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
+import { currentUrlNoParams } from './url-util'
 import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
 
-export type authResponse =
-  { session: ?session
-  , fetch: (url: RequestInfo, options?: Object) => Promise<Response>
-  }
-
 export type loginOptions = {
-  redirectUri: ?string,
-  storage: Storage
+  callbackUri: ?string,
+  popupUri: ?string,
+  storage: AsyncStorage
 }
 
 const defaultLoginOptions = (): loginOptions => {
   const url = currentUrlNoParams()
   return {
-    redirectUri: url ? url.split('#')[0] : null,
+    callbackUri: url ? url.split('#')[0] : null,
+    popupUri: null,
     storage: defaultStorage()
   }
 }
@@ -30,47 +28,81 @@ const defaultLoginOptions = (): loginOptions => {
 export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
   authnFetch(defaultStorage())(url, options)
 
-const responseFromFirstSession = (storage: Storage, authFns: Array<() => Promise<?session>>): Promise<authResponse> => {
+async function firstSession(
+  storage: AsyncStorage,
+  authFns: Array<() => Promise<?session>>
+): Promise<?session> {
   if (authFns.length === 0) {
-    return Promise.resolve({ session: null, fetch: authnFetch(storage) })
+    return null
   }
-  return authFns[0]()
-    .then(session =>
-      session
-        ? { session: saveSession(storage)(session), fetch: authnFetch(storage) }
-        : responseFromFirstSession(storage, authFns.slice(1)))
-    .catch(err => {
-      console.error(err)
-      return responseFromFirstSession(storage, authFns.slice(1))
-    })
+  try {
+    const session = await authFns[0]()
+    if (session) {
+      return saveSession(storage)(session)
+    }
+  } catch (err) {
+    console.error(err)
+  }
+  return firstSession(storage, authFns.slice(1))
 }
 
-export const login = (idp: string, options: loginOptions): Promise<authResponse> => {
+type redirectFn = () => any
+
+export async function login(
+  idp: string,
+  options: loginOptions
+): Promise<?session | ?redirectFn> {
   options = { ...defaultLoginOptions(), ...options }
-  return responseFromFirstSession(options.storage, [
-    WebIdTls.login.bind(null, idp),
-    WebIdOidc.login.bind(null, idp, options)
-  ])
-}
-
-export const currentSession = (storage: Storage = defaultStorage()): Promise<authResponse> => {
-  const session = getSession(storage)
-  if (session) {
-    return Promise.resolve({ session, fetch: authnFetch(storage) })
+  const webIdTlsSession = await WebIdTls.login(idp)
+  if (webIdTlsSession) {
+    return saveSession(options.storage)(webIdTlsSession)
   }
-  return responseFromFirstSession(storage, [
-    WebIdOidc.currentSession.bind(null, storage)
-  ])
+  const webIdOidcLoginRedirectFn = await WebIdOidc.login(idp, options)
+  return webIdOidcLoginRedirectFn
 }
 
-export const logout = (storage: Storage = defaultStorage()): Promise<void> =>
-  Promise.resolve(getSession(storage))
-    .then(session => session && session.idToken && session.accessToken
-      ? WebIdOidc.logout(storage)
-      : null
-    )
-    .then(() => clearSession(storage))
-    .catch(err => {
-      console.warn('Error logging out:')
-      console.error(err)
-    })
+export async function popupLogin(options: loginOptions): Promise<?session> {
+  if (!options.popupUri) {
+    throw new Error('Must provide options.popupUri')
+  }
+  if (!options.callbackUri) {
+    options.callbackUri = options.popupUri
+  }
+  options = { ...defaultLoginOptions(), ...options }
+  const childWindow = openIdpSelector(options)
+  const session = await startPopupServer(options.storage, childWindow, options)
+  return session
+}
+
+export async function currentSession(
+  storage: AsyncStorage = defaultStorage()
+): Promise<?session> {
+  const session = await getSession(storage)
+  if (session) {
+    return session
+  }
+  return firstSession(storage, [WebIdOidc.currentSession.bind(null, storage)])
+}
+
+export async function logout(
+  storage: AsyncStorage = defaultStorage()
+): Promise<void> {
+  const session = await getSession(storage)
+  if (!session) {
+    return
+  }
+  switch (session.authType) {
+    case 'WebID-OIDC':
+      try {
+        await WebIdOidc.logout(storage)
+      } catch (err) {
+        console.warn('Error logging out:')
+        console.error(err)
+      }
+      break
+    case 'WebID-TLS':
+    default:
+      break
+  }
+  return clearSession(storage)
+}

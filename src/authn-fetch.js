@@ -2,40 +2,52 @@
 /* global fetch, RequestInfo, Response */
 import 'isomorphic-fetch'
 
-import { getHost, updateHostFromResponse } from './hosts'
+import { getHost, updateHostFromResponse } from './host'
 import type { session } from './session'
 import { getSession } from './session'
-import type { Storage } from './storage'
+import type { AsyncStorage } from './storage'
 import * as WebIdOidc from './webid-oidc'
 
-export const authnFetch = (storage: Storage) => (url: RequestInfo, options?: Object): Promise<Response> => {
-  const session = getSession(storage)
-  if (session && shouldShareCredentials(storage)(url)) {
-    return fetchWithCredentials(session, url, options)
-  }
-  return fetch(url, options)
-    .then((resp) => {
-      if (resp.status === 401) {
-        updateHostFromResponse(storage)(resp)
-        if (session && shouldShareCredentials(storage)(url)) {
-          return fetchWithCredentials(session, url, options)
-        }
+export function authnFetch(
+  storage: AsyncStorage
+): (RequestInfo, ?Object) => Promise<Response> {
+  return async (url, options) => {
+    options = options || {}
+    const session = await getSession(storage)
+    const shouldShareCreds = await shouldShareCredentials(storage)(url)
+    if (session && shouldShareCreds) {
+      return fetchWithCredentials(session, url, options)
+    }
+    const resp = await fetch(url, options)
+    if (resp.status === 401) {
+      await updateHostFromResponse(storage)(resp)
+      const shouldShareCreds = await shouldShareCredentials(storage)(url)
+      if (session && shouldShareCreds) {
+        return fetchWithCredentials(session, url, options)
       }
-      return resp
-    })
-}
-
-const shouldShareCredentials = (storage: Storage) => (url: RequestInfo): boolean => {
-  const session = getSession(storage)
-  if (!session) {
-    return false
+    }
+    return resp
   }
-  const requestHost = getHost(storage)(url)
-  return requestHost != null &&
-    session.authType === requestHost.authType
 }
 
-const fetchWithCredentials = (session: session, url: RequestInfo, options?: Object): Promise<Response> => {
+function shouldShareCredentials(
+  storage: AsyncStorage
+): (url: RequestInfo) => Promise<boolean> {
+  return async url => {
+    const session = await getSession(storage)
+    if (!session) {
+      return false
+    }
+    const requestHost = await getHost(storage)(url)
+    return requestHost != null && session.authType === requestHost.authType
+  }
+}
+
+const fetchWithCredentials = async (
+  session: session,
+  url: RequestInfo,
+  options?: Object
+): Promise<Response> => {
   switch (session.authType) {
     case 'WebID-OIDC':
       return WebIdOidc.fetchWithCredentials(session)(url, options)

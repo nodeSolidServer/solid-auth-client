@@ -57,5 +57,17 @@ typings/
 # dotenv environment variables file
 .env
 
+
+###########################
+# solid-auth-client stuff #
+###########################
+
+# editor
+.vscode
+
+# build
 lib
-dist
+dist-lib
+dist-popup
+.env.demo
+.env.popup

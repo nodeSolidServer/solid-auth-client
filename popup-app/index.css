@@ -1,0 +1,63 @@
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+h1 {
+  font-weight: normal;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #d8d8d8;
+}
+
+#app-container {
+  max-width: 600px;
+  margin: auto;
+}
+
+.center {
+  text-align: center;
+}
+
+.copy-gentle {
+  color: #494949;
+  font-size: 0.9em;
+  font-weight: lighter;
+}
+
+.error {
+  background-color: #ff8e8e;
+  color: #323232;
+  padding: 8px;
+  border-radius: 2px;
+}
+
+.btn {
+  border: 1px solid grey;
+  border-radius: 2px;
+  padding: 4px;
+  margin-left: 4px;
+  cursor: pointer;
+}
+
+.btn-link {
+  border: none;
+  background-color: #fff;
+  text-decoration: underline;
+  padding: 4px;
+}
+
+.form-inline {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.form-inline .form-inline__input-text {
+  flex-grow: 2;
+}
+
+.form-inline .form-inline__controls {
+  flex-grow: 1;
+  display: flex;
+  justify-content: flex-end;
+}
