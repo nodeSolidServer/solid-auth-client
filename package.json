@@ -32,9 +32,9 @@
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
+    "@trust/oidc-rp": "^0.4.3",
     "auth-header": "^0.3.1",
     "isomorphic-fetch": "^2.2.1",
-    "oidc-rp": "dan-f/oidc-rp#d52383526f3aa4e8313870dbfd891b5fad9fe03a",
     "uuid": "^3.1.0"
   },
   "devDependencies": {
