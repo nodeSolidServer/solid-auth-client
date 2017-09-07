@@ -4,23 +4,20 @@ import { currentSession } from '../../src/api'
 import { client } from '../../src/ipc'
 import { postMessageStorage } from '../../src/storage'
 
-const request = client(window.opener, process.env.TRUSTED_APP_ORIGIN)
-
-const postSession = async () => {
-  const storage = postMessageStorage(
-    window.opener,
-    process.env.TRUSTED_APP_ORIGIN
-  )
-  const session = await currentSession(storage)
-  await request({ method: 'foundSession', args: [session] })
-}
-
 export default class IdpCallback extends Component {
   state = { loggedIn: false }
 
+  request = client(window.opener, this.props.appOrigin)
+
+  postSession = async () => {
+    const storage = postMessageStorage(window.opener, this.props.appOrigin)
+    const session = await currentSession(storage)
+    return this.request({ method: 'foundSession', args: [session] })
+  }
+
   constructor(props) {
     super(props)
-    postSession().then(() => {
+    this.postSession().then(() => {
       this.setState({ loggedIn: true })
     })
   }

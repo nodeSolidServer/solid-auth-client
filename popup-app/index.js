@@ -1,5 +1,9 @@
+/* global sessionStorage */
 import React from 'react'
 import ReactDOM from 'react-dom'
+
+import { client } from '../src/ipc'
+import { getData, updateStorage } from '../src/storage'
 
 import IdpCallback from './components/IdpCallback'
 import IdpSelect from './components/IdpSelect'
@@ -19,11 +23,45 @@ const idps = [
   }
 ]
 
-ReactDOM.render(
-  window.location.hash ? (
-    <IdpCallback afterLoggedIn={() => setTimeout(window.close, 750)} />
-  ) : (
-    <IdpSelect idps={idps} />
-  ),
-  document.getElementById('app-container')
-)
+requestAppOrigin().then(appOrigin => {
+  ReactDOM.render(
+    window.location.hash ? (
+      <IdpCallback
+        appOrigin={appOrigin}
+        afterLoggedIn={() => setTimeout(window.close, 750)}
+      />
+    ) : (
+      <IdpSelect
+        idps={idps}
+        appOrigin={appOrigin}
+        appName={process.env.TRUSTED_APP_NAME}
+      />
+    ),
+    document.getElementById('app-container')
+  )
+})
+
+async function requestAppOrigin() {
+  let appOrigin = await getStoredAppOrigin()
+  if (appOrigin) {
+    return appOrigin
+  }
+  const request = client(window.opener, '*')
+  appOrigin = await request({
+    method: 'getAppOrigin',
+    args: []
+  })
+  storeAppOrigin(appOrigin)
+  return appOrigin
+}
+
+function getStoredAppOrigin() {
+  return getData(sessionStorage).then(data => data.appOrigin)
+}
+
+function storeAppOrigin(origin) {
+  return updateStorage(sessionStorage, data => ({
+    ...data,
+    appOrigin: origin
+  })).appOrigin
+}

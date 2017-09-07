@@ -54,7 +54,7 @@ export async function updateStorage(
 ): Promise<Object> {
   const currentData = await getData(store)
   const newData = update(currentData)
-  store.setItem(NAMESPACE, JSON.stringify(newData))
+  await store.setItem(NAMESPACE, JSON.stringify(newData))
   return newData
 }
 

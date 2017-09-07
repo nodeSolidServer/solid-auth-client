@@ -137,36 +137,22 @@ To use the popup login flow, you'll need a popup application running on a
 trusted domain which authenticates the user, handles redirects, and messages the
 authenticated session back to your application.
 
-Due to the possible redirects and the security model of `window.postMessage`,
-you'll need to build a static popup app bound to your application's origin.
+In order to tell the user they're logging into *your* app, you'll need to
+build a static popup bound to your application's name.
 
-Keeping this in mind, here's how to get things working.
+Keeping this in mind, it's pretty simple to build a popup for your app!
 
-0. Clone this repo and set up your development environment according to the
-   [Developing](#developing) section.
-
-1. Create your `.env.popup` file.  This file declares your application name and
-   origin.
+0. Make sure you've got the `solid-auth-client` package installed locally.
 ```sh
-$ cp .env.popup.example .env.popup
+$ npm i solid-auth-client # [--save | --save-dev]
 ```
 
-2. Edit the `TRUSTED_APP_NAME` and `TRUSTED_APP_ORIGIN` fields of the new
-`.env.popup` file to match your app's name and origin.
+1. Run the build script!
 ```sh
-$ $EDITOR .env.popup # Change TRUSTED_APP_NAME and TRUSTED_APP_ORIGIN
+$ solid-auth-client generate-popup "My App's Name" # [my-app-popup.html]
 ```
 
-3. Run the build script to generate the app as a static HTML bundle.
-section.
-```sh
-$ yarn build:popup
-```
-
-4. The app now lives in `dist-popup/popup.html`.  You can now set up a route in
-your application to the popup app.
-
-5. If your popup now lives at e.g. 'https://localhost:8080/popup.html',
+2. If your popup is deployed to e.g. 'https://localhost:8080/popup.html',
 call `popupLogin('https://localhost:8080/popup.html')`.
 
 ## Developing

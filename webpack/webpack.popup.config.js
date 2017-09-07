@@ -1,19 +1,19 @@
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-const DotenvPlugin = require('dotenv-webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 const path = require('path')
+const { EnvironmentPlugin } = require('webpack')
 
-const { module: _module, externals } = require('./webpack.common.config')
+const {
+  context,
+  module: _module,
+  externals
+} = require('./webpack.common.config')
 
 const outputDir = './dist-popup'
 
-const dotEnvPlugin = new DotenvPlugin({
-  path: './.env.popup',
-  safe: './.env.popup.example'
-})
-
 module.exports = {
+  context,
   entry: {
     popup: './popup-app/index.js'
   },
@@ -30,8 +30,8 @@ module.exports = {
     }
   },
   plugins: [
-    dotEnvPlugin,
-    new CleanWebpackPlugin(['./dist-popup']),
+    new EnvironmentPlugin(['TRUSTED_APP_NAME']),
+    new CleanWebpackPlugin([outputDir]),
     new HtmlWebpackPlugin({
       template: 'popup-app/index.ejs',
       filename: 'popup.html',

@@ -1,6 +1,11 @@
 // @flow
 /* eslint-env jest */
-import { loginHandler, storageHandler, startPopupServer } from './popup'
+import {
+  appOriginHandler,
+  loginHandler,
+  storageHandler,
+  startPopupServer
+} from './popup'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
 import { defaultStorage } from './storage'
 
@@ -115,6 +120,31 @@ describe('loginHandler', () => {
       id: '12345',
       method: 'unknown_method',
       args: ['a', 'b', 'c']
+    })
+    expect(resp).toBeNull()
+  })
+})
+
+describe('appOriginHandler', () => {
+  it('responds with the window origin', async () => {
+    expect.assertions(1)
+    const resp = await appOriginHandler({
+      id: '12345',
+      method: 'getAppOrigin',
+      args: []
+    })
+    expect(resp).toEqual({
+      id: '12345',
+      ret: 'https://app.biz'
+    })
+  })
+
+  it('ignores unknown methods', async () => {
+    expect.assertions(1)
+    const resp = await appOriginHandler({
+      id: '12345',
+      method: 'somethingCompletelyDifferent',
+      args: []
     })
     expect(resp).toBeNull()
   })
