@@ -6,22 +6,25 @@ import RelyingParty from '@trust/oidc-rp'
 import PoPToken from '@trust/oidc-rp/lib/PoPToken'
 
 import type { loginOptions } from './api'
-import { currentUrl, clearHashFragment, navigateTo } from './url-util'
+import { currentUrl, navigateTo } from './url-util'
 import type { webIdOidcSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
 
-export const login = (
+export const login = async (
   idp: string,
   options: loginOptions
-): Promise<null | (() => any)> =>
-  getRegisteredRp(idp, options)
-    .then(rp => () => sendAuthRequest(rp, options))
-    .catch(err => {
-      console.warn('Error logging in with WebID-OIDC')
-      console.error(err)
-      return null
-    })
+): Promise<null | (() => any)> => {
+  try {
+    const rp = await getRegisteredRp(idp, options)
+    await saveAppHashFragment(options.storage)
+    return () => sendAuthRequest(rp, options)
+  } catch (err) {
+    console.warn('Error logging in with WebID-OIDC')
+    console.error(err)
+    return null
+  }
+}
 
 export const currentSession = async (
   storage: AsyncStorage = defaultStorage()
@@ -40,7 +43,7 @@ export const currentSession = async (
     if (!resp) {
       return null
     }
-    clearHashFragment()
+    await restoreAppHashFragment(storage)
     const { idp, idToken, accessToken, clientId, sessionKey } = resp
     return {
       authType: 'WebID-OIDC',
@@ -134,6 +137,23 @@ const sendAuthRequest = async (
   const url = await rp.createRequest({ redirect_uri: callbackUri }, data)
   await updateStorage(storage, () => data)
   return navigateTo(url)
+}
+
+async function saveAppHashFragment(store): Promise<void> {
+  await updateStorage(store, data => ({
+    ...data,
+    appHashFragment: window.location.hash
+  }))
+}
+
+async function restoreAppHashFragment(store): Promise<void> {
+  let appHashFragment
+  await updateStorage(store, data => {
+    appHashFragment = data.appHashFragment
+    delete data.appHashFragment
+    return data
+  })
+  window.location.hash = appHashFragment
 }
 
 /**

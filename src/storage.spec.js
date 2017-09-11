@@ -1,4 +1,3 @@
-/* global expect */
 /* eslint-env jest */
 
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
