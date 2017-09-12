@@ -139,22 +139,18 @@ const sendAuthRequest = async (
   return navigateTo(url)
 }
 
-async function saveAppHashFragment(store): Promise<void> {
-  await updateStorage(store, data => ({
+const saveAppHashFragment = (store: AsyncStorage): Promise<any> =>
+  updateStorage(store, data => ({
     ...data,
     appHashFragment: window.location.hash
   }))
-}
 
-async function restoreAppHashFragment(store): Promise<void> {
-  let appHashFragment
-  await updateStorage(store, data => {
-    appHashFragment = data.appHashFragment
+const restoreAppHashFragment = (store: AsyncStorage): Promise<any> =>
+  updateStorage(store, data => {
+    window.location.hash = data.appHashFragment
     delete data.appHashFragment
     return data
   })
-  window.location.hash = appHashFragment
-}
 
 /**
  * Answers whether a HTTP response requires WebID-OIDC authentication.
