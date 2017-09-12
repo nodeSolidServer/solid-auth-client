@@ -1,10 +1,9 @@
-/* global expect */
 /* eslint-env jest */
 import { currentUrl, currentUrlNoParams } from './url-util'
 
 describe('currentUrl', () => {
   it('returns the current url when window.location is available', () => {
-    expect(currentUrl()).toBe('https://app.biz/page?foo=bar#more-params')
+    expect(currentUrl()).toBe('https://app.biz/page?foo=bar#the-hash-fragment')
   })
 })
 

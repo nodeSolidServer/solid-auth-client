@@ -82,7 +82,7 @@
     "webpack-dev-server": "^2.6.1"
   },
   "jest": {
-    "testURL": "https://app.biz/page?foo=bar#more-params",
+    "testURL": "https://app.biz/page?foo=bar#the-hash-fragment",
     "collectCoverage": true,
     "coveragePathIgnorePatterns": [
       "demo",

@@ -6,22 +6,25 @@ import RelyingParty from '@trust/oidc-rp'
 import PoPToken from '@trust/oidc-rp/lib/PoPToken'
 
 import type { loginOptions } from './api'
-import { currentUrl, clearHashFragment, navigateTo } from './url-util'
+import { currentUrl, navigateTo } from './url-util'
 import type { webIdOidcSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
 
-export const login = (
+export const login = async (
   idp: string,
   options: loginOptions
-): Promise<null | (() => any)> =>
-  getRegisteredRp(idp, options)
-    .then(rp => () => sendAuthRequest(rp, options))
-    .catch(err => {
-      console.warn('Error logging in with WebID-OIDC')
-      console.error(err)
-      return null
-    })
+): Promise<null | (() => any)> => {
+  try {
+    const rp = await getRegisteredRp(idp, options)
+    await saveAppHashFragment(options.storage)
+    return () => sendAuthRequest(rp, options)
+  } catch (err) {
+    console.warn('Error logging in with WebID-OIDC')
+    console.error(err)
+    return null
+  }
+}
 
 export const currentSession = async (
   storage: AsyncStorage = defaultStorage()
@@ -40,7 +43,7 @@ export const currentSession = async (
     if (!resp) {
       return null
     }
-    clearHashFragment()
+    await restoreAppHashFragment(storage)
     const { idp, idToken, accessToken, clientId, sessionKey } = resp
     return {
       authType: 'WebID-OIDC',
@@ -135,6 +138,19 @@ const sendAuthRequest = async (
   await updateStorage(storage, () => data)
   return navigateTo(url)
 }
+
+const saveAppHashFragment = (store: AsyncStorage): Promise<any> =>
+  updateStorage(store, data => ({
+    ...data,
+    appHashFragment: window.location.hash
+  }))
+
+const restoreAppHashFragment = (store: AsyncStorage): Promise<any> =>
+  updateStorage(store, data => {
+    window.location.hash = data.appHashFragment
+    delete data.appHashFragment
+    return data
+  })
 
 /**
  * Answers whether a HTTP response requires WebID-OIDC authentication.

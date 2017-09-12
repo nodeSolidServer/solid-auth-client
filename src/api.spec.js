@@ -1,5 +1,4 @@
 /* eslint-env jest */
-/* global expect */
 import fs from 'fs'
 import jwt from 'jsonwebtoken'
 import nock from 'nock'
@@ -298,7 +297,7 @@ describe('currentSession', () => {
       expect(session.idToken).toBe(expectedIdToken)
       verifySerializedKey(session.sessionKey)
       expect(await getStoredSession()).toEqual(session)
-      expect(window.location.hash).toBe('')
+      expect(window.location.hash).toBe('#the-hash-fragment')
     })
   })
 })
@@ -376,7 +375,7 @@ describe('logout', () => {
       expect(session.accessToken).toBe(expectedAccessToken)
       expect(session.idToken).toBe(expectedIdToken)
       verifySerializedKey(session.sessionKey)
-      expect(window.location.hash).toBe('')
+      expect(window.location.hash).toBe('#the-hash-fragment')
       const storedSession = await getStoredSession()
       expect(storedSession).toEqual(session)
       await logout()
