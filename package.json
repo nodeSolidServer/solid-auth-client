@@ -3,9 +3,12 @@
   "version": "0.5.1",
   "description": "Opaquely authenticates solid clients",
   "main": "lib/index.js",
+  "bin": "./bin/solid-auth-client.js",
   "files": [
-    "lib",
-    "dist-lib"
+    "bin",
+    "dist-lib",
+    "dist-popup",
+    "lib"
   ],
   "repository": "git@github.com:solid/solid-auth-client.git",
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
@@ -14,19 +17,20 @@
     "start:demo": "webpack-dev-server --env development --config=./webpack/webpack.demo.config.js",
     "start:popup": "webpack-dev-server --env development --config=./webpack/webpack.popup.config.js",
     "jest": "jest src",
-    "format": "prettier --parser flow --no-semi --single-quote --write '{src,demo,popup-app}/**/*.js'",
+    "format": "prettier --parser flow --no-semi --single-quote --write '{src,bin,demo,popup-app}/**/*.js'",
     "prelint": "yarn format",
-    "lint": "eslint '{src,demo,popup-app}/**/*.js'",
+    "lint": "eslint '{src,bin,demo,popup-app}/**/*.js'",
     "pretest": "flow && yarn lint",
     "test": "yarn jest",
     "test:dev": "yarn jest -- --watch",
     "test:debug": "node --debug-brk ./node_modules/.bin/jest --runInBand src",
     "coverage:report": "cat ./coverage/lcov.info | coveralls",
-    "build": "yarn build:lib && yarn build:lib:umd",
+    "build": "yarn build:lib && yarn build:lib:umd && yarn build:popup:template",
     "build:lib": "rm -rf lib && babel --ignore '**.spec.js' src -d lib",
     "build:lib:umd": "webpack --config=./webpack/webpack.lib.config.js -p",
     "build:demo": "webpack --config=./webpack/webpack.demo.config.js -p",
     "build:popup": "webpack --config=./webpack/webpack.popup.config.js -p && rm ./dist-popup/popup.bundle.js",
+    "build:popup:template": "cross-env APP_NAME='{{APP_NAME}}' yarn build:popup",
     "preversion": "yarn test",
     "postversion": "git push --follow-tags",
     "prepublishOnly": "yarn build"
@@ -34,6 +38,7 @@
   "dependencies": {
     "@trust/oidc-rp": "^0.4.3",
     "auth-header": "^0.3.1",
+    "commander": "^2.11.0",
     "isomorphic-fetch": "^2.2.1",
     "uuid": "^3.1.0"
   },
@@ -52,8 +57,8 @@
     "bootstrap": "^4.0.0-alpha.6",
     "clean-webpack-plugin": "^0.1.16",
     "coveralls": "^2.13.1",
+    "cross-env": "^5.0.5",
     "css-loader": "^0.28.4",
-    "dotenv-webpack": "^1.5.4",
     "eslint": "^4.5.0",
     "eslint-config-prettier": "^2.3.0",
     "eslint-config-standard": "^10.2.1",
@@ -85,6 +90,7 @@
     "testURL": "https://app.biz/page?foo=bar#the-hash-fragment",
     "collectCoverage": true,
     "coveragePathIgnorePatterns": [
+      "bin",
       "demo",
       "popup-app"
     ]

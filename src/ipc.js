@@ -91,7 +91,7 @@ export const client = (
     const responseListener = event => {
       const { data, origin } = event
       const resp = getResponse(data)
-      if (origin !== serverOrigin || !resp) {
+      if ((serverOrigin !== '*' && origin !== serverOrigin) || !resp) {
         return
       }
       if (resp.id !== reqId) {
@@ -114,7 +114,7 @@ export const client = (
   })
 }
 
-export const server = (childWindow: window, childOrigin: string) => (
+export const server = (clientWindow: window, clientOrigin: string) => (
   handle: handler
 ): Server => {
   const messageListener = async (event: MessageEvent) => {
@@ -123,29 +123,30 @@ export const server = (childWindow: window, childOrigin: string) => (
     if (!req) {
       return
     }
-    if (origin !== childOrigin) {
+    if (origin !== clientOrigin) {
       console.warn(
-        `SECURITY WARNING: solid-auth-client is listening for messages from ${childOrigin},` +
-          ` but received a message from ${origin}.`
+        `SECURITY WARNING: solid-auth-client is listening for messages from ${clientOrigin}, ` +
+          `but received a message from ${origin}.  Ignoring the message.`
       )
       return
     }
     const resp = await handle(req)
     if (resp) {
-      childWindow.postMessage(namespace(resp), childOrigin)
+      clientWindow.postMessage(namespace(resp), clientOrigin)
     }
   }
-  const s = {
+
+  const _server = {
     start: () => {
       window.addEventListener('message', messageListener)
-      return s
+      return _server
     },
     stop: () => {
       window.removeEventListener('message', messageListener)
-      return s
+      return _server
     }
   }
-  return s
+  return _server
 }
 
 export const combineHandlers = (...handlers: handler[]) => (

@@ -30,6 +30,7 @@ class IdpSelect extends React.Component {
   }
 
   handleSelectIdp = idp => async event => {
+    const { appOrigin } = this.props
     event.preventDefault()
     if (!window.opener) {
       console.warn('No parent window')
@@ -40,7 +41,7 @@ class IdpSelect extends React.Component {
       })
       return
     }
-    const request = client(window.opener, process.env.TRUSTED_APP_ORIGIN)
+    const request = client(window.opener, appOrigin)
     let loginOptions = await timeout(
       request({
         method: 'getLoginOptions',
@@ -61,7 +62,7 @@ class IdpSelect extends React.Component {
     }
     loginOptions = {
       ...loginOptions,
-      storage: postMessageStorage(window.opener, process.env.TRUSTED_APP_ORIGIN)
+      storage: postMessageStorage(window.opener, appOrigin)
     }
     const maybeSession = await login(idp.url, loginOptions)
     if (typeof maybeSession === 'object') {
@@ -73,11 +74,11 @@ class IdpSelect extends React.Component {
   }
 
   render() {
-    const { idps } = this.props
+    const { appName, idps } = this.props
     const { customIdp, enteringCustomIdp, error } = this.state
     return (
       <div>
-        <h1 className="center">Log in to {process.env.TRUSTED_APP_NAME}</h1>
+        <h1 className="center">Log in to {appName}</h1>
         {error && <Error error={error} />}
         <p className="copy-gentle center">Choose where you log in</p>
         {enteringCustomIdp ? (

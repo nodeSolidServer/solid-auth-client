@@ -11,7 +11,11 @@ const popupAppRequestHandler = (
   options: loginOptions,
   foundSessionCb: session => void
 ): handler =>
-  combineHandlers(storageHandler(store), loginHandler(options, foundSessionCb))
+  combineHandlers(
+    storageHandler(store),
+    loginHandler(options, foundSessionCb),
+    appOriginHandler
+  )
 
 export const storageHandler = (store: AsyncStorage) => (
   req: request
@@ -49,6 +53,13 @@ export const loginHandler = (
     default:
       return null
   }
+}
+
+export const appOriginHandler = (req: request): ?Promise<response> => {
+  const { id, method } = req
+  return method === 'getAppOrigin'
+    ? Promise.resolve({ id, ret: window.location.origin })
+    : null
 }
 
 export const startPopupServer = (

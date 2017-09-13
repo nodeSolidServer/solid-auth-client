@@ -1,19 +1,20 @@
 const CleanWebpackPlugin = require('clean-webpack-plugin')
-const DotenvPlugin = require('dotenv-webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
-const webpack = require('webpack')
+const { EnvironmentPlugin, HotModuleReplacementPlugin } = require('webpack')
 const path = require('path')
 
 const {
+  context,
   module: _module,
   externals,
   devtool
 } = require('./webpack.common.config')
 
-const outputDir = './docs'
+const outputDir = './dist-demo'
 
 module.exports = {
+  context,
   entry: {
     demo: './demo/index.js'
   },
@@ -30,18 +31,15 @@ module.exports = {
     }
   },
   plugins: [
-    new DotenvPlugin({
-      path: './.env.demo',
-      safe: './.env.demo.example'
-    }),
-    new CleanWebpackPlugin(['./docs']),
+    new EnvironmentPlugin(['POPUP_URI']),
+    new CleanWebpackPlugin([outputDir]),
     new HtmlWebpackPlugin({
       chunks: ['demo'],
       filename: 'demo.html',
       title: 'Solid Auth Client Demo'
     }),
     new HtmlWebpackInlineSourcePlugin(),
-    new webpack.HotModuleReplacementPlugin(outputDir)
+    new HotModuleReplacementPlugin(outputDir)
   ],
   devtool,
   devServer: {

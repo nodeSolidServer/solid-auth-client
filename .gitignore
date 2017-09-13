@@ -69,5 +69,5 @@ typings/
 lib
 dist-lib
 dist-popup
-.env.demo
-.env.popup
+dist-demo
+popup.html
