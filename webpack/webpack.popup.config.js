@@ -30,7 +30,7 @@ module.exports = {
     }
   },
   plugins: [
-    new EnvironmentPlugin(['TRUSTED_APP_NAME']),
+    new EnvironmentPlugin(['APP_NAME']),
     new CleanWebpackPlugin([outputDir]),
     new HtmlWebpackPlugin({
       template: 'popup-app/index.ejs',

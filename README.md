@@ -25,7 +25,10 @@ fetching resources with authenticated credentials.
 
 ### How do I get this?
 
-The simplest way to use this library is to install it via `npm` or `yarn`.  You can then use the ES6 module (`import { login, currentUser, logout } from 'solid-auth-client'`), or you can grab the transpiled UMD bundle from `node_modules/solid-auth-client/dist-lib/solid-auth-client.bundle.js`.
+The simplest way to use this library is to install it via `npm` or `yarn`.
+You can then use the ES6 module (`import { login, currentUser, logout } from
+'solid-auth-client'`), or you can grab the transpiled UMD bundle from
+`node_modules/solid-auth-client/dist-lib/solid-auth-client.bundle.js`.
 
 ## API
 
@@ -134,8 +137,8 @@ type session = webIdTlsSession | webIdOidcSession
 ## Using the popup login flow
 
 To use the popup login flow, you'll need a popup application running on a
-trusted domain which authenticates the user, handles redirects, and messages the
-authenticated session back to your application.
+trusted domain which authenticates the user, handles redirects, and messages
+the authenticated session back to your application.
 
 In order to tell the user they're logging into *your* app, you'll need to
 build a static popup bound to your application's name.
@@ -177,31 +180,11 @@ $ yarn test:dev # just run the tests in watch mode
 ### Building the demo app
 
 ```sh
-$ cp .env.demo.example .env.demo && $EDITOR .env.demo # configure the demo app
-$ yarn start:demo
+$ POPUP_URI='http://localhost:8081/popup.html' yarn start:demo
 ```
-
-#### Configuration
-
-The demo app is configurable via the `.env.demo` file.  The important fields are:
-
-- IDP_SELECT_URI: URI for the popup-based IDP select app.  When testing
-  locally, this will be something like 'http://localhost:XXXX/popup.html'
-- CALLBACK_URI: URI for the popup-based callback app.  When testing locally,
-  this will be something like 'http://localhost:XXXX/popup.html'
 
 ### Building the popup app
 
 ```sh
-$ cp .env.popup.example .env.popup && $EDITOR .env.popup # configure the popup app
-$ yarn start:popup
+$ APP_NAME='solid-auth-client demo' yarn start:popup
 ```
-
-#### Configuration
-
-The popup app is configurable via the `.env.popup` file.  The important fields are:
-
-- TRUSTED_APP_NAME: Name of the trusted application the popup is working on
-  behalf of.
-- TRUSTED_APP_ORIGIN: Origin of the trusted application the popup is working
-  on behalf of.

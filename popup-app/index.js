@@ -23,7 +23,7 @@ const idps = [
   }
 ]
 
-requestAppOrigin().then(appOrigin => {
+findAppOrigin().then(appOrigin => {
   ReactDOM.render(
     window.location.hash ? (
       <IdpCallback
@@ -34,14 +34,14 @@ requestAppOrigin().then(appOrigin => {
       <IdpSelect
         idps={idps}
         appOrigin={appOrigin}
-        appName={process.env.TRUSTED_APP_NAME}
+        appName={process.env.APP_NAME}
       />
     ),
     document.getElementById('app-container')
   )
 })
 
-async function requestAppOrigin() {
+async function findAppOrigin() {
   let appOrigin = await getStoredAppOrigin()
   if (appOrigin) {
     return appOrigin
@@ -51,17 +51,18 @@ async function requestAppOrigin() {
     method: 'getAppOrigin',
     args: []
   })
-  storeAppOrigin(appOrigin)
+  await storeAppOrigin(appOrigin)
   return appOrigin
 }
 
-function getStoredAppOrigin() {
-  return getData(sessionStorage).then(data => data.appOrigin)
+async function getStoredAppOrigin() {
+  const { appOrigin } = await getData(sessionStorage)
+  return appOrigin
 }
 
 function storeAppOrigin(origin) {
   return updateStorage(sessionStorage, data => ({
     ...data,
     appOrigin: origin
-  })).appOrigin
+  }))
 }

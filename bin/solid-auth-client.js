@@ -10,26 +10,25 @@ const { version } = require('../package.json')
 // helpers
 
 function ns(fn) {
-  return function() {
-    fn.apply(
-      null,
-      ['[solid-auth-client]'].concat(Array.prototype.slice.call(arguments))
-    )
+  return function(...args) {
+    fn('[solid-auth-client]', ...args)
   }
 }
 
-const log = ns(console.log.bind(console))
-const warn = ns(console.log.bind(console))
+const log = ns(console.log)
+const warn = ns(console.log)
+
+const issueUrl = 'https://github.com/solid/solid-auth-client/issues'
 
 // CLI
 
 program
   .version(version)
-  .command('generate-popup <trusted-name> [filename]')
+  .command('generate-popup [app-name] [filename]')
   .description(
     'build a secure login app named for your application.  ' +
-      '<trusted-name> is required and is the name of your app.  ' +
-      '[filename] defaults to "popup.html".'
+      '[app-name] is the name of your app. (default "the application")  ' +
+      '[filename] is the name of the popup html file. (default "popup.html").'
   )
   .action(generatePopup)
 
@@ -42,8 +41,8 @@ if (!process.argv.slice(2).length) {
 
 // generatePopup command
 
-function generatePopup(trustedName, filename = 'popup.html') {
-  log(`Generating "${filename}" with trusted app name "${trustedName}".`)
+function generatePopup(appName = 'the application', filename = 'popup.html') {
+  log(`Generating "${filename}" with app name "${appName}".`)
 
   const templateFilename = path.resolve(
     __dirname,
@@ -51,7 +50,6 @@ function generatePopup(trustedName, filename = 'popup.html') {
     'dist-popup/popup.html'
   )
   if (!fs.existsSync(templateFilename)) {
-    const issueUrl = 'https://github.com/solid/solid-auth-client/issues'
     warn(
       `Could not find popup template. Expected it to be located at "${templateFilename}".  Please file a bug at ${issueUrl}`
     )
@@ -62,14 +60,14 @@ function generatePopup(trustedName, filename = 'popup.html') {
   try {
     popupTemplateBuffer = fs.readFileSync(templateFilename)
   } catch (err) {
-    warn(`Could not read the popup template`)
+    warn(`Could not read the popup template.  Please file a bug at ${issueUrl}`)
     console.error(err)
     return
   }
 
   const popupBuffer = popupTemplateBuffer
     .toString()
-    .replace(/{{TRUSTED_APP_NAME}}/g, trustedName)
+    .replace(/{{APP_NAME}}/g, appName)
 
   try {
     fs.writeFileSync(filename, popupBuffer)

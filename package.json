@@ -30,7 +30,7 @@
     "build:lib:umd": "webpack --config=./webpack/webpack.lib.config.js -p",
     "build:demo": "webpack --config=./webpack/webpack.demo.config.js -p",
     "build:popup": "webpack --config=./webpack/webpack.popup.config.js -p && rm ./dist-popup/popup.bundle.js",
-    "build:popup:template": "cross-env TRUSTED_APP_NAME='{{TRUSTED_APP_NAME}}' yarn build:popup",
+    "build:popup:template": "cross-env APP_NAME='{{APP_NAME}}' yarn build:popup",
     "preversion": "yarn test",
     "postversion": "git push --follow-tags",
     "prepublishOnly": "yarn build"

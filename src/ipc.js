@@ -125,8 +125,8 @@ export const server = (clientWindow: window, clientOrigin: string) => (
     }
     if (origin !== clientOrigin) {
       console.warn(
-        `SECURITY WARNING: solid-auth-client is listening for messages from ${clientOrigin},` +
-          ` but received a message from ${origin}.`
+        `SECURITY WARNING: solid-auth-client is listening for messages from ${clientOrigin}, ` +
+          `but received a message from ${origin}.  Ignoring the message.`
       )
       return
     }

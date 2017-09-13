@@ -57,12 +57,9 @@ export const loginHandler = (
 
 export const appOriginHandler = (req: request): ?Promise<response> => {
   const { id, method } = req
-  switch (method) {
-    case 'getAppOrigin':
-      return Promise.resolve({ id, ret: window.location.origin })
-    default:
-      return null
-  }
+  return method === 'getAppOrigin'
+    ? Promise.resolve({ id, ret: window.location.origin })
+    : null
 }
 
 export const startPopupServer = (
