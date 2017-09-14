@@ -59,8 +59,7 @@ way.  Then, call `currentSession` when the user gives consent and lands back
 in your app.
 
 If you're using an auth flow with redirections, and don't want to take the
-user away from your app, consider using the [popup workflow](#Using-the-popup-
-login-flow).
+user away from your app, consider using the [popup workflow](#Logging-in-via-the-popup-app).
 
 If there's an error during the auth handshake, the Promise will reject.
 
@@ -80,7 +79,7 @@ popupLogin({
 ```
 
 Logs the user in using a popup window so that your app doesn't lose state.
-See [Using the popup login flow](#Using-the-popup-login-flow).
+See [Logging in via the popup app](#Logging-in-via-the-popup-app).
 
 ### `currentSession`
 
@@ -134,9 +133,9 @@ type webIdOidcSession = {
 type session = webIdTlsSession | webIdOidcSession
 ```
 
-## Using the popup login flow
+## Logging in via the popup app
 
-To use the popup login flow, you'll need a popup application running on a
+To log in with a popup window, you'll need a popup application running on a
 trusted domain which authenticates the user, handles redirects, and messages
 the authenticated session back to your application.
 
@@ -144,6 +143,8 @@ In order to tell the user they're logging into *your* app, you'll need to
 build a static popup bound to your application's name.
 
 Keeping this in mind, it's pretty simple to build a popup for your app!
+
+### Building the popup
 
 0. Make sure you've got the `solid-auth-client` package installed locally.
 ```sh
@@ -156,7 +157,7 @@ $ solid-auth-client generate-popup "My App's Name" # [my-app-popup.html]
 ```
 
 2. If your popup is deployed to e.g. 'https://localhost:8080/popup.html',
-call `popupLogin('https://localhost:8080/popup.html')`.
+call `popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
 
 ## Developing
 
@@ -177,13 +178,17 @@ $ yarn test # run the code formatter, linter, and test suite
 $ yarn test:dev # just run the tests in watch mode
 ```
 
-### Building the demo app
+### Acceptance Testing
+
+You can test how `solid-auth-client` operates within an app by running the demo app.
+
+#### Running the demo development server
 
 ```sh
 $ POPUP_URI='http://localhost:8081/popup.html' yarn start:demo
 ```
 
-### Building the popup app
+#### Running the popup development server
 
 ```sh
 $ APP_NAME='solid-auth-client demo' yarn start:popup
