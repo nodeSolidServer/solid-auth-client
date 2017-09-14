@@ -7,6 +7,7 @@ import { getData, updateStorage } from '../src/storage'
 
 import IdpCallback from './components/IdpCallback'
 import IdpSelect from './components/IdpSelect'
+import NoParent from './components/NoParent'
 
 import './index.css'
 
@@ -24,24 +25,29 @@ const idps = [
 ]
 
 findAppOrigin().then(appOrigin => {
-  ReactDOM.render(
-    window.location.hash ? (
+  const appName = process.env.APP_NAME
+
+  let element
+  if (!appOrigin) {
+    element = <NoParent appName={appName} />
+  } else if (window.location.hash) {
+    element = (
       <IdpCallback
         appOrigin={appOrigin}
         afterLoggedIn={() => setTimeout(window.close, 750)}
       />
-    ) : (
-      <IdpSelect
-        idps={idps}
-        appOrigin={appOrigin}
-        appName={process.env.APP_NAME}
-      />
-    ),
-    document.getElementById('app-container')
-  )
+    )
+  } else {
+    element = <IdpSelect idps={idps} appOrigin={appOrigin} appName={appName} />
+  }
+
+  ReactDOM.render(element, document.getElementById('app-container'))
 })
 
 async function findAppOrigin() {
+  if (!window.opener) {
+    return null
+  }
   let appOrigin = await getStoredAppOrigin()
   if (appOrigin) {
     return appOrigin
