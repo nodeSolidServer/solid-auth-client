@@ -78,7 +78,9 @@ class IdpSelect extends React.Component {
     const { customIdp, enteringCustomIdp, error } = this.state
     return (
       <div>
-        <h1 className="center">Log in to {appName}</h1>
+        <h1 className="center">
+          Log in to <span className="app-name">{appName}</span>
+        </h1>
         {error && <Error error={error} />}
         <p className="copy-gentle center">Choose where you log in</p>
         {enteringCustomIdp ? (
