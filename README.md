@@ -163,8 +163,8 @@ call `popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
 
 ### Prerequisites
 
-This library assumes you have [node](https://nodejs.org/en/) >= v7.10.1  and
-[yarn](https://yarnpkg.com/) 0.24.6 installed.  It may work with earlier
+This library assumes you have [node](https://nodejs.org/en/) >= v7.10.1
+installed. It may work with earlier
 versions, but that hasn't been tested thus far.
 
 ### Setting up the development environment
@@ -172,10 +172,9 @@ versions, but that hasn't been tested thus far.
 ```sh
 $ git clone https://github.com/solid/solid-auth-client.git
 $ cd solid-auth-client
-$ yarn
-$ yarn build # build the library and UMD bundle
-$ yarn test # run the code formatter, linter, and test suite
-$ yarn test:dev # just run the tests in watch mode
+$ npm install
+$ npm run test     # run the code formatter, linter, and test suite
+$ npm run test:dev # just run the tests in watch mode
 ```
 
 ### Acceptance Testing
@@ -185,11 +184,11 @@ You can test how `solid-auth-client` operates within an app by running the demo 
 #### Running the demo development server
 
 ```sh
-$ POPUP_URI='http://localhost:8081/popup.html' yarn start:demo
+$ POPUP_URI='http://localhost:8081/popup.html' npm run start:demo
 ```
 
 #### Running the popup development server
 
 ```sh
-$ APP_NAME='solid-auth-client demo' yarn start:popup
+$ APP_NAME='solid-auth-client demo' npm run start:popup
 ```
