@@ -1,7 +1,7 @@
 // @flow
 import React from 'react'
 
-export default class TextForm extends React.Component {
+export default class TextForm extends React.Component<Object, Object> {
   props: {
     label: string,
     placeholder: string,
@@ -13,8 +13,8 @@ export default class TextForm extends React.Component {
     input: ''
   }
 
-  updateInput = (event: Event & { target: EventTarget }) =>
-    this.setState({ input: event.target.value })
+  updateInput = (event: SyntheticEvent<HTMLInputElement>) =>
+    this.setState({ input: event.currentTarget.value })
 
   handle = (handler: (input: string) => any) => (event: Event) => {
     event.preventDefault()

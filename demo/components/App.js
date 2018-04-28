@@ -10,7 +10,7 @@ import Footer from './Footer'
 import type { session } from '../../src/session'
 import { popupLogin, logout, currentSession } from '../../src/'
 
-export default class App extends React.Component {
+export default class App extends React.Component<Object, Object> {
   state: { session: ?session } = { session: null }
 
   saveCredentials = (session: session): void => {

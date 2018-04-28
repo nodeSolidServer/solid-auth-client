@@ -75,7 +75,7 @@ export const startPopupServer = (
         )
       )
     }
-    const popupServer = server(childWindow, originOf(options.popupUri))(
+    const popupServer = server(childWindow, originOf(options.popupUri || ''))(
       popupAppRequestHandler(store, options, (session: session) => {
         popupServer.stop()
         resolve(session)

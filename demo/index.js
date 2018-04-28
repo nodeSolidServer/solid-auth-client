@@ -8,6 +8,12 @@ import App from './components/App'
 
 import * as SolidAuthClient from '../src'
 
+declare var module: {
+  hot: {
+    accept(path: string, callback: () => void): void
+  }
+}
+
 // for demo/debug purposes
 window.SolidAuthClient = SolidAuthClient
 console.log('Welcome to the solid-auth-client demo!')

@@ -9,7 +9,7 @@ type profile = {
   'foaf:name': ?{ '@value': string }
 }
 
-export default class PersonalInfo extends React.Component {
+export default class PersonalInfo extends React.Component<Object, Object> {
   props: { session: ?session }
 
   defaultProps = {
