@@ -36,8 +36,8 @@ export type response = {
 export type handler = request => ?Promise<response>
 
 export interface Server {
-  start: () => Server,
-  stop: () => Server
+  start: () => Server;
+  stop: () => Server;
 }
 
 const NAMESPACE = 'solid-auth-client'
@@ -75,9 +75,9 @@ const getRequest = (eventData: mixed): ?request => {
   }
   const { id, method, args } = req
   return id != null &&
-  typeof id === 'string' &&
-  typeof method === 'string' &&
-  Array.isArray(args)
+    typeof id === 'string' &&
+    typeof method === 'string' &&
+    Array.isArray(args)
     ? { id, method, args }
     : null
 }

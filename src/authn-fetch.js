@@ -3,7 +3,7 @@
 import 'isomorphic-fetch'
 
 import { getHost, updateHostFromResponse } from './host'
-import type { session } from './session'
+import type { Session } from './session'
 import { getSession } from './session'
 import type { AsyncStorage } from './storage'
 import * as WebIdOidc from './webid-oidc'
@@ -44,7 +44,7 @@ function shouldShareCredentials(
 }
 
 const fetchWithCredentials = async (
-  session: session,
+  session: Session,
   url: RequestInfo,
   options?: Object
 ): Promise<Response> => {

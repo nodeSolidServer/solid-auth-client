@@ -16,7 +16,9 @@ export const hostNameFromRequestInfo = (url: RequestInfo): string => {
   const _url =
     url instanceof URL
       ? url
-      : url instanceof Request ? new URL(url.url) : new URL(url)
+      : url instanceof Request
+        ? new URL(url.url)
+        : new URL(url)
   return _url.host
 }
 
