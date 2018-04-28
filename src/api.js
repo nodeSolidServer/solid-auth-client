@@ -2,7 +2,7 @@
 /* global RequestInfo, Response */
 import { authnFetch } from './authn-fetch'
 import { openIdpSelector, startPopupServer } from './popup'
-import type { session } from './session'
+import type { Session } from './session'
 import { getSession, saveSession, clearSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
@@ -30,8 +30,8 @@ export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
 
 async function firstSession(
   storage: AsyncStorage,
-  authFns: Array<() => Promise<?session>>
-): Promise<?session> {
+  authFns: Array<() => Promise<?Session>>
+): Promise<?Session> {
   if (authFns.length === 0) {
     return null
   }
@@ -51,7 +51,7 @@ type redirectFn = () => any
 export async function login(
   idp: string,
   options: loginOptions
-): Promise<?session | ?redirectFn> {
+): Promise<?Session | ?redirectFn> {
   options = { ...defaultLoginOptions(), ...options }
   const webIdTlsSession = await WebIdTls.login(idp)
   if (webIdTlsSession) {
@@ -61,7 +61,7 @@ export async function login(
   return webIdOidcLoginRedirectFn
 }
 
-export async function popupLogin(options: loginOptions): Promise<?session> {
+export async function popupLogin(options: loginOptions): Promise<?Session> {
   if (!options.popupUri) {
     throw new Error('Must provide options.popupUri')
   }
@@ -76,7 +76,7 @@ export async function popupLogin(options: loginOptions): Promise<?session> {
 
 export async function currentSession(
   storage: AsyncStorage = defaultStorage()
-): Promise<?session> {
+): Promise<?Session> {
   const session = await getSession(storage)
   if (session) {
     return session

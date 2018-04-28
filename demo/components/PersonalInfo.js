@@ -3,24 +3,24 @@ import 'isomorphic-fetch'
 import React from 'react'
 
 import { fetch } from '../../src/'
-import type { session } from '../../src/session'
+import type { Session } from '../../src/session'
 
-type profile = {
+type Profile = {
   'foaf:name': ?{ '@value': string }
 }
 
 export default class PersonalInfo extends React.Component<Object, Object> {
-  props: { session: ?session }
+  props: { session: ?Session }
 
   defaultProps = {
     session: null
   }
 
-  state: { profile: profile } = {
+  state: { profile: Profile } = {
     profile: { 'foaf:name': null }
   }
 
-  fetchProfile = (webId: string): Promise<profile> => {
+  fetchProfile = (webId: string): Promise<Profile> => {
     const query = `
       @prefix foaf http://xmlns.com/foaf/0.1/
       ${webId} { foaf:name }
@@ -31,9 +31,9 @@ export default class PersonalInfo extends React.Component<Object, Object> {
     }).then(resp => resp.json())
   }
 
-  saveProfile = (profile: profile): void => this.setState({ profile })
+  saveProfile = (profile: Profile): void => this.setState({ profile })
 
-  componentWillReceiveProps(props: { session: ?session }) {
+  componentWillReceiveProps(props: { session: ?Session }) {
     if (props.session) {
       this.fetchProfile(props.session.webId).then(this.saveProfile)
     }
