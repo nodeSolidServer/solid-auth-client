@@ -13,8 +13,8 @@ import './index.css'
 
 const idps = [
   {
-    displayName: 'Databox',
-    url: 'https://databox.me/',
+    displayName: 'Solid Community',
+    url: 'https://solid.community/',
     iconUrl: 'https://solidtest.space/favicon.ico'
   },
   {
