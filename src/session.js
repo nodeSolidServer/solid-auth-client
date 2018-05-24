@@ -20,16 +20,16 @@ export type webIdOidcSession = {
   sessionKey: string
 }
 
-export type session = webIdTlsSession | webIdOidcSession
+export type Session = webIdTlsSession | webIdOidcSession
 
-export async function getSession(storage: AsyncStorage): Promise<?session> {
+export async function getSession(storage: AsyncStorage): Promise<?Session> {
   const data = await getData(storage)
   return data.session || null
 }
 
 export function saveSession(
   storage: AsyncStorage
-): (session: session) => Promise<session> {
+): (session: Session) => Promise<Session> {
   return async session => {
     const data = await updateStorage(storage, data => ({ ...data, session }))
     return data.session

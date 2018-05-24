@@ -2,14 +2,14 @@
 import type { loginOptions } from './api'
 import type { handler, request, response } from './ipc'
 import { combineHandlers, server } from './ipc'
-import type { session } from './session'
+import type { Session } from './session'
 import type { AsyncStorage } from './storage'
 import { originOf } from './url-util'
 
 const popupAppRequestHandler = (
   store: AsyncStorage,
   options: loginOptions,
-  foundSessionCb: session => void
+  foundSessionCb: Session => void
 ): handler =>
   combineHandlers(
     storageHandler(store),
@@ -35,7 +35,7 @@ export const storageHandler = (store: AsyncStorage) => (
 
 export const loginHandler = (
   options: loginOptions,
-  foundSessionCb: session => void
+  foundSessionCb: Session => void
 ) => (req: request): ?Promise<response> => {
   const { id, method, args } = req
   switch (method) {
@@ -66,7 +66,7 @@ export const startPopupServer = (
   store: AsyncStorage,
   childWindow: window,
   options: loginOptions
-): Promise<?session> => {
+): Promise<?Session> => {
   return new Promise((resolve, reject) => {
     if (!(options.popupUri && options.callbackUri)) {
       return reject(
@@ -75,8 +75,8 @@ export const startPopupServer = (
         )
       )
     }
-    const popupServer = server(childWindow, originOf(options.popupUri))(
-      popupAppRequestHandler(store, options, (session: session) => {
+    const popupServer = server(childWindow, originOf(options.popupUri || ''))(
+      popupAppRequestHandler(store, options, (session: Session) => {
         popupServer.stop()
         resolve(session)
       })

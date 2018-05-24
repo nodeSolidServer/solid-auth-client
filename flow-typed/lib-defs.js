@@ -1,19 +1,19 @@
 declare module 'auth-header' {
-  declare export function parse(wwwAuthHeader: string): object
+  declare export function parse(wwwAuthHeader: string): Object
 }
 
 declare module '@trust/oidc-rp' {
   declare export default class RelyingParty {
     provider: { url: string },
-    static from(data: object): Promise<RelyingParty>,
+    static from(data: Object): Promise<RelyingParty>,
     static register(
       issuer: string,
-      registration: object,
-      options: object
+      registration: Object,
+      options: Object
     ): Promise<RelyingParty>,
-    createRequest(options: object, storage: object): Promise<string>,
+    createRequest(options: Object, storage: Object): Promise<string>,
     serialize(): string,
-    validateResponse(response: string, session: object): Promise<object>,
+    validateResponse(response: string, session: Object): Promise<Object>,
     logout(): Promise<void>
   }
 }

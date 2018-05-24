@@ -1,9 +1,17 @@
 {
-  "presets": ["flow", "react", "es2015"],
+  "presets": [
+    ["flow"],
+    ["react"],
+    ["env", {
+      "targets": {
+        "browsers": ["last 2 versions"],
+        "node": "8",
+      }
+    }]
+  ],
   "plugins": [
     "transform-runtime",
     "transform-object-rest-spread",
     "transform-class-properties",
-    "transform-async-to-generator"
   ]
 }

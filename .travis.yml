@@ -2,7 +2,9 @@ language: node_js
 node_js:
   - node
 script:
-  - yarn test
+  - npm test
 after_success:
-  - yarn coverage:report
-cache: yarn
+  - npm run coverage:report
+cache:
+  directories:
+    - node_modules

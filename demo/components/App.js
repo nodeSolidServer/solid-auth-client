@@ -7,13 +7,13 @@ import Nav from './Nav'
 import PersonalInfo from './PersonalInfo'
 import Footer from './Footer'
 
-import type { session } from '../../src/session'
+import type { Session } from '../../src/session'
 import { popupLogin, logout, currentSession } from '../../src/'
 
-export default class App extends React.Component {
-  state: { session: ?session } = { session: null }
+export default class App extends React.Component<Object, Object> {
+  state: { session: ?Session } = { session: null }
 
-  saveCredentials = (session: session): void => {
+  saveCredentials = (session: Session): void => {
     this.setState({ session })
   }
 

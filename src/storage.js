@@ -4,9 +4,9 @@ import { client } from './ipc'
 export const NAMESPACE = 'solid-auth-client'
 
 export interface AsyncStorage {
-  getItem(key: string): Promise<?string>,
-  setItem(key: string, val: string): Promise<void>,
-  removeItem(key: string): Promise<void>
+  getItem(key: string): Promise<?string>;
+  setItem(key: string, val: string): Promise<void>;
+  removeItem(key: string): Promise<void>;
 }
 
 export type Storage = Storage | AsyncStorage
