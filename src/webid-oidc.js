@@ -61,9 +61,14 @@ export const currentSession = async (
   }
 }
 
-export const logout = (storage: AsyncStorage): Promise<void> =>
+export const logout = (storage: AsyncStorage, idp: string): Promise<void> =>
   getStoredRp(storage)
     .then(rp => (rp ? rp.logout() : undefined))
+    .catch(err => {
+      console.warn('Error logging out of the WebID-OIDC session')
+      console.error(err)
+    })
+    .then(x => (fetch(idp + '/logout', { method: 'GET', credentials: 'include'})))
     .catch(err => {
       console.warn('Error logging out of the WebID-OIDC session')
       console.error(err)

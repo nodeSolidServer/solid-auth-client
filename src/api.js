@@ -94,7 +94,7 @@ export async function logout(
   switch (session.authType) {
     case 'WebID-OIDC':
       try {
-        await WebIdOidc.logout(storage)
+        await WebIdOidc.logout(storage, session.idp)
       } catch (err) {
         console.warn('Error logging out:')
         console.error(err)
