@@ -36,7 +36,7 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@trust/oidc-rp": "git+https://github.com/OpenLinkSoftware/oidc-rp.git#openlink",
+    "@trust/oidc-rp": "^0.4.3",
     "auth-header": "^0.3.1",
     "commander": "^2.11.0",
     "isomorphic-fetch": "^2.2.1",
