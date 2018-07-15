@@ -5,7 +5,6 @@ import type { AsyncStorage } from './storage'
 import { getData, updateStorage } from './storage'
 import type { Auth } from './types'
 import * as WebIdOidc from './webid-oidc'
-import * as WebIdTls from './webid-tls'
 
 export type host = {
   authType: Auth,
@@ -57,8 +56,6 @@ export function updateHostFromResponse(
     let authType
     if (WebIdOidc.requiresAuth(resp)) {
       authType = 'WebID-OIDC'
-    } else if (WebIdTls.requiresAuth(resp)) {
-      authType = 'WebID-TLS'
     } else {
       authType = null
     }

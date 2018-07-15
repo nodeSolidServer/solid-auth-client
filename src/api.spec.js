@@ -103,28 +103,10 @@ describe('login', () => {
     expect(await getStoredSession()).toBeNull()
   })
 
-  describe('WebID-TLS', () => {
-    it('can log in with WebID-TLS', async () => {
-      expect.assertions(2)
-      const webId = 'https://localhost/profile#me'
-      nock('https://localhost/')
-        .head('/')
-        .reply(200, '', { user: webId })
-
-      const session = await login('https://localhost')
-      expect(session.webId).toBe(webId)
-      expect(await getStoredSession()).toEqual(session)
-    })
-  })
-
   describe('WebID-OIDC', () => {
     it('can log in with WebID-OIDC', async () => {
       expect.assertions(6)
       nock('https://localhost/')
-        // try to log in with WebID-TLS
-        .head('/')
-        .reply(200)
-        // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
         .reply(200, oidcConfiguration)
         .get('/jwks')
@@ -149,10 +131,6 @@ describe('login', () => {
     it('uses the provided redirect uri', async () => {
       expect.assertions(6)
       nock('https://localhost')
-        // try to log in with WebID-TLS
-        .head('/')
-        .reply(200)
-        // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
         .reply(200, oidcConfiguration)
         .get('/jwks')
@@ -179,10 +157,6 @@ describe('login', () => {
     it('strips the hash fragment from the current URL when providing the default redirect URL', async () => {
       expect.assertions(6)
       nock('https://localhost/')
-        // try to log in with WebID-TLS
-        .head('/')
-        .reply(200)
-        // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
         .reply(200, oidcConfiguration)
         .get('/jwks')
@@ -244,10 +218,6 @@ describe('currentSession', () => {
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
       nock('https://localhost/')
-        // try to log in with WebID-TLS
-        .head('/')
-        .reply(200)
-        // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
         .reply(200, oidcConfiguration)
         .get('/jwks')
@@ -299,19 +269,6 @@ describe('currentSession', () => {
 })
 
 describe('logout', () => {
-  describe('WebID-TLS', () => {
-    it('just removes the current session from the store', async () => {
-      expect.assertions(1)
-      await saveSession(window.localStorage)({
-        authType: 'WebID-TLS',
-        idp: 'https://localhost',
-        webId: 'https://person.me/#me'
-      })
-      await logout()
-      expect(await getStoredSession()).toBeNull()
-    })
-  })
-
   describe('WebID-OIDC', () => {
     it('hits the end_session_endpoint and clears the current session from the store', async () => {
       expect.assertions(7)
@@ -319,10 +276,6 @@ describe('logout', () => {
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
       nock('https://localhost/')
-        // try to log in with WebID-TLS
-        .head('/')
-        .reply(200)
-        // no user header, so try to use WebID-OIDC
         .get('/.well-known/openid-configuration')
         .reply(200, oidcConfiguration)
         .get('/jwks')
@@ -551,30 +504,6 @@ describe('fetch', () => {
 
       const resp = await fetch('https://third-party.com/resource')
       expect(resp.status).toBe(200)
-    })
-
-    it('does not send credentials to a familiar domain when that domain uses a different auth type', async () => {
-      expect.assertions(1)
-      await saveSession(window.localStorage)({
-        authType: 'WebID-OIDC',
-        idp: 'https://localhost',
-        webId: 'https://person.me/#me',
-        accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi',
-        sessionKey
-      })
-
-      await saveHost(window.localStorage)({
-        url: 'third-party.com',
-        authType: 'WebID-TLS'
-      })
-
-      nock('https://third-party.com')
-        .get('/resource')
-        .reply(401)
-
-      const resp = await fetch('https://third-party.com/resource')
-      expect(resp.status).toBe(401)
     })
   })
 })

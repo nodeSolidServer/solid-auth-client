@@ -96,7 +96,6 @@ describe('loginHandler', () => {
     const mockCallback = jest.fn()
     const handler = loginHandler(options, mockCallback)
     const session = {
-      authType: 'WebID-TLS',
       idp: 'https://example.com',
       webId: 'https://me.example.com/profile#me'
     }
@@ -167,7 +166,6 @@ describe('startPopupServer', () => {
     expect.assertions(1)
     const store = defaultStorage()
     const session = {
-      authType: 'WebIdTls',
       idp: 'https://localhost',
       webId: 'https://localhost/profile#me'
     }

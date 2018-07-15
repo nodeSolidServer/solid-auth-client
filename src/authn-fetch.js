@@ -51,7 +51,6 @@ const fetchWithCredentials = async (
   switch (session.authType) {
     case 'WebID-OIDC':
       return WebIdOidc.fetchWithCredentials(session)(url, options)
-    case 'WebID-TLS':
     default:
       return fetch(url, options)
   }

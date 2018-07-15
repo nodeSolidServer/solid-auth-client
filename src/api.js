@@ -7,7 +7,6 @@ import { getSession, saveSession, clearSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
 import { currentUrlNoParams } from './url-util'
-import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
 
 export type loginOptions = {
@@ -51,10 +50,6 @@ export async function login(
   options: loginOptions
 ): Promise<?Session> {
   options = { ...defaultLoginOptions(), ...options }
-  const webIdTlsSession = await WebIdTls.login(idp)
-  if (webIdTlsSession) {
-    return saveSession(options.storage)(webIdTlsSession)
-  }
   const webIdOidcLogin = await WebIdOidc.login(idp, options)
   return webIdOidcLogin
 }
@@ -98,7 +93,6 @@ export async function logout(
         console.error(err)
       }
       break
-    case 'WebID-TLS':
     default:
       break
   }
