@@ -46,19 +46,17 @@ async function firstSession(
   return firstSession(storage, authFns.slice(1))
 }
 
-type redirectFn = () => any
-
 export async function login(
   idp: string,
   options: loginOptions
-): Promise<?Session | ?redirectFn> {
+): Promise<?Session> {
   options = { ...defaultLoginOptions(), ...options }
   const webIdTlsSession = await WebIdTls.login(idp)
   if (webIdTlsSession) {
     return saveSession(options.storage)(webIdTlsSession)
   }
-  const webIdOidcLoginRedirectFn = await WebIdOidc.login(idp, options)
-  return webIdOidcLoginRedirectFn
+  const webIdOidcLogin = await WebIdOidc.login(idp, options)
+  return webIdOidcLogin
 }
 
 export async function popupLogin(options: loginOptions): Promise<?Session> {

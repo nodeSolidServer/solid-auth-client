@@ -42,7 +42,7 @@ functions.  You don't have to know anything about flow.*
 login (idp: string, {
   callbackUri?: string,
   storage?: Storage
-}): Promise<?session | ?redirectFn>
+}): Promise<?session>
 ```
 
 Authenticates the user with their IDP (identity provider) and promises an object
@@ -51,15 +51,12 @@ containing the user's session.
 When the user is successfully authenticated, the session will be non-null.  When
 the user is not authenticated by the IDP, the session will be `null`.
 
-Auth flows like OIDC require the user to give consent on their identity
-provider.  In such cases, this function will return _a function which
-redirects the user to their auth provider_, so as not to break the promise.
-All you have to do is call that function in order to send the user on their
-way.  Then, call `currentSession` when the user gives consent and lands back
-in your app.
+Auth flows like OIDC require the user to give consent on their identity provider.
+In such cases, this function will _redirect the user to their auth provider_.
+Then, call `currentSession` when the user gives consent and lands back in your app.
 
-If you're using an auth flow with redirections, and don't want to take the
-user away from your app, consider using the [popup workflow](#Logging-in-via-the-popup-app).
+If don't want to take the user away from your app,
+consider using the [popup workflow](#Logging-in-via-the-popup-app).
 
 If there's an error during the auth handshake, the Promise will reject.
 
