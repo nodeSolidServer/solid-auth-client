@@ -11,7 +11,7 @@ import NoParent from './components/NoParent'
 
 import './index.css'
 
-const idps = [
+const defaultIdps = [
   {
     displayName: 'Solid Community',
     url: 'https://solid.community/',
@@ -38,6 +38,15 @@ findAppOrigin().then(appOrigin => {
       />
     )
   } else {
+    const currentHost = window.location.href.replace(/(\/\/[^/]*\/).*/, '$1')
+    const idps = [...defaultIdps]
+    if (!idps.some(idp => idp.url === currentHost)) {
+      idps.unshift({
+        displayName: currentHost.replace(/^[^:]+:|\//g, ''),
+        url: currentHost,
+        iconUrl: currentHost + 'favicon.ico'
+      })
+    }
     element = <IdpSelect idps={idps} appOrigin={appOrigin} appName={appName} />
   }
 
