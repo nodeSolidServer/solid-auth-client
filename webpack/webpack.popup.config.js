@@ -6,6 +6,7 @@ const { EnvironmentPlugin } = require('webpack')
 
 const {
   context,
+  mode,
   module: _module,
   externals
 } = require('./webpack.common.config')
@@ -14,6 +15,7 @@ const outputDir = './dist-popup'
 
 module.exports = {
   context,
+  mode,
   entry: {
     popup: './popup-app/index.js'
   },

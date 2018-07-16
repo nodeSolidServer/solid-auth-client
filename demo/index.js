@@ -8,12 +8,6 @@ import App from './components/App'
 
 import * as SolidAuthClient from '../src'
 
-declare var module: {
-  hot: {
-    accept(path: string, callback: () => void): void
-  }
-}
-
 // for demo/debug purposes
 window.SolidAuthClient = SolidAuthClient
 console.log('Welcome to the solid-auth-client demo!')
@@ -32,14 +26,3 @@ if (document.body) {
 }
 
 ReactDOM.render(<App />, container)
-
-if (
-  module.hot &&
-  module.hot.accept &&
-  typeof module.hot.accept === 'function'
-) {
-  module.hot.accept('./components/App', () => {
-    const App = require('./components/App').default
-    ReactDOM.render(<App />, container)
-  })
-}

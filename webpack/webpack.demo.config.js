@@ -6,6 +6,7 @@ const path = require('path')
 
 const {
   context,
+  mode,
   module: _module,
   externals,
   devtool
@@ -15,6 +16,7 @@ const outputDir = './dist-demo'
 
 module.exports = {
   context,
+  mode,
   entry: {
     demo: './demo/index.js'
   },
