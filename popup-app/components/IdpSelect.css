@@ -7,13 +7,12 @@
 
 .idp {
   flex: 1 100%;
-  margin-bottom: 16px;
   padding: .5em;
 }
 
 @media all and (min-width: 500px) {
   .idp {
-    flex: 1;
+    flex: 1 200px;
   }
 }
 
