@@ -133,7 +133,13 @@ const Idp = ({ idp, handleSelectIdp }) => (
     <button className="idp__select" onClick={handleSelectIdp}>
       <span className="idp__copy">Log in with {idp.displayName}</span>
       <span className="idp__icon-container">
-        <img className="idp__icon" src={idp.iconUrl} alt="" />
+        {idp.iconUrl ? (
+          <img className="idp__icon" src={idp.iconUrl} alt="" />
+        ) : (
+          <svg width="32" viewBox="0 0 100 20" alt="">
+            <path d="M41.2,50c0-4.9,4-8.8,8.8-8.8s8.8,4,8.8,8.8c0,4.9-4,8.8-8.8,8.8S41.2,54.9,41.2,50z M80.3,41.2c-4.9,0-8.8,4-8.8,8.8 c0,4.9,4,8.8,8.8,8.8s8.8-4,8.8-8.8C89.2,45.1,85.2,41.2,80.3,41.2z M19.7,41.2c-4.9,0-8.8,4-8.8,8.8c0,4.9,4,8.8,8.8,8.8 s8.8-4,8.8-8.8C28.5,45.1,24.5,41.2,19.7,41.2z" />
+          </svg>
+        )}
       </span>
     </button>
   </div>
