@@ -46,7 +46,6 @@ export const currentSession = async (
     await restoreAppHashFragment(storage)
     const { idp, idToken, accessToken, clientId, sessionKey } = resp
     return {
-      authType: 'WebID-OIDC',
       webId: resp.decoded.payload.sub,
       idp,
       idToken,

@@ -191,7 +191,6 @@ describe('currentSession', () => {
   it('can find the current session if stored', async () => {
     expect.assertions(2)
     await saveSession(window.localStorage)({
-      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -345,7 +344,6 @@ describe('fetch', () => {
   it('handles 401s from WebID-OIDC resources by resending with credentials', async () => {
     expect.assertions(1)
     await saveSession(window.localStorage)({
-      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -366,7 +364,6 @@ describe('fetch', () => {
 
   it('merges request headers with the authorization header', async () => {
     await saveSession(window.localStorage)({
-      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -391,7 +388,6 @@ describe('fetch', () => {
   it('does not resend with credentials if the www-authenticate header is missing', async () => {
     expect.assertions(1)
     await saveSession(window.localStorage)({
-      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -409,7 +405,6 @@ describe('fetch', () => {
 
   it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', async () => {
     await saveSession(window.localStorage)({
-      authType: 'WebID-OIDC',
       idp: 'https://localhost',
       webId: 'https://person.me/#me',
       accessToken: 'fake_access_token',
@@ -461,7 +456,6 @@ describe('fetch', () => {
     it('just sends one request when the RP is also the IDP', async () => {
       expect.assertions(1)
       await saveSession(window.localStorage)({
-        authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
@@ -481,7 +475,6 @@ describe('fetch', () => {
     it('just sends one request to domains it has already encountered', async () => {
       expect.assertions(1)
       await saveSession(window.localStorage)({
-        authType: 'WebID-OIDC',
         idp: 'https://localhost',
         webId: 'https://person.me/#me',
         accessToken: 'fake_access_token',
@@ -491,7 +484,7 @@ describe('fetch', () => {
 
       await saveHost(window.localStorage)({
         url: 'third-party.com',
-        authType: 'WebID-OIDC'
+        requiresAuth: true
       })
 
       nock('https://third-party.com')

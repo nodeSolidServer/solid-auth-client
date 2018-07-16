@@ -2,10 +2,8 @@
 
 import type { AsyncStorage } from './storage'
 import { getData, updateStorage } from './storage'
-import type { WebIdOidc } from './types'
 
 export type webIdOidcSession = {
-  authType: WebIdOidc,
   idp: string,
   webId: string,
   accessToken: string,

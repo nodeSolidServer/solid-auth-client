@@ -105,7 +105,6 @@ fetch: (url: RequestInfo, options?: Object) => Promise<Response>
 
 ```
 type webIdOidcSession = {
-  authType: WebIdOidc,
   idp: string,
   webId: string,
   accessToken: string,
