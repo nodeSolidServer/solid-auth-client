@@ -64,13 +64,7 @@ class IdpSelect extends React.Component {
       ...loginOptions,
       storage: postMessageStorage(window.opener, appOrigin)
     }
-    const maybeSession = await login(idp.url, loginOptions)
-    if (typeof maybeSession === 'object') {
-      await request({ method: 'foundSession', args: [maybeSession] })
-      window.close()
-    } else if (typeof maybeSession === 'function') {
-      maybeSession()
-    }
+    await login(idp.url, loginOptions)
   }
 
   render() {
