@@ -39,7 +39,7 @@ function shouldShareCredentials(
       return false
     }
     const requestHost = await getHost(storage)(url)
-    return requestHost != null && session.authType === requestHost.authType
+    return requestHost != null && requestHost.requiresAuth
   }
 }
 
@@ -48,11 +48,5 @@ const fetchWithCredentials = async (
   url: RequestInfo,
   options?: Object
 ): Promise<Response> => {
-  switch (session.authType) {
-    case 'WebID-OIDC':
-      return WebIdOidc.fetchWithCredentials(session)(url, options)
-    case 'WebID-TLS':
-    default:
-      return fetch(url, options)
-  }
+  return WebIdOidc.fetchWithCredentials(session)(url, options)
 }
