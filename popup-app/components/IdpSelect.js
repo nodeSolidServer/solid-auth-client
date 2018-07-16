@@ -67,6 +67,12 @@ class IdpSelect extends React.Component {
     await login(idp.url, loginOptions)
   }
 
+  componentDidUpdate() {
+    if (this.idpInput) {
+      this.idpInput.focus()
+    }
+  }
+
   render() {
     const { appName, idps } = this.props
     const { customIdp, enteringCustomIdp, error } = this.state
@@ -77,12 +83,13 @@ class IdpSelect extends React.Component {
         </h1>
         {error && <Error error={error} />}
         <p className="copy-gentle center">Choose where you log in</p>
-        {enteringCustomIdp ? (
+        {enteringCustomIdp && (
           <form
             className="form-inline"
             onSubmit={this.handleSelectIdp(customIdp)}
           >
             <input
+              ref={input => (this.idpInput = input)}
               className="form-inline__input-text"
               type="url"
               placeholder="https://my-identity.databox.me/profile/card#me"
@@ -102,19 +109,16 @@ class IdpSelect extends React.Component {
               </button>
             </div>
           </form>
-        ) : (
-          <button
-            className="btn btn-link"
-            onClick={this.toggleEnteringCustomIdp}
-          >
-            Choose a custom Solid account
-          </button>
         )}
         <div className="idp-list">
+          <Idp
+            idp={{ displayName: 'custom provider' }}
+            handleSelectIdp={this.toggleEnteringCustomIdp}
+          />
           {idps.map(idp => (
             <Idp
               idp={idp}
-              handleSelectIdp={this.handleSelectIdp}
+              handleSelectIdp={this.handleSelectIdp(idp)}
               key={idp.url}
             />
           ))}
@@ -126,7 +130,7 @@ class IdpSelect extends React.Component {
 
 const Idp = ({ idp, handleSelectIdp }) => (
   <div className="idp">
-    <button className="idp__select" onClick={handleSelectIdp(idp)}>
+    <button className="idp__select" onClick={handleSelectIdp}>
       <span className="idp__copy">Log in with {idp.displayName}</span>
       <span className="idp__icon-container">
         <img className="idp__icon" src={idp.iconUrl} alt="" />
