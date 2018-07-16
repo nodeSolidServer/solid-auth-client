@@ -8,7 +8,7 @@
 .idp {
   flex: 1 100%;
   margin-bottom: 16px;
-  padding: 2px;
+  padding: .5em;
 }
 
 @media all and (min-width: 500px) {
@@ -52,6 +52,7 @@
   height: 42px;
   border-radius: 2px;
   background-color: #fff;
+  margin-left: .25em;
 }
 
 .idp .idp__icon {
