@@ -27,24 +27,6 @@ const defaultLoginOptions = (): loginOptions => {
 export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
   authnFetch(defaultStorage())(url, options)
 
-async function firstSession(
-  storage: AsyncStorage,
-  authFns: Array<() => Promise<?Session>>
-): Promise<?Session> {
-  if (authFns.length === 0) {
-    return null
-  }
-  try {
-    const session = await authFns[0]()
-    if (session) {
-      return saveSession(storage)(session)
-    }
-  } catch (err) {
-    console.error(err)
-  }
-  return firstSession(storage, authFns.slice(1))
-}
-
 export async function login(
   idp: string,
   options: loginOptions
@@ -70,11 +52,18 @@ export async function popupLogin(options: loginOptions): Promise<?Session> {
 export async function currentSession(
   storage: AsyncStorage = defaultStorage()
 ): Promise<?Session> {
-  const session = await getSession(storage)
-  if (session) {
-    return session
+  let session = await getSession(storage)
+  if (!session) {
+    try {
+      session = await WebIdOidc.currentSession(storage)
+    } catch (err) {
+      console.error(err)
+    }
+    if (session) {
+      await saveSession(storage)(session)
+    }
   }
-  return firstSession(storage, [WebIdOidc.currentSession.bind(null, storage)])
+  return session
 }
 
 export async function logout(
