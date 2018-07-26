@@ -32,13 +32,6 @@ h1 {
   cursor: pointer;
 }
 
-.btn-link {
-  border: none;
-  background-color: #fff;
-  text-decoration: underline;
-  padding: 4px;
-}
-
 .form-inline {
   display: flex;
   flex-wrap: nowrap;
