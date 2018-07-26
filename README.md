@@ -130,7 +130,7 @@ $ npm install -g solid-auth-client # [--save | --save-dev]
 
 1. Run the generation script to generate the popup's HTML file.
 ```sh
-$ solid-auth-client generate-popup "My App Name" # [my-app-popup.html]
+$ solid-auth-client generate-popup # ["My App Name"] [my-app-popup.html]
 ```
 
 2. Place the popup file on your server (say at `https://localhost:8080/popup.html`).
