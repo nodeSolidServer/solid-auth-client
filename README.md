@@ -13,7 +13,7 @@ by implementing [WebID-OIDC](https://github.com/solid/webid-oidc-spec).
 
 ### Why might I need this?
 
-If you're building a web app and want to identify users with Solid, or store
+If you're creating a web app and want to identify users with Solid, or store
 personal information on your user's Solid account, you'll have to authenticate
 them.  This library provides a simple API for logging in, logging out, and
 fetching resources with authenticated credentials.
@@ -119,24 +119,23 @@ trusted domain which authenticates the user, handles redirects, and messages
 the authenticated session back to your application.
 
 In order to tell the user they're logging into *your* app, you'll need to
-build a static popup bound to your application's name.
+generate a static popup bound to your application's name.
 
-Keeping this in mind, it's pretty simple to build a popup for your app!
+### Generating a popup window
 
-### Building the popup
-
-0. Make sure you've got the `solid-auth-client` package installed locally.
+0. Make sure you've got the `solid-auth-client` package installed globally.
 ```sh
-$ npm i solid-auth-client # [--save | --save-dev]
+$ npm install -g solid-auth-client # [--save | --save-dev]
 ```
 
-1. Run the build script!
+1. Run the generation script to generate the popup's HTML file.
 ```sh
-$ solid-auth-client generate-popup "My App's Name" # [my-app-popup.html]
+$ solid-auth-client generate-popup "My App Name" # [my-app-popup.html]
 ```
 
-2. If your popup is deployed to e.g. 'https://localhost:8080/popup.html',
-call `popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
+2. Place the popup file on your server (say at `https://localhost:8080/popup.html`).
+
+3. From within your own app, call `SolidAuthClient.popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
 
 ## Developing
 
