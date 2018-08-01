@@ -40,6 +40,12 @@ export async function popupLogin(options: loginOptions): Promise<?Session> {
   if (!options.popupUri) {
     throw new Error('Must provide options.popupUri')
   }
+  if (!/https?:/.test(options.popupUri)) {
+    options.popupUri = new URL(
+      options.popupUri || '',
+      window.location
+    ).toString()
+  }
   if (!options.callbackUri) {
     options.callbackUri = options.popupUri
   }
