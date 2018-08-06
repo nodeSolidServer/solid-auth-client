@@ -20,9 +20,11 @@ fetching resources with authenticated credentials.
 
 ### How do I get this?
 
-The simplest way to use this library is to install it via `npm` or `yarn`.
-You can then use the ES6 module (`import { login, currentUser, logout } from
-'solid-auth-client'`), or you can grab the transpiled UMD bundle from
+You can download the latest version at
+https://solid.github.io/solid-auth-client/dist/solid-auth-client.bundle.js.
+Alternatively, you can install the library via `npm` or `yarn`,
+and then use the ES6 module (`import { login, currentUser, logout } from
+'solid-auth-client'`), or grab the transpiled UMD bundle from
 `node_modules/solid-auth-client/dist-lib/solid-auth-client.bundle.js`.
 
 ## API
