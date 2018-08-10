@@ -96,4 +96,5 @@ export async function logout(
       console.error(err)
     }
     await clearSession(storage)
+  }
 }
