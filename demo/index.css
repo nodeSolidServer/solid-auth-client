@@ -1,0 +1,34 @@
+body, button {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.4;
+}
+
+body {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1em;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+}
+
+nav h1 {
+  flex-grow: 1;
+  margin: 0;
+}
+
+nav button {
+  border: 1px solid #999999;
+  border-radius: .5em;
+  margin-right: .5em;
+  padding: .25em .5em;
+  background-color: #eeeeee;
+  cursor: pointer;
+  font-weight: bold;
+}
+nav button:hover {
+  background-color: #f9f9f9;
+}
