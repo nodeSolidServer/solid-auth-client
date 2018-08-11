@@ -28,12 +28,20 @@ export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
   authnFetch(defaultStorage())(url, options)
 
 export async function login(
-  idp: string,
+  idp: string | loginOptions,
   options: loginOptions
 ): Promise<?Session> {
-  options = { ...defaultLoginOptions(), ...options }
-  const webIdOidcLogin = await WebIdOidc.login(idp, options)
-  return webIdOidcLogin
+  if (typeof idp === 'string') {
+    options = { ...defaultLoginOptions(), ...options }
+    return WebIdOidc.login(idp, options)
+  } else {
+    options = { ...defaultLoginOptions(), ...idp }
+    if (options.loginUi) {
+      window.location.href = options.loginUi
+      return null
+    }
+  }
+  throw new Error('must provide either idp or loginUi')
 }
 
 export async function popupLogin(options: loginOptions): Promise<?Session> {

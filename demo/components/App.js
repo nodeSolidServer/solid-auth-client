@@ -19,11 +19,8 @@ export default class App extends React.Component<Object, Object> {
   }
 
   async login() {
-    const idp = window.prompt('Please enter your identity provider')
-    if (idp) {
-      const session = await login(idp)
-      this.setState({ session })
-    }
+    const session = await login({ loginUi: process.env.LOGIN_UI })
+    this.setState({ session })
   }
 
   async loginPopup() {
