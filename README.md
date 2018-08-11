@@ -8,26 +8,23 @@ Opaquely authenticates [Solid](https://github.com/solid/) clients
 ## About
 
 ### What is this?
-
-Solid currently supports two cross-origin authentication protocols,
-[WebID-TLS](https://www.w3.org/2005/Incubator/webid/spec/tls/) and
-[WebID-OIDC](https://github.com/solid/webid-oidc-spec).
-
-This library abstracts away the implementation details of these specs so that
-clients don't have to handle different authentication protocols.
+This library facilitates authentication with Solid servers
+by implementing [WebID-OIDC](https://github.com/solid/webid-oidc-spec).
 
 ### Why might I need this?
 
-If you're building a web app and want to identify users with Solid, or store
+If you're creating a web app and want to identify users with Solid, or store
 personal information on your user's Solid account, you'll have to authenticate
 them.  This library provides a simple API for logging in, logging out, and
 fetching resources with authenticated credentials.
 
 ### How do I get this?
 
-The simplest way to use this library is to install it via `npm` or `yarn`.
-You can then use the ES6 module (`import { login, currentUser, logout } from
-'solid-auth-client'`), or you can grab the transpiled UMD bundle from
+You can download the latest version at
+https://solid.github.io/solid-auth-client/dist/solid-auth-client.bundle.js.
+Alternatively, you can install the library via `npm` or `yarn`,
+and then use the ES6 module (`import { login, currentUser, logout } from
+'solid-auth-client'`), or grab the transpiled UMD bundle from
 `node_modules/solid-auth-client/dist-lib/solid-auth-client.bundle.js`.
 
 ## API
@@ -42,7 +39,7 @@ functions.  You don't have to know anything about flow.*
 login (idp: string, {
   callbackUri?: string,
   storage?: Storage
-}): Promise<?session | ?redirectFn>
+}): Promise<?session>
 ```
 
 Authenticates the user with their IDP (identity provider) and promises an object
@@ -51,15 +48,12 @@ containing the user's session.
 When the user is successfully authenticated, the session will be non-null.  When
 the user is not authenticated by the IDP, the session will be `null`.
 
-Auth flows like OIDC require the user to give consent on their identity
-provider.  In such cases, this function will return _a function which
-redirects the user to their auth provider_, so as not to break the promise.
-All you have to do is call that function in order to send the user on their
-way.  Then, call `currentSession` when the user gives consent and lands back
-in your app.
+Auth flows like OIDC require the user to give consent on their identity provider.
+In such cases, this function will _redirect the user to their auth provider_.
+Then, call `currentSession` when the user gives consent and lands back in your app.
 
-If you're using an auth flow with redirections, and don't want to take the
-user away from your app, consider using the [popup workflow](#Logging-in-via-the-popup-app).
+If don't want to take the user away from your app,
+consider using the [popup workflow](#Logging-in-via-the-popup-app).
 
 If there's an error during the auth handshake, the Promise will reject.
 
@@ -98,10 +92,6 @@ logout (storage?: Storage): Promise<void>
 
 Clears the active user session.
 
-WARNING: this is an unsupported use case in WebID-TLS.  Once your browser
-provides its client cert to a web server, there's no going back!  So for
-WebID-TLS, the only thing this will do is clear the session from the store.
-
 ### `fetch`
 
 Fetches a resource from the web.  Same API as
@@ -116,21 +106,12 @@ fetch: (url: RequestInfo, options?: Object) => Promise<Response>
 ### types
 
 ```
-type webIdTlsSession = {
-  authType: WebIdTls,
-  idp: string,
-  webId: string
-}
-
 type webIdOidcSession = {
-  authType: WebIdOidc,
   idp: string,
   webId: string,
   accessToken: string,
   idToken: string
 }
-
-type session = webIdTlsSession | webIdOidcSession
 ```
 
 ## Logging in via the popup app
@@ -140,24 +121,23 @@ trusted domain which authenticates the user, handles redirects, and messages
 the authenticated session back to your application.
 
 In order to tell the user they're logging into *your* app, you'll need to
-build a static popup bound to your application's name.
+generate a static popup bound to your application's name.
 
-Keeping this in mind, it's pretty simple to build a popup for your app!
+### Generating a popup window
 
-### Building the popup
-
-0. Make sure you've got the `solid-auth-client` package installed locally.
+0. Make sure you've got the `solid-auth-client` package installed globally.
 ```sh
-$ npm i solid-auth-client # [--save | --save-dev]
+$ npm install -g solid-auth-client # [--save | --save-dev]
 ```
 
-1. Run the build script!
+1. Run the generation script to generate the popup's HTML file.
 ```sh
-$ solid-auth-client generate-popup "My App's Name" # [my-app-popup.html]
+$ solid-auth-client generate-popup # ["My App Name"] [my-app-popup.html]
 ```
 
-2. If your popup is deployed to e.g. 'https://localhost:8080/popup.html',
-call `popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
+2. Place the popup file on your server (say at `https://localhost:8080/popup.html`).
+
+3. From within your own app, call `SolidAuthClient.popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
 
 ## Developing
 

@@ -5,6 +5,7 @@ script:
   - npm test
 after_success:
   - npm run coverage:report
+  - ./.travis_publish
 cache:
   directories:
     - node_modules

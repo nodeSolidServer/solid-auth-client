@@ -14,11 +14,11 @@ import { defaultStorage, getData, updateStorage } from './storage'
 export const login = async (
   idp: string,
   options: loginOptions
-): Promise<null | (() => any)> => {
+): Promise<?null> => {
   try {
     const rp = await getRegisteredRp(idp, options)
     await saveAppHashFragment(options.storage)
-    return () => sendAuthRequest(rp, options)
+    return sendAuthRequest(rp, options)
   } catch (err) {
     console.warn('Error logging in with WebID-OIDC')
     console.error(err)
@@ -46,7 +46,6 @@ export const currentSession = async (
     await restoreAppHashFragment(storage)
     const { idp, idToken, accessToken, clientId, sessionKey } = resp
     return {
-      authType: 'WebID-OIDC',
       webId: resp.decoded.payload.sub,
       idp,
       idToken,

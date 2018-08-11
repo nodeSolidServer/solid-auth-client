@@ -7,13 +7,12 @@
 
 .idp {
   flex: 1 100%;
-  margin-bottom: 16px;
-  padding: 2px;
+  padding: .5em;
 }
 
 @media all and (min-width: 500px) {
   .idp {
-    flex: 1;
+    flex: 1 200px;
   }
 }
 
@@ -23,7 +22,6 @@
   align-items: center;
   border: none;
   border-radius: 2px;
-  height: 50px;
   width: 100%;
   padding: 4px;
   background-color: rgb(61, 109, 211);
@@ -53,6 +51,7 @@
   height: 42px;
   border-radius: 2px;
   background-color: #fff;
+  margin-left: .25em;
 }
 
 .idp .idp__icon {

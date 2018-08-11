@@ -2,6 +2,7 @@ const path = require('path')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const {
   context,
+  mode,
   module: _module,
   externals,
   devtool
@@ -11,6 +12,7 @@ const outputDir = './dist-lib'
 
 module.exports = {
   context,
+  mode,
   entry: {
     'solid-auth-client': './src/index.js'
   },

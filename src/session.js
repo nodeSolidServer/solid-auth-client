@@ -2,16 +2,8 @@
 
 import type { AsyncStorage } from './storage'
 import { getData, updateStorage } from './storage'
-import type { WebIdTls, WebIdOidc } from './types'
-
-export type webIdTlsSession = {
-  authType: WebIdTls,
-  idp: string,
-  webId: string
-}
 
 export type webIdOidcSession = {
-  authType: WebIdOidc,
   idp: string,
   webId: string,
   accessToken: string,
@@ -20,7 +12,7 @@ export type webIdOidcSession = {
   sessionKey: string
 }
 
-export type Session = webIdTlsSession | webIdOidcSession
+export type Session = webIdOidcSession
 
 export async function getSession(storage: AsyncStorage): Promise<?Session> {
   const data = await getData(storage)

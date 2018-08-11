@@ -7,7 +7,6 @@ import { getSession, saveSession, clearSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
 import { currentUrlNoParams } from './url-util'
-import * as WebIdTls from './webid-tls'
 import * as WebIdOidc from './webid-oidc'
 
 export type loginOptions = {
@@ -28,42 +27,24 @@ const defaultLoginOptions = (): loginOptions => {
 export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
   authnFetch(defaultStorage())(url, options)
 
-async function firstSession(
-  storage: AsyncStorage,
-  authFns: Array<() => Promise<?Session>>
-): Promise<?Session> {
-  if (authFns.length === 0) {
-    return null
-  }
-  try {
-    const session = await authFns[0]()
-    if (session) {
-      return saveSession(storage)(session)
-    }
-  } catch (err) {
-    console.error(err)
-  }
-  return firstSession(storage, authFns.slice(1))
-}
-
-type redirectFn = () => any
-
 export async function login(
   idp: string,
   options: loginOptions
-): Promise<?Session | ?redirectFn> {
+): Promise<?Session> {
   options = { ...defaultLoginOptions(), ...options }
-  const webIdTlsSession = await WebIdTls.login(idp)
-  if (webIdTlsSession) {
-    return saveSession(options.storage)(webIdTlsSession)
-  }
-  const webIdOidcLoginRedirectFn = await WebIdOidc.login(idp, options)
-  return webIdOidcLoginRedirectFn
+  const webIdOidcLogin = await WebIdOidc.login(idp, options)
+  return webIdOidcLogin
 }
 
 export async function popupLogin(options: loginOptions): Promise<?Session> {
   if (!options.popupUri) {
     throw new Error('Must provide options.popupUri')
+  }
+  if (!/https?:/.test(options.popupUri)) {
+    options.popupUri = new URL(
+      options.popupUri || '',
+      window.location
+    ).toString()
   }
   if (!options.callbackUri) {
     options.callbackUri = options.popupUri
@@ -77,11 +58,18 @@ export async function popupLogin(options: loginOptions): Promise<?Session> {
 export async function currentSession(
   storage: AsyncStorage = defaultStorage()
 ): Promise<?Session> {
-  const session = await getSession(storage)
-  if (session) {
-    return session
+  let session = await getSession(storage)
+  if (!session) {
+    try {
+      session = await WebIdOidc.currentSession(storage)
+    } catch (err) {
+      console.error(err)
+    }
+    if (session) {
+      await saveSession(storage)(session)
+    }
   }
-  return firstSession(storage, [WebIdOidc.currentSession.bind(null, storage)])
+  return session
 }
 
 export async function logout(

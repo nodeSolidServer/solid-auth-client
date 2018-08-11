@@ -1,11 +1,11 @@
-body {
-  font-family: 'Roboto', sans-serif;
+body, button, input {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 11pt;
 }
 
 h1 {
   font-weight: normal;
   padding-bottom: 10px;
-  border-bottom: 1px solid #d8d8d8;
 }
 
 #app-container {
@@ -15,12 +15,6 @@ h1 {
 
 .center {
   text-align: center;
-}
-
-.copy-gentle {
-  color: #494949;
-  font-size: 0.9em;
-  font-weight: lighter;
 }
 
 .error {
@@ -36,13 +30,6 @@ h1 {
   padding: 4px;
   margin-left: 4px;
   cursor: pointer;
-}
-
-.btn-link {
-  border: none;
-  background-color: #fff;
-  text-decoration: underline;
-  padding: 4px;
 }
 
 .form-inline {
@@ -63,6 +50,5 @@ h1 {
 }
 
 .app-name {
-  text-decoration: underline;
   font-weight: bold;
 }
