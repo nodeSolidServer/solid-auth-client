@@ -43,7 +43,7 @@ export const loginHandler = (
       return Promise.resolve({
         id,
         ret: {
-          popupUri: options.popupUri,
+          loginUi: options.loginUi,
           callbackUri: options.callbackUri
         }
       })
@@ -68,14 +68,14 @@ export const startPopupServer = (
   options: loginOptions
 ): Promise<?Session> => {
   return new Promise((resolve, reject) => {
-    if (!(options.popupUri && options.callbackUri)) {
+    if (!(options.loginUi && options.callbackUri)) {
       return reject(
         new Error(
-          'Cannot serve a popup without both "options.popupUri" and "options.callbackUri"'
+          'Cannot serve a popup without both "options.loginUi" and "options.callbackUri"'
         )
       )
     }
-    const popupServer = server(childWindow, originOf(options.popupUri || ''))(
+    const popupServer = server(childWindow, originOf(options.loginUi || ''))(
       popupAppRequestHandler(store, options, (session: Session) => {
         popupServer.stop()
         resolve(session)
@@ -86,15 +86,15 @@ export const startPopupServer = (
 }
 
 export const openIdpSelector = (options: loginOptions): window => {
-  if (!(options.popupUri && options.callbackUri)) {
+  if (!(options.loginUi && options.callbackUri)) {
     throw new Error(
-      'Cannot open IDP select UI.  Must provide both "options.popupUri" and "options.callbackUri".'
+      'Cannot open IDP select UI.  Must provide both "options.loginUi" and "options.callbackUri".'
     )
   }
   const width = 650
   const height = 400
   const w = window.open(
-    options.popupUri,
+    options.loginUi,
     '_blank',
     `width=${width},height=${height},left=${(window.innerWidth - width) /
       2},top=${(window.innerHeight - height) / 2}`

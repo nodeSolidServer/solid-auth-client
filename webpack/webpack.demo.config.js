@@ -33,7 +33,7 @@ module.exports = {
     }
   },
   plugins: [
-    new EnvironmentPlugin(['POPUP_URI']),
+    new EnvironmentPlugin(['LOGIN_UI']),
     new CleanWebpackPlugin([outputDir]),
     new HtmlWebpackPlugin({
       chunks: ['demo'],

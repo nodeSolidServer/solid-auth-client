@@ -67,7 +67,7 @@ Options:
 
 ```
 popupLogin({
-  popupUri: ?string,
+  loginUi: ?string,
   storage: AsyncStorage
 }): Promise<?session>
 ```
@@ -137,7 +137,7 @@ $ solid-auth-client generate-popup # ["My App Name"] [my-app-popup.html]
 
 2. Place the popup file on your server (say at `https://localhost:8080/popup.html`).
 
-3. From within your own app, call `SolidAuthClient.popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
+3. From within your own app, call `SolidAuthClient.popupLogin({ loginUi: 'https://localhost:8080/popup.html' })`.
 
 ## Developing
 
@@ -164,7 +164,7 @@ You can test how `solid-auth-client` operates within an app by running the demo 
 #### Running the demo development server
 
 ```sh
-$ POPUP_URI='http://localhost:8081/popup.html' npm run start:demo
+$ LOGIN_UI='http://localhost:8081/popup.html' npm run start:demo
 ```
 
 #### Running the popup development server

@@ -69,7 +69,7 @@ describe('storageHandler', () => {
 
 describe('loginHandler', () => {
   const options = {
-    popupUri: 'https://localhost/select-idp',
+    loginUi: 'https://localhost/select-idp',
     callbackUri: 'https://localhost/callback',
     storage: defaultStorage()
   }
@@ -85,7 +85,7 @@ describe('loginHandler', () => {
     expect(_options).toEqual({
       id: '12345',
       ret: {
-        popupUri: options.popupUri,
+        loginUi: options.loginUi,
         callbackUri: options.callbackUri
       }
     })
@@ -150,12 +150,12 @@ describe('appOriginHandler', () => {
 })
 
 describe('startPopupServer', () => {
-  it('rejects if loginOptions does not include both popupUri and callbackUri', async () => {
+  it('rejects if loginOptions does not include both loginUi and callbackUri', async () => {
     expect.assertions(1)
     const store = defaultStorage()
     await expect(
       startPopupServer(store, window, {
-        popupUri: null,
+        loginUi: null,
         callbackUri: null,
         storage: store
       })
@@ -170,7 +170,7 @@ describe('startPopupServer', () => {
       webId: 'https://localhost/profile#me'
     }
     const sessionPromise = startPopupServer(store, window, {
-      popupUri: 'https://app.biz/select-idp',
+      loginUi: 'https://app.biz/select-idp',
       callbackUri: 'https://app.biz/callback',
       storage: store
     })

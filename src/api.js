@@ -11,7 +11,7 @@ import * as WebIdOidc from './webid-oidc'
 
 export type loginOptions = {
   callbackUri: ?string,
-  popupUri: ?string,
+  loginUi: ?string,
   storage: AsyncStorage
 }
 
@@ -19,7 +19,7 @@ const defaultLoginOptions = (): loginOptions => {
   const url = currentUrlNoParams()
   return {
     callbackUri: url ? url.split('#')[0] : null,
-    popupUri: null,
+    loginUi: null,
     storage: defaultStorage()
   }
 }
@@ -37,17 +37,15 @@ export async function login(
 }
 
 export async function popupLogin(options: loginOptions): Promise<?Session> {
-  if (!options.popupUri) {
-    throw new Error('Must provide options.popupUri')
+  options.loginUi = options.loginUi || (options: Object).popupUri
+  if (!options.loginUi) {
+    throw new Error('Must provide options.loginUi')
   }
-  if (!/https?:/.test(options.popupUri)) {
-    options.popupUri = new URL(
-      options.popupUri || '',
-      window.location
-    ).toString()
+  if (!/https?:/.test(options.loginUi)) {
+    options.loginUi = new URL(options.loginUi || '', window.location).toString()
   }
   if (!options.callbackUri) {
-    options.callbackUri = options.popupUri
+    options.callbackUri = options.loginUi
   }
   options = { ...defaultLoginOptions(), ...options }
   const childWindow = openIdpSelector(options)

@@ -27,7 +27,7 @@ export default class App extends React.Component<Object, Object> {
   }
 
   async loginPopup() {
-    const session = await popupLogin({ popupUri: process.env.POPUP_URI })
+    const session = await popupLogin({ loginUi: process.env.LOGIN_UI })
     this.setState({ session })
   }
 
