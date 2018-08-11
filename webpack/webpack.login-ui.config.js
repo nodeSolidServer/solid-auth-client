@@ -11,13 +11,13 @@ const {
   externals
 } = require('./webpack.common.config')
 
-const outputDir = './dist-popup'
+const outputDir = './dist-ui'
 
 module.exports = {
   context,
   mode,
   entry: {
-    popup: './popup-app/index.js'
+    login: './login-ui/index.js'
   },
   output: {
     filename: '[name].bundle.js',
@@ -37,8 +37,8 @@ module.exports = {
     }),
     new CleanWebpackPlugin([outputDir]),
     new HtmlWebpackPlugin({
-      template: 'popup-app/index.ejs',
-      filename: 'popup.html',
+      template: 'login-ui/index.ejs',
+      filename: 'login.html',
       inlineSource: '.(js|css)$'
     }),
     new HtmlWebpackInlineSourcePlugin()

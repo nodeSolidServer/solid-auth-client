@@ -24,13 +24,13 @@ const issueUrl = 'https://github.com/solid/solid-auth-client/issues'
 
 program
   .version(version)
-  .command('generate-popup [app-name] [filename]')
+  .command('generate-ui [app-name] [filename]')
   .description(
-    'build a secure login app named for your application.  ' +
-      '[app-name] is the name of your app. (default "the application")  ' +
-      '[filename] is the name of the popup html file. (default "popup.html").'
+    'build a login UI named for your application.  ' +
+      '[app-name] is the name of your app. (default host)  ' +
+      '[filename] is the name of the html file. (default "login.html").'
   )
-  .action(generatePopup)
+  .action(generateUI)
 
 program.parse(process.argv)
 
@@ -39,43 +39,41 @@ if (!process.argv.slice(2).length) {
   program.outputHelp()
 }
 
-// generatePopup command
+// generateUI command
 
-function generatePopup(appName = '', filename = 'popup.html') {
+function generateUI(appName = '', filename = 'login.html') {
   log(`Generating "${filename}" with app name "${appName}".`)
 
-  const templateFilename = path.resolve(
-    __dirname,
-    '..',
-    'dist-popup/popup.html'
-  )
+  const templateFilename = path.resolve(__dirname, '..', 'dist-ui/login.html')
   if (!fs.existsSync(templateFilename)) {
     warn(
-      `Could not find popup template. Expected it to be located at "${templateFilename}".  Please file a bug at ${issueUrl}`
+      `Could not find login UI template. Expected it to be located at "${templateFilename}".  Please file a bug at ${issueUrl}`
     )
     return
   }
 
-  let popupTemplateBuffer
+  let templateBuffer
   try {
-    popupTemplateBuffer = fs.readFileSync(templateFilename)
+    templateBuffer = fs.readFileSync(templateFilename)
   } catch (err) {
-    warn(`Could not read the popup template.  Please file a bug at ${issueUrl}`)
+    warn(
+      `Could not read the login UI template.  Please file a bug at ${issueUrl}`
+    )
     console.error(err)
     return
   }
 
-  const popupBuffer = popupTemplateBuffer
+  const uiBuffer = templateBuffer
     .toString()
     .replace(/['"]{{APP_NAME}}['"]/g, JSON.stringify(appName))
 
   try {
-    fs.writeFileSync(filename, popupBuffer)
+    fs.writeFileSync(filename, uiBuffer)
   } catch (err) {
-    warn(`Could not write the popup to "${filename}".`)
+    warn(`Could not write the login UI to "${filename}".`)
     console.error(err)
     return
   }
 
-  log(`Popup is generated and available at "${filename}"!`)
+  log(`HTML is generated and available at "${filename}"!`)
 }

@@ -132,12 +132,12 @@ $ npm install -g solid-auth-client # [--save | --save-dev]
 
 1. Run the generation script to generate the popup's HTML file.
 ```sh
-$ solid-auth-client generate-popup # ["My App Name"] [my-app-popup.html]
+$ solid-auth-client generate-ui # ["My App Name"] [my-app-login.html]
 ```
 
-2. Place the popup file on your server (say at `https://localhost:8080/popup.html`).
+2. Place the UI file on your server (say at `https://localhost:8080/login.html`).
 
-3. From within your own app, call `SolidAuthClient.popupLogin({ loginUi: 'https://localhost:8080/popup.html' })`.
+3. From within your own app, call `SolidAuthClient.popupLogin({ loginUi: 'https://localhost:8080/login.html' })`.
 
 ## Developing
 
@@ -164,11 +164,11 @@ You can test how `solid-auth-client` operates within an app by running the demo 
 #### Running the demo development server
 
 ```sh
-$ LOGIN_UI='http://localhost:8081/popup.html' npm run start:demo
+$ LOGIN_UI='http://localhost:8081/login.html' npm run start:demo
 ```
 
 #### Running the popup development server
 
 ```sh
-$ APP_NAME='solid-auth-client demo' npm run start:popup
+$ APP_NAME='solid-auth-client demo' npm run start:ui
 ```

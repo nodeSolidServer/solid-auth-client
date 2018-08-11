@@ -68,6 +68,6 @@ typings/
 # build
 lib
 dist-lib
-dist-popup
+dist-ui
 dist-demo
-popup.html
+login.html

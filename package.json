@@ -7,7 +7,7 @@
   "files": [
     "bin",
     "dist-lib",
-    "dist-popup",
+    "dist-ui",
     "lib"
   ],
   "repository": "git@github.com:solid/solid-auth-client.git",
@@ -15,22 +15,22 @@
   "license": "MIT",
   "scripts": {
     "start:demo": "webpack-dev-server --env development --config=./webpack/webpack.demo.config.js",
-    "start:popup": "webpack-dev-server --env development --config=./webpack/webpack.popup.config.js",
+    "start:ui": "webpack-dev-server --env development --config=./webpack/webpack.login-ui.config.js",
     "jest": "jest src",
-    "format": "prettier --parser flow --no-semi --single-quote --write '{src,bin,demo,popup-app}/**/*.js'",
+    "format": "prettier --parser flow --no-semi --single-quote --write '{src,bin,demo,login-ui}/**/*.js'",
     "prelint": "npm run format",
-    "lint": "eslint '{src,bin,demo,popup-app}/**/*.js'",
+    "lint": "eslint '{src,bin,demo,login-ui}/**/*.js'",
     "pretest": "flow && npm run lint",
     "test": "npm run jest",
     "test:dev": "npm run jest -- --watch",
     "test:debug": "node --debug-brk ./node_modules/.bin/jest --runInBand src",
     "coverage:report": "cat ./coverage/lcov.info | coveralls",
-    "build": "npm run build:lib && npm run build:lib:umd && npm run build:popup:template",
+    "build": "npm run build:lib && npm run build:lib:umd && npm run build:ui:template",
     "build:lib": "rm -rf lib && babel --ignore '**.spec.js' src -d lib",
     "build:lib:umd": "webpack --config=./webpack/webpack.lib.config.js -p",
     "build:demo": "webpack --config=./webpack/webpack.demo.config.js -p",
-    "build:popup": "webpack --config=./webpack/webpack.popup.config.js -p && rm ./dist-popup/popup.bundle.js",
-    "build:popup:template": "cross-env APP_NAME='{{APP_NAME}}' npm run build:popup",
+    "build:ui": "webpack --config=./webpack/webpack.login-ui.config.js -p && rm ./dist-ui/login.bundle.js",
+    "build:ui:template": "cross-env APP_NAME='{{APP_NAME}}' npm run build:ui",
     "preversion": "npm test",
     "postversion": "git push --follow-tags",
     "prepare": "npm run build"
@@ -91,7 +91,7 @@
     "coveragePathIgnorePatterns": [
       "bin",
       "demo",
-      "popup-app"
+      "login-ui"
     ]
   },
   "pre-commit": [
