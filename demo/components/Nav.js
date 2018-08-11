@@ -8,18 +8,12 @@ type propTypes = {
 }
 
 const Nav = ({ loggedIn, onClickLogIn, onClickLogOut }: propTypes) => (
-  <nav className="navbar navbar-light bg-faded d-flex flex-row justify-content-between">
-    <a className="navbar-brand" href="#">
-      Solid Auth Client Demo
-    </a>
+  <nav>
+    <h1>Solid Auth Client Demo</h1>
     {loggedIn ? (
-      <button className="btn btn-default" onClick={onClickLogOut}>
-        Log out
-      </button>
+      <button onClick={onClickLogOut}>Log out</button>
     ) : (
-      <button className="btn btn-default" onClick={onClickLogIn}>
-        Log in
-      </button>
+      <button onClick={onClickLogIn}>Log in</button>
     )}
   </nav>
 )
