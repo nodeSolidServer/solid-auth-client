@@ -78,7 +78,7 @@ export async function logout(
   const session = await getSession(storage)
   if (session) {
     try {
-      await WebIdOidc.logout(storage)
+      await WebIdOidc.logout(storage, session.idp)
     } catch (err) {
       console.warn('Error logging out:')
       console.error(err)
