@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom'
 import { client } from '../src/ipc'
 import { getData, updateStorage } from '../src/storage'
 
-import IdpCallback from './components/IdpCallback'
+import OidcCallback from './components/OidcCallback'
 import IdpSelect from './components/IdpSelect'
 import NoParent from './components/NoParent'
 
@@ -25,34 +25,50 @@ const defaultIdps = [
 ]
 
 findAppOrigin().then(appOrigin => {
-  const baseUrl = window.location.href.replace(/(\/\/[^/]*\/).*/, '$1')
-  const host = baseUrl.replace(/^[^:]+:|\//g, '')
-  const appName = process.env.APP_NAME.trim() || host
+  const container = createAppContainer(appOrigin)
+  ReactDOM.render(container, document.getElementById('app-container'))
+})
 
-  let element
-  if (!appOrigin) {
-    element = <NoParent appName={appName} />
-  } else if (window.location.hash) {
-    element = (
-      <IdpCallback
+function createAppContainer(appOrigin) {
+  // Extract parameters from the current URL
+  const { origin, host, hash } = new URL(window.location)
+  const baseUrl = `${origin}/`
+  const appName = process.env.APP_NAME.trim() || host
+  const idpCallbackUri = hash.replace(/^#idpCallback=(.*)|.*/, '$1')
+
+  // The login UI was not opened from a parent window or referrer
+  if (!appOrigin && !idpCallbackUri) {
+    return <NoParent appName={appName} />
+  }
+
+  // An OIDC callback returned to the login UI
+  if (/^#access_token/.test(hash)) {
+    return (
+      <OidcCallback
         appOrigin={appOrigin}
         afterLoggedIn={() => setTimeout(window.close, 750)}
       />
     )
-  } else {
-    const idps = [...defaultIdps]
-    if (!idps.some(idp => idp.url === baseUrl)) {
-      idps.unshift({
-        displayName: host,
-        url: baseUrl,
-        iconUrl: baseUrl + 'favicon.ico'
-      })
-    }
-    element = <IdpSelect idps={idps} appOrigin={appOrigin} appName={appName} />
   }
 
-  ReactDOM.render(element, document.getElementById('app-container'))
-})
+  // Default mode: show the IDP selection UI
+  const idps = [...defaultIdps]
+  if (!idps.some(idp => idp.url === baseUrl)) {
+    idps.unshift({
+      displayName: host,
+      url: baseUrl,
+      iconUrl: baseUrl + 'favicon.ico'
+    })
+  }
+  return (
+    <IdpSelect
+      idps={idps}
+      appOrigin={appOrigin}
+      appName={appName}
+      idpCallbackUri={idpCallbackUri}
+    />
+  )
+}
 
 async function findAppOrigin() {
   if (!window.opener) {

@@ -24,6 +24,8 @@ const defaultLoginOptions = (): loginOptions => {
   }
 }
 
+loginWithSelectedIdp()
+
 export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
   authnFetch(defaultStorage())(url, options)
 
@@ -32,16 +34,37 @@ export async function login(
   options: loginOptions
 ): Promise<?Session> {
   if (typeof idp === 'string') {
+    // Identity provider was given, so login there
     options = { ...defaultLoginOptions(), ...options }
     return WebIdOidc.login(idp, options)
   } else {
+    // Identity provider was not given, ask the user through the login UI
     options = { ...defaultLoginOptions(), ...idp }
     if (options.loginUi) {
-      window.location.href = options.loginUi
+      // After the user has selected an identity provider,
+      // loginWithSelectedIdp will continue by calling login
+      const loginUi = new URL(options.loginUi)
+      loginUi.hash = `idpCallback=${window.location}`
+      window.location.href = loginUi
       return null
     }
   }
   throw new Error('must provide either idp or loginUi')
+}
+
+// If the user has just selected an identity provider
+// (as part of calling login without idp parameter),
+// we attempt login with that provider
+function loginWithSelectedIdp() {
+  // Try to find the selected IDP in the URL fragment
+  const { hash } = window.location
+  const idpMatch = /^#solid-auth-client.idp=([^#]+)(#.*)/.exec(hash)
+  // If found, strip from the URL and login with the IDP
+  if (idpMatch) {
+    const [, idp, oldHash] = idpMatch
+    window.history.replaceState({}, '', oldHash)
+    login(idp, defaultLoginOptions())
+  }
 }
 
 export async function popupLogin(options: loginOptions): Promise<?Session> {

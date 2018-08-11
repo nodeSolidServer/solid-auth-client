@@ -30,8 +30,25 @@ class IdpSelect extends React.Component {
   }
 
   handleSelectIdp = idp => async event => {
-    const { appOrigin } = this.props
     event.preventDefault()
+
+    const { appOrigin, idpCallbackUri } = this.props
+    if (idpCallbackUri) {
+      this.sendIdpChoice(idp, idpCallbackUri)
+    } else {
+      await this.loginViaOpener(idp, appOrigin)
+    }
+  }
+
+  // The login UI was used to select an IDP only; reply with the selected IDP
+  sendIdpChoice(idp, idpCallbackUri) {
+    const returnUrl = new URL(idpCallbackUri)
+    returnUrl.hash = `#solid-auth-client.idp=${idp.url}${returnUrl.hash || '#'}`
+    window.location.href = returnUrl
+  }
+
+  // The login UI was used as a popup; continue logging in
+  async loginViaOpener(idp, appOrigin) {
     if (!window.opener) {
       console.warn('No parent window')
       this.setState({

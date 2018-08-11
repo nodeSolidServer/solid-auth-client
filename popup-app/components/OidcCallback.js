@@ -4,7 +4,7 @@ import { currentSession } from '../../src/api'
 import { client } from '../../src/ipc'
 import { postMessageStorage } from '../../src/storage'
 
-export default class IdpCallback extends Component {
+export default class OidcCallback extends Component {
   state = { loggedIn: false }
 
   request = client(window.opener, this.props.appOrigin)
