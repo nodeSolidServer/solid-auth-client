@@ -38,7 +38,7 @@ module.exports = {
     new CleanWebpackPlugin([outputDir]),
     new HtmlWebpackPlugin({
       template: 'popup-app/index.ejs',
-      filename: 'popup.html',
+      filename: 'popup-template.html',
       inlineSource: '.(js|css)$'
     }),
     new HtmlWebpackInlineSourcePlugin()

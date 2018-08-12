@@ -47,7 +47,7 @@ function generatePopup(appName = '', filename = 'popup.html') {
   const templateFilename = path.resolve(
     __dirname,
     '..',
-    'dist-popup/popup.html'
+    'dist-popup/popup-template.html'
   )
   if (!fs.existsSync(templateFilename)) {
     warn(

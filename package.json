@@ -29,7 +29,7 @@
     "build:lib": "rm -rf lib && babel --ignore '**.spec.js' src -d lib",
     "build:lib:umd": "webpack --config=./webpack/webpack.lib.config.js -p",
     "build:demo": "webpack --config=./webpack/webpack.demo.config.js -p",
-    "build:popup": "webpack --config=./webpack/webpack.popup.config.js -p && rm ./dist-popup/popup.bundle.js",
+    "build:popup": "webpack --config=./webpack/webpack.popup.config.js -p && rm ./dist-popup/popup.bundle.js && bin/solid-auth-client.js generate-popup '' dist-popup/popup.html",
     "build:popup:template": "cross-env APP_NAME='{{APP_NAME}}' npm run build:popup",
     "preversion": "npm test",
     "postversion": "git push --follow-tags",
