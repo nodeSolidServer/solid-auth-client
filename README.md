@@ -164,7 +164,7 @@ You can test how `solid-auth-client` operates within an app by running the demo 
 #### Running the demo development server
 
 ```sh
-$ POPUP_URI='http://localhost:8081/popup.html' npm run start:demo
+$ POPUP_URI='http://localhost:8081/popup-template.html' npm run start:demo
 ```
 
 #### Running the popup development server
