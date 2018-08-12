@@ -12,6 +12,13 @@
   ],
   "repository": "git@github.com:solid/solid-auth-client.git",
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
+  "contributors": [
+    {
+      "name": "Ruben Verborgh",
+      "email": "ruben@verborgh.org",
+      "url": "https://ruben.verborgh.org/"
+    }
+  ],
   "license": "MIT",
   "scripts": {
     "start:demo": "webpack-dev-server --env development --config=./webpack/webpack.demo.config.js",
