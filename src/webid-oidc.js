@@ -181,6 +181,7 @@ export const fetchWithCredentials = (session: webIdOidcSession) => async (
   const popToken = await PoPToken.issueFor(url, session)
   const authenticatedOptions = {
     ...options,
+    credentials: 'include',
     headers: {
       ...(options && options.headers ? options.headers : {}),
       authorization: `Bearer ${popToken}`
