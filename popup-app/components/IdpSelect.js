@@ -78,36 +78,27 @@ class IdpSelect extends React.Component {
     const { customIdp, enteringCustomIdp, error } = this.state
     return (
       <div>
-        <h1 className="center">
+        <h1>
           Log in to <span className="app-name">{appName}</span>
         </h1>
         {error && <Error error={error} />}
-        <p className="copy-gentle center">Choose where you log in</p>
+        <p>Choose where you log in</p>
         {enteringCustomIdp && (
           <form
-            className="form-inline"
+            className="custom-idp"
             onSubmit={this.handleSelectIdp(customIdp)}
           >
             <input
               ref={input => (this.idpInput = input)}
-              className="form-inline__input-text"
               type="url"
               placeholder="https://my-identity.databox.me/profile/card#me"
               value={customIdp.url}
               onChange={this.handleChangeIdp}
             />
-            <div className="form-inline__controls">
-              <button className="btn" type="submit">
-                Log In
-              </button>
-              <button
-                className="btn"
-                type="reset"
-                onClick={this.toggleEnteringCustomIdp}
-              >
-                Cancel
-              </button>
-            </div>
+            <button type="submit">Log In</button>
+            <button type="reset" onClick={this.toggleEnteringCustomIdp}>
+              Cancel
+            </button>
           </form>
         )}
         <div className="idp-list">
@@ -129,22 +120,18 @@ class IdpSelect extends React.Component {
 }
 
 const Idp = ({ idp, handleSelectIdp }) => (
-  <div className="idp">
-    <button className="idp__select" onClick={handleSelectIdp}>
-      <span className="idp__copy">Log in with {idp.displayName}</span>
-      <span className="idp__icon-container">
-        {idp.iconUrl ? (
-          <img className="idp__icon" src={idp.iconUrl} alt="" />
-        ) : (
-          <svg width="32" viewBox="0 0 100 20" alt="">
-            <path d="M41.2,50c0-4.9,4-8.8,8.8-8.8s8.8,4,8.8,8.8c0,4.9-4,8.8-8.8,8.8S41.2,54.9,41.2,50z M80.3,41.2c-4.9,0-8.8,4-8.8,8.8 c0,4.9,4,8.8,8.8,8.8s8.8-4,8.8-8.8C89.2,45.1,85.2,41.2,80.3,41.2z M19.7,41.2c-4.9,0-8.8,4-8.8,8.8c0,4.9,4,8.8,8.8,8.8 s8.8-4,8.8-8.8C28.5,45.1,24.5,41.2,19.7,41.2z" />
-          </svg>
-        )}
-      </span>
-    </button>
-  </div>
+  <button className="idp" onClick={handleSelectIdp}>
+    <span class="label">Log in with {idp.displayName}</span>
+    {idp.iconUrl ? (
+      <img className="icon" src={idp.iconUrl} alt="" />
+    ) : (
+      <svg className="icon" width="32" viewBox="0 0 100 20" alt="">
+        <path d="M41.2,50c0-4.9,4-8.8,8.8-8.8s8.8,4,8.8,8.8c0,4.9-4,8.8-8.8,8.8S41.2,54.9,41.2,50z M80.3,41.2c-4.9,0-8.8,4-8.8,8.8 c0,4.9,4,8.8,8.8,8.8s8.8-4,8.8-8.8C89.2,45.1,85.2,41.2,80.3,41.2z M19.7,41.2c-4.9,0-8.8,4-8.8,8.8c0,4.9,4,8.8,8.8,8.8 s8.8-4,8.8-8.8C28.5,45.1,24.5,41.2,19.7,41.2z" />
+      </svg>
+    )}
+  </button>
 )
 
-const Error = ({ error }) => <div className="error center">{error}</div>
+const Error = ({ error }) => <p className="error">{error}</p>
 
 export default IdpSelect
