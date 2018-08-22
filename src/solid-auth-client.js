@@ -70,6 +70,7 @@ export default class SolidAuthClient extends EventEmitter {
         console.error(err)
       }
       if (session) {
+        this.emit('login', session)
         await saveSession(storage)(session)
       }
     }

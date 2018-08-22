@@ -73,6 +73,7 @@ const verifySerializedKey = ssk => {
 beforeEach(() => {
   polyfillWindow()
   nock.disableNetConnect()
+  instance.removeAllListeners('login')
 })
 
 afterEach(() => {
@@ -209,8 +210,13 @@ describe('currentSession', () => {
   })
 
   describe('WebID-OIDC', () => {
-    it('can find the current session from the URL auth response', async () => {
-      expect.assertions(6)
+    let expectedIdToken, expectedAccessToken
+    let loginEvents
+
+    beforeEach(async () => {
+      loginEvents = []
+      instance.on('login', (...params) => loginEvents.push(params))
+
       // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
@@ -224,8 +230,6 @@ describe('currentSession', () => {
         // see https://github.com/anvilresearch/oidc-rp/issues/29
         .get('/jwks')
         .reply(200, jwks)
-
-      let expectedIdToken, expectedAccessToken
 
       window.location.href = 'https://app.biz/page?foo=bar#the-hash-fragment'
       await instance.login('https://localhost')
@@ -255,6 +259,10 @@ describe('currentSession', () => {
         `token_type=Bearer&` +
         `id_token=${idToken}&` +
         `state=${state}`
+    })
+
+    it('can find the current session from the URL auth response', async () => {
+      expect.assertions(6)
       const session = await instance.currentSession()
       expect(session.webId).toBe('https://person.me/#me')
       expect(session.accessToken).toBe(expectedAccessToken)
@@ -262,6 +270,30 @@ describe('currentSession', () => {
       verifySerializedKey(session.sessionKey)
       expect(await getStoredSession()).toEqual(session)
       expect(window.location.hash).toBe('#the-hash-fragment')
+    })
+
+    it('triggers the login event on first call', async () => {
+      expect.assertions(1)
+      await instance.currentSession()
+      expect(loginEvents).toHaveLength(1)
+    })
+
+    it('passes the session as parameter to the login event', async () => {
+      expect.assertions(4)
+      await instance.currentSession()
+      expect(loginEvents).toHaveLength(1)
+      expect(loginEvents[0]).toHaveLength(1)
+
+      const session = loginEvents[0][0]
+      expect(session).toBeInstanceOf(Object)
+      expect(session.webId).toBe('https://person.me/#me')
+    })
+
+    it('does not trigger the login event on subsequent calls', async () => {
+      expect.assertions(1)
+      await instance.currentSession()
+      await instance.currentSession()
+      expect(loginEvents).toHaveLength(1)
     })
   })
 })
