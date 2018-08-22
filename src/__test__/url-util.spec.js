@@ -1,5 +1,5 @@
 /* eslint-env jest */
-import { currentUrl, currentUrlNoParams } from './url-util'
+import { currentUrl, currentUrlNoParams } from '../url-util'
 
 describe('currentUrl', () => {
   it('returns the current url when window.location is available', () => {

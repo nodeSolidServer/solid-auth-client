@@ -1,15 +1,16 @@
 /* eslint-env jest */
 import fs from 'fs'
+import path from 'path'
 import jwt from 'jsonwebtoken'
 import nock from 'nock'
 import rsaPemToJwk from 'rsa-pem-to-jwk'
 
-import { currentSession, fetch, login, logout } from './api'
-import { saveHost } from './host'
-import { getSession, saveSession } from './session'
+import { currentSession, fetch, login, logout } from '../api'
+import { saveHost } from '../host'
+import { getSession, saveSession } from '../session'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import { asyncStorage } from './storage'
-import { sessionKeys } from '../test-keys/session-keys'
+import { asyncStorage } from '../storage'
+import { sessionKeys } from './session-keys'
 
 /*
  * OIDC test data:
@@ -30,7 +31,7 @@ const oidcRegistration = {
   client_id: 'the-client-id'
 }
 
-const pem = fs.readFileSync('./test-keys/id_rsa')
+const pem = fs.readFileSync(path.join(__dirname, './id_rsa'))
 
 const jwks = {
   keys: [

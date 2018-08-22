@@ -1,8 +1,8 @@
 /* eslint-env jest */
 
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import type { AsyncStorage } from './storage'
-import { defaultStorage, postMessageStorage } from './storage'
+import type { AsyncStorage } from '../storage'
+import { defaultStorage, postMessageStorage } from '../storage'
 
 beforeEach(polyfillWindow)
 

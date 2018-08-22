@@ -5,9 +5,9 @@ import {
   loginHandler,
   storageHandler,
   startPopupServer
-} from './popup'
+} from '../popup'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import { defaultStorage } from './storage'
+import { defaultStorage } from '../storage'
 
 beforeEach(polyfillWindow)
 

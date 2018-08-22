@@ -1,5 +1,5 @@
 /* eslint-env browser */
-import { memStorage } from '../src/storage'
+import { memStorage } from '../storage'
 
 import URLSearchParams from 'url-search-params'
 

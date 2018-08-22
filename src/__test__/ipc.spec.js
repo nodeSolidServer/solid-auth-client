@@ -2,7 +2,7 @@
 /* eslint-env jest */
 
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import { client, server } from './ipc'
+import { client, server } from '../ipc'
 
 beforeEach(polyfillWindow)
 
