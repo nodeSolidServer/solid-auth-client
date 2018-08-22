@@ -1,5 +1,6 @@
 // @flow
 /* global RequestInfo, Response */
+import EventEmitter from 'events'
 import { authnFetch } from './authn-fetch'
 import { openIdpSelector, startPopupServer } from './popup'
 import type { Session } from './session'
@@ -24,7 +25,7 @@ const defaultLoginOptions = (): loginOptions => {
   }
 }
 
-export default class SolidAuthClient {
+export default class SolidAuthClient extends EventEmitter {
   fetch(url: RequestInfo, options?: Object): Promise<Response> {
     return authnFetch(defaultStorage())(url, options)
   }
