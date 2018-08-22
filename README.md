@@ -36,7 +36,7 @@ functions.  You don't have to know anything about flow.*
 ### `login`
 
 ```
-login (idp: string, {
+SolidAuthClient.login (idp: string, {
   callbackUri?: string,
   storage?: Storage
 }): Promise<?session>
@@ -66,7 +66,7 @@ Options:
 ### `popupLogin`
 
 ```
-popupLogin({
+SolidAuthClient.popupLogin({
   popupUri: ?string,
   storage: AsyncStorage
 }): Promise<?session>
@@ -78,7 +78,7 @@ See [Logging in via the popup app](#Logging-in-via-the-popup-app).
 ### `currentSession`
 
 ```
-currentSession (storage?: Storage): Promise<?session>
+SolidAuthClient.currentSession (storage?: Storage): Promise<?session>
 ```
 
 Finds the current session, and returns it if it is still active, otherwise
@@ -87,7 +87,7 @@ Finds the current session, and returns it if it is still active, otherwise
 ### `logout`
 
 ```
-logout (storage?: Storage): Promise<void>
+SolidAuthClient.logout (storage?: Storage): Promise<void>
 ```
 
 Clears the active user session.
@@ -100,7 +100,7 @@ encounters a `401` with a `WWW-Authenticate` header which matches a recognized
 authenticate scheme.
 
 ```
-fetch: (url: RequestInfo, options?: Object) => Promise<Response>
+SolidAuthClient.fetch: (url: RequestInfo, options?: Object) => Promise<Response>
 ```
 
 ### types
