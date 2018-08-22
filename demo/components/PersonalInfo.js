@@ -2,7 +2,7 @@
 import 'isomorphic-fetch'
 import React from 'react'
 
-import { fetch } from '../../src/'
+import SolidAuthClient from '../../src/'
 import type { Session } from '../../src/session'
 
 type Profile = {
@@ -25,7 +25,7 @@ export default class PersonalInfo extends React.Component<Object, Object> {
       @prefix foaf http://xmlns.com/foaf/0.1/
       ${webId} { foaf:name }
     `
-    return fetch('https://databox.me/,query', {
+    return SolidAuthClient.fetch('https://databox.me/,query', {
       method: 'POST',
       body: query
     }).then(resp => resp.json())

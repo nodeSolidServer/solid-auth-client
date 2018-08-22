@@ -24,65 +24,67 @@ const defaultLoginOptions = (): loginOptions => {
   }
 }
 
-export const fetch = (url: RequestInfo, options?: Object): Promise<Response> =>
-  authnFetch(defaultStorage())(url, options)
-
-export async function login(
-  idp: string,
-  options: loginOptions
-): Promise<?Session> {
-  options = { ...defaultLoginOptions(), ...options }
-  const webIdOidcLogin = await WebIdOidc.login(idp, options)
-  return webIdOidcLogin
-}
-
-export async function popupLogin(options: loginOptions): Promise<?Session> {
-  if (!options.popupUri) {
-    throw new Error('Must provide options.popupUri')
+export default class SolidAuthClient {
+  fetch(url: RequestInfo, options?: Object): Promise<Response> {
+    return authnFetch(defaultStorage())(url, options)
   }
-  if (!/https?:/.test(options.popupUri)) {
-    options.popupUri = new URL(
-      options.popupUri || '',
-      window.location
-    ).toString()
-  }
-  if (!options.callbackUri) {
-    options.callbackUri = options.popupUri
-  }
-  options = { ...defaultLoginOptions(), ...options }
-  const childWindow = openIdpSelector(options)
-  const session = await startPopupServer(options.storage, childWindow, options)
-  return session
-}
 
-export async function currentSession(
-  storage: AsyncStorage = defaultStorage()
-): Promise<?Session> {
-  let session = await getSession(storage)
-  if (!session) {
-    try {
-      session = await WebIdOidc.currentSession(storage)
-    } catch (err) {
-      console.error(err)
+  async login(idp: string, options: loginOptions): Promise<?Session> {
+    options = { ...defaultLoginOptions(), ...options }
+    const webIdOidcLogin = await WebIdOidc.login(idp, options)
+    return webIdOidcLogin
+  }
+
+  async popupLogin(options: loginOptions): Promise<?Session> {
+    if (!options.popupUri) {
+      throw new Error('Must provide options.popupUri')
     }
+    if (!/https?:/.test(options.popupUri)) {
+      options.popupUri = new URL(
+        options.popupUri || '',
+        window.location
+      ).toString()
+    }
+    if (!options.callbackUri) {
+      options.callbackUri = options.popupUri
+    }
+    options = { ...defaultLoginOptions(), ...options }
+    const childWindow = openIdpSelector(options)
+    const session = await startPopupServer(
+      options.storage,
+      childWindow,
+      options
+    )
+    return session
+  }
+
+  async currentSession(
+    storage: AsyncStorage = defaultStorage()
+  ): Promise<?Session> {
+    let session = await getSession(storage)
+    if (!session) {
+      try {
+        session = await WebIdOidc.currentSession(storage)
+      } catch (err) {
+        console.error(err)
+      }
+      if (session) {
+        await saveSession(storage)(session)
+      }
+    }
+    return session
+  }
+
+  async logout(storage: AsyncStorage = defaultStorage()): Promise<void> {
+    const session = await getSession(storage)
     if (session) {
-      await saveSession(storage)(session)
+      try {
+        await WebIdOidc.logout(storage)
+      } catch (err) {
+        console.warn('Error logging out:')
+        console.error(err)
+      }
+      await clearSession(storage)
     }
-  }
-  return session
-}
-
-export async function logout(
-  storage: AsyncStorage = defaultStorage()
-): Promise<void> {
-  const session = await getSession(storage)
-  if (session) {
-    try {
-      await WebIdOidc.logout(storage)
-    } catch (err) {
-      console.warn('Error logging out:')
-      console.error(err)
-    }
-    await clearSession(storage)
   }
 }

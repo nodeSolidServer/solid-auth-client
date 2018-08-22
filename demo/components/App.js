@@ -8,7 +8,7 @@ import PersonalInfo from './PersonalInfo'
 import Footer from './Footer'
 
 import type { Session } from '../../src/session'
-import { popupLogin, logout, currentSession } from '../../src/'
+import SolidAuthClient from '../../src/'
 
 export default class App extends React.Component<Object, Object> {
   state: { session: ?Session } = { session: null }
@@ -18,18 +18,18 @@ export default class App extends React.Component<Object, Object> {
   }
 
   onClickLogIn = () =>
-    popupLogin({
+    SolidAuthClient.popupLogin({
       popupUri: process.env.POPUP_URI
     }).then(this.saveCredentials)
 
   onClickLogOut = () =>
-    logout().then(() => {
+    SolidAuthClient.logout().then(() => {
       this.setState({ session: null })
     })
 
   constructor(props: {}) {
     super(props)
-    currentSession().then(this.saveCredentials)
+    SolidAuthClient.currentSession().then(this.saveCredentials)
   }
 
   render() {

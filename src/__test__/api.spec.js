@@ -5,12 +5,14 @@ import jwt from 'jsonwebtoken'
 import nock from 'nock'
 import rsaPemToJwk from 'rsa-pem-to-jwk'
 
-import { currentSession, fetch, login, logout } from '../api'
+import SolidAuthClient from '../api'
 import { saveHost } from '../host'
 import { getSession, saveSession } from '../session'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
 import { asyncStorage } from '../storage'
 import { sessionKeys } from './session-keys'
+
+const instance = new SolidAuthClient()
 
 /*
  * OIDC test data:
@@ -99,7 +101,7 @@ describe('login', () => {
       .get('/.well-known/openid-configuration')
       .reply(404)
 
-    const session = await login('https://localhost')
+    const session = await instance.login('https://localhost')
     expect(session).toBeNull()
     expect(await getStoredSession()).toBeNull()
   })
@@ -115,7 +117,7 @@ describe('login', () => {
         .post('/register')
         .reply(200, oidcRegistration)
 
-      await login('https://localhost')
+      await instance.login('https://localhost')
       const location = new window.URL(window.location.href)
       expect(location.origin).toEqual('https://localhost')
       expect(location.pathname).toEqual('/authorize')
@@ -139,7 +141,7 @@ describe('login', () => {
         .post('/register')
         .reply(200, oidcRegistration)
 
-      await login('https://localhost', {
+      await instance.login('https://localhost', {
         callbackUri: 'https://app.biz/welcome/'
       })
       const location = new window.URL(window.location.href)
@@ -167,7 +169,7 @@ describe('login', () => {
 
       window.location.href += '#foo-bar'
 
-      await login('https://localhost')
+      await instance.login('https://localhost')
       const location = new window.URL(window.location.href)
       expect(location.origin).toEqual('https://localhost')
       expect(location.pathname).toEqual('/authorize')
@@ -199,14 +201,14 @@ describe('currentSession', () => {
       sessionKey
     })
 
-    const session = await currentSession()
+    const session = await instance.currentSession()
     expect(session.webId).toBe('https://person.me/#me')
     expect(await getStoredSession()).toEqual(session)
   })
 
   it('resolves to a `null` session when there is no stored session or OIDC response', async () => {
     expect.assertions(2)
-    const session = await currentSession()
+    const session = await instance.currentSession()
     expect(session).toBeNull()
     expect(await getStoredSession()).toBeNull()
   })
@@ -230,7 +232,7 @@ describe('currentSession', () => {
 
       let expectedIdToken, expectedAccessToken
 
-      await login('https://localhost')
+      await instance.login('https://localhost')
       // generate the auth response
       const location = new window.URL(window.location.href)
       const state = location.searchParams.get('state')
@@ -257,7 +259,7 @@ describe('currentSession', () => {
         `token_type=Bearer&` +
         `id_token=${idToken}&` +
         `state=${state}`
-      const session = await currentSession()
+      const session = await instance.currentSession()
       expect(session.webId).toBe('https://person.me/#me')
       expect(session.accessToken).toBe(expectedAccessToken)
       expect(session.idToken).toBe(expectedIdToken)
@@ -291,7 +293,7 @@ describe('logout', () => {
 
       let expectedIdToken, expectedAccessToken
 
-      await login('https://localhost')
+      await instance.login('https://localhost')
       // generate the auth response
       const location = new window.URL(window.location.href)
       const state = location.searchParams.get('state')
@@ -318,7 +320,7 @@ describe('logout', () => {
         `token_type=Bearer&` +
         `id_token=${idToken}&` +
         `state=${state}`
-      const session = await currentSession()
+      const session = await instance.currentSession()
       expect(session.webId).toBe('https://person.me/#me')
       expect(session.accessToken).toBe(expectedAccessToken)
       expect(session.idToken).toBe(expectedIdToken)
@@ -326,7 +328,7 @@ describe('logout', () => {
       expect(window.location.hash).toBe('#the-hash-fragment')
       const storedSession = await getStoredSession()
       expect(storedSession).toEqual(session)
-      await logout()
+      await instance.logout()
       expect(await getStoredSession()).toBeNull()
     })
   })
@@ -359,7 +361,9 @@ describe('fetch', () => {
       .matchHeader('authorization', matchAuthzHeader('https://third-party.com'))
       .reply(200)
 
-    const resp = await fetch('https://third-party.com/protected-resource')
+    const resp = await instance.fetch(
+      'https://third-party.com/protected-resource'
+    )
     expect(resp.status).toBe(200)
   })
 
@@ -380,9 +384,12 @@ describe('fetch', () => {
       .matchHeader('authorization', matchAuthzHeader('https://third-party.com'))
       .reply(200)
 
-    const resp = await fetch('https://third-party.com/private-resource', {
-      headers: { accept: 'text/plain' }
-    })
+    const resp = await instance.fetch(
+      'https://third-party.com/private-resource',
+      {
+        headers: { accept: 'text/plain' }
+      }
+    )
     expect(resp.status).toBe(200)
   })
 
@@ -400,7 +407,9 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401)
 
-    const resp = await fetch('https://third-party.com/protected-resource')
+    const resp = await instance.fetch(
+      'https://third-party.com/protected-resource'
+    )
     expect(resp.status).toBe(401)
   })
 
@@ -417,7 +426,9 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Basic token' })
 
-    const resp = await fetch('https://third-party.com/protected-resource')
+    const resp = await instance.fetch(
+      'https://third-party.com/protected-resource'
+    )
     expect(resp.status).toBe(401)
   })
 
@@ -427,7 +438,9 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
 
-    const resp = await fetch('https://third-party.com/protected-resource')
+    const resp = await instance.fetch(
+      'https://third-party.com/protected-resource'
+    )
     expect(resp.status).toBe(401)
   })
 
@@ -437,7 +450,7 @@ describe('fetch', () => {
       .get('/public-resource')
       .reply(200, 'public content', { 'content-type': 'text/plain' })
 
-    const resp = await fetch('https://third-party.com/public-resource')
+    const resp = await instance.fetch('https://third-party.com/public-resource')
     expect(resp.status).toBe(200)
     const body = await resp.text()
     expect(body).toEqual('public content')
@@ -449,7 +462,9 @@ describe('fetch', () => {
       .get('/protected-resource')
       .reply(401, '', { 'www-authenticate': 'Bearer scope="openid"' })
 
-    const resp = await fetch('https://third-party.com/protected-resource')
+    const resp = await instance.fetch(
+      'https://third-party.com/protected-resource'
+    )
     expect(resp.status).toBe(401)
   })
 
@@ -469,7 +484,7 @@ describe('fetch', () => {
         .matchHeader('authorization', matchAuthzHeader('https://localhost'))
         .reply(200)
 
-      const resp = await fetch('https://localhost/resource')
+      const resp = await instance.fetch('https://localhost/resource')
       expect(resp.status).toBe(200)
     })
 
@@ -496,7 +511,7 @@ describe('fetch', () => {
         )
         .reply(200)
 
-      const resp = await fetch('https://third-party.com/resource')
+      const resp = await instance.fetch('https://third-party.com/resource')
       expect(resp.status).toBe(200)
     })
   })

@@ -6,7 +6,7 @@ import './index.css'
 
 import App from './components/App'
 
-import * as SolidAuthClient from '../src'
+import SolidAuthClient from '../src'
 
 // for demo/debug purposes
 window.SolidAuthClient = SolidAuthClient
