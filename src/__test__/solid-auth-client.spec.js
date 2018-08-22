@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken'
 import nock from 'nock'
 import rsaPemToJwk from 'rsa-pem-to-jwk'
 
-import SolidAuthClient from '../api'
+import SolidAuthClient from '../solid-auth-client'
 import { saveHost } from '../host'
 import { getSession, saveSession } from '../session'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'

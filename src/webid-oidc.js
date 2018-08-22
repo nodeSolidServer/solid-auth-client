@@ -5,7 +5,7 @@ import * as authorization from 'auth-header'
 import RelyingParty from '@trust/oidc-rp'
 import PoPToken from '@trust/oidc-rp/lib/PoPToken'
 
-import type { loginOptions } from './api'
+import type { loginOptions } from './solid-auth-client'
 import { currentUrl, navigateTo } from './url-util'
 import type { webIdOidcSession } from './session'
 import type { AsyncStorage } from './storage'

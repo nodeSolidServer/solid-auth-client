@@ -1,5 +1,5 @@
 // @flow
-import type { loginOptions } from './api'
+import type { loginOptions } from './solid-auth-client'
 import type { handler, request, response } from './ipc'
 import { combineHandlers, server } from './ipc'
 import type { Session } from './session'
