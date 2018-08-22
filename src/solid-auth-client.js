@@ -82,6 +82,7 @@ export default class SolidAuthClient extends EventEmitter {
     if (session) {
       try {
         await WebIdOidc.logout(storage)
+        this.emit('logout')
       } catch (err) {
         console.warn('Error logging out:')
         console.error(err)

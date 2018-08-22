@@ -74,6 +74,7 @@ beforeEach(() => {
   polyfillWindow()
   nock.disableNetConnect()
   instance.removeAllListeners('login')
+  instance.removeAllListeners('logout')
 })
 
 afterEach(() => {
@@ -300,8 +301,13 @@ describe('currentSession', () => {
 
 describe('logout', () => {
   describe('WebID-OIDC', () => {
-    it('hits the end_session_endpoint and clears the current session from the store', async () => {
-      expect.assertions(7)
+    let expectedIdToken, expectedAccessToken
+    let logoutEvents
+
+    beforeEach(async () => {
+      logoutEvents = []
+      instance.on('logout', (...params) => logoutEvents.push(params))
+
       // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
       // back to the app.
@@ -318,8 +324,6 @@ describe('logout', () => {
         .reply(200, jwks)
         .get('/logout')
         .reply(200)
-
-      let expectedIdToken, expectedAccessToken
 
       await instance.login('https://localhost')
       // generate the auth response
@@ -348,6 +352,10 @@ describe('logout', () => {
         `token_type=Bearer&` +
         `id_token=${idToken}&` +
         `state=${state}`
+    })
+
+    it('hits the end_session_endpoint and clears the current session from the store', async () => {
+      expect.assertions(7)
       const session = await instance.currentSession()
       expect(session.webId).toBe('https://person.me/#me')
       expect(session.accessToken).toBe(expectedAccessToken)
@@ -358,6 +366,21 @@ describe('logout', () => {
       expect(storedSession).toEqual(session)
       await instance.logout()
       expect(await getStoredSession()).toBeNull()
+    })
+
+    it('triggers the logout event on first call', async () => {
+      expect.assertions(1)
+      await instance.currentSession()
+      await instance.logout()
+      expect(logoutEvents).toHaveLength(1)
+    })
+
+    it('does not trigger the logout event on subsequent calls', async () => {
+      expect.assertions(1)
+      await instance.currentSession()
+      await instance.logout()
+      await instance.logout()
+      expect(logoutEvents).toHaveLength(1)
     })
   })
 })
