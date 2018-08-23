@@ -182,11 +182,6 @@ describe('login', () => {
       expect(location.searchParams.get('scope')).toEqual('openid')
       expect(location.searchParams.get('client_id')).toEqual('the-client-id')
     })
-
-    // TODO: this is broken due to https://github.com/anvilresearch/oidc-rp/issues/26
-    it(
-      'resolves to a `null` session when none of the recognized auth schemes are available'
-    )
   })
 })
 
@@ -232,6 +227,7 @@ describe('currentSession', () => {
 
       let expectedIdToken, expectedAccessToken
 
+      window.location.href = 'https://app.biz/page?foo=bar#the-hash-fragment'
       await instance.login('https://localhost')
       // generate the auth response
       const location = new window.URL(window.location.href)

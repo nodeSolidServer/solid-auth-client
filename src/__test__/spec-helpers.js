@@ -1,30 +1,29 @@
 /* eslint-env browser */
 import { memStorage } from '../storage'
 
-import URLSearchParams from 'url-search-params'
+let _window
 
-let _href
-let _URL
-
-// polyfill missing/incomplete web apis
+// polyfill missing/incomplete APIs in jsdom
 export const polyfillWindow = () => {
-  _href = window.location.href
-  Object.defineProperty(window.location, 'href', {
-    writable: true,
-    value: 'https://app.biz/'
+  _window = global.window
+  global.window = Object.create(window)
+
+  Object.defineProperty(window, 'location', {
+    value: {
+      href: 'https://app.biz/',
+      pathname: '/',
+      origin: 'https://app.biz',
+      get hash() {
+        return this.href.replace(/^[^#]+/, '')
+      },
+      set hash(value) {
+        this.href = this.href.replace(/#.*/, value)
+      }
+    }
   })
-  Object.defineProperty(window.location, 'pathname', {
-    writable: true,
-    value: '/'
-  })
-  _URL = window.URL
-  window.URL = function(urlStr) {
-    const url = new _URL(urlStr)
-    url.searchParams = new URLSearchParams(url.search)
-    return url
-  }
-  window.URLSearchParams = URLSearchParams
+
   window.localStorage = memStorage()
+
   // this is fixed in the latest jsdom, but jest has not yet updated the jsdom dependency
   window.origin = window.location.origin
   Object.defineProperty(MessageEvent.prototype, 'origin', {
@@ -36,8 +35,5 @@ export const polyfillWindow = () => {
 
 export const polyunfillWindow = () => {
   delete window.localStorage
-  delete window.URLSearchParams
-  window.URL = _URL
-  window.location.href = _href
-  delete window.origin
+  global.window = _window
 }
