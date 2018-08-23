@@ -75,6 +75,7 @@ beforeEach(() => {
   nock.disableNetConnect()
   instance.removeAllListeners('login')
   instance.removeAllListeners('logout')
+  instance.removeAllListeners('session')
 })
 
 afterEach(() => {
@@ -212,11 +213,13 @@ describe('currentSession', () => {
 
   describe('WebID-OIDC', () => {
     let expectedIdToken, expectedAccessToken
-    let loginEvents
+    let loginEvents, sessionEvents
 
     beforeEach(async () => {
       loginEvents = []
+      sessionEvents = []
       instance.on('login', (...params) => loginEvents.push(params))
+      instance.on('session', (...params) => sessionEvents.push(params))
 
       // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
@@ -296,17 +299,43 @@ describe('currentSession', () => {
       await instance.currentSession()
       expect(loginEvents).toHaveLength(1)
     })
+
+    it('triggers the session event on first call', async () => {
+      expect.assertions(1)
+      await instance.currentSession()
+      expect(sessionEvents).toHaveLength(1)
+    })
+
+    it('passes the session as parameter to the session event', async () => {
+      expect.assertions(4)
+      await instance.currentSession()
+      expect(sessionEvents).toHaveLength(1)
+      expect(sessionEvents[0]).toHaveLength(1)
+
+      const session = sessionEvents[0][0]
+      expect(session).toBeInstanceOf(Object)
+      expect(session.webId).toBe('https://person.me/#me')
+    })
+
+    it('does not trigger the session event on subsequent calls', async () => {
+      expect.assertions(1)
+      await instance.currentSession()
+      await instance.currentSession()
+      expect(sessionEvents).toHaveLength(1)
+    })
   })
 })
 
 describe('logout', () => {
   describe('WebID-OIDC', () => {
     let expectedIdToken, expectedAccessToken
-    let logoutEvents
+    let logoutEvents, sessionEvents
 
     beforeEach(async () => {
       logoutEvents = []
+      sessionEvents = []
       instance.on('logout', (...params) => logoutEvents.push(params))
+      instance.on('session', (...params) => sessionEvents.push(params))
 
       // To test currentSession with WebID-OIDC it's easist to set up the OIDC RP
       // client by logging in, generating the IDP's response, and redirecting
@@ -381,6 +410,32 @@ describe('logout', () => {
       await instance.logout()
       await instance.logout()
       expect(logoutEvents).toHaveLength(1)
+    })
+
+    it('triggers the session event on first call', async () => {
+      expect.assertions(1)
+      await instance.currentSession()
+      await instance.logout()
+      expect(sessionEvents).toHaveLength(2)
+    })
+
+    it('passes null as parameter to the session event', async () => {
+      expect.assertions(3)
+      await instance.currentSession()
+      await instance.logout()
+      expect(sessionEvents).toHaveLength(2)
+      expect(sessionEvents[1]).toHaveLength(1)
+
+      const session = sessionEvents[1][0]
+      expect(session).toBeNull()
+    })
+
+    it('does not trigger the session event on subsequent calls', async () => {
+      expect.assertions(1)
+      await instance.currentSession()
+      await instance.logout()
+      await instance.logout()
+      expect(sessionEvents).toHaveLength(2)
     })
   })
 })
