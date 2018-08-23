@@ -3,7 +3,7 @@ import React from 'react'
 
 import SolidAuthClient from '../../src/'
 
-export default class Nav extends React.Component<Object, Object> {
+export default class LoginButton extends React.Component<Object, Object> {
   constructor(props: {}) {
     super(props)
     SolidAuthClient.trackSession(session =>
@@ -22,16 +22,10 @@ export default class Nav extends React.Component<Object, Object> {
   }
 
   render() {
-    const { loggedIn } = this.state
-    return (
-      <nav>
-        <h1>Solid Auth Client Demo</h1>
-        {loggedIn ? (
-          <button onClick={this.logout}>Log out</button>
-        ) : (
-          <button onClick={this.login}>Log in</button>
-        )}
-      </nav>
+    return this.state.loggedIn ? (
+      <button onClick={this.logout}>Log out</button>
+    ) : (
+      <button onClick={this.login}>Log in</button>
     )
   }
 }

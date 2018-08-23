@@ -1,14 +1,17 @@
 // @flow
 import React from 'react'
 
-import Nav from './Nav'
+import LoginButton from './LoginButton'
 import Copy from './Copy'
 import PersonalInfo from './PersonalInfo'
 import Footer from './Footer'
 
 const App = () => (
   <div>
-    <Nav />
+    <nav>
+      <h1>Solid Auth Client Demo</h1>
+      <LoginButton />
+    </nav>
     <Copy />
     <PersonalInfo />
     <Footer />
