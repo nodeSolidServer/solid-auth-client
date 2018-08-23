@@ -326,6 +326,56 @@ describe('currentSession', () => {
   })
 })
 
+describe('trackSession', () => {
+  it('yields null if there is no active session', async () => {
+    expect.assertions(2)
+    const callback = jest.fn()
+    await instance.trackSession(callback)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenLastCalledWith(null)
+  })
+
+  it('yields an active session', async () => {
+    expect.assertions(2)
+    const session = {}
+    await saveSession(window.localStorage)(session)
+
+    const callback = jest.fn()
+    await instance.trackSession(callback)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenLastCalledWith(session)
+  })
+
+  it('calls the callback on login', async () => {
+    expect.assertions(4)
+
+    const callback = jest.fn()
+    await instance.trackSession(callback)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenLastCalledWith(null)
+
+    const session = {}
+    instance.emit('session', session)
+    expect(callback).toHaveBeenCalledTimes(2)
+    expect(callback).toHaveBeenLastCalledWith(session)
+  })
+
+  it('calls the callback on logout', async () => {
+    expect.assertions(4)
+    const session = {}
+    await saveSession(window.localStorage)(session)
+
+    const callback = jest.fn()
+    await instance.trackSession(callback)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenLastCalledWith(session)
+
+    await instance.logout()
+    expect(callback).toHaveBeenCalledTimes(2)
+    expect(callback).toHaveBeenLastCalledWith(null)
+  })
+})
+
 describe('logout', () => {
   describe('WebID-OIDC', () => {
     let expectedIdToken, expectedAccessToken
