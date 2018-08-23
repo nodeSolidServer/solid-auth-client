@@ -56,6 +56,8 @@ export default class SolidAuthClient extends EventEmitter {
       childWindow,
       options
     )
+    this.emit('login', session)
+    this.emit('session', session)
     return session
   }
 
