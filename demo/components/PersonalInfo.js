@@ -1,5 +1,4 @@
 // @flow
-import 'isomorphic-fetch'
 import React from 'react'
 
 import SolidAuthClient from '../../src/'
