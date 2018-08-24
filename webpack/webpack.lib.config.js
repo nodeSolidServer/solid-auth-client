@@ -20,7 +20,6 @@ module.exports = {
     filename: '[name].bundle.js',
     path: path.resolve(outputDir),
     library: ['solid', 'auth'],
-    libraryExport: 'default',
     libraryTarget: 'umd'
   },
   module: _module,
