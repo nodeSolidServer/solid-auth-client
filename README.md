@@ -1,31 +1,15 @@
-# solid-auth-client
+# A library for reading and writing to Solid pods
 
 [![Build Status](https://travis-ci.org/solid/solid-auth-client.svg?branch=master)](https://travis-ci.org/solid/solid-auth-client)
 [![Coverage Status](https://coveralls.io/repos/github/solid/solid-auth-client/badge.svg?branch=master)](https://coveralls.io/github/solid/solid-auth-client?branch=master)
 
-Opaquely authenticates [Solid](https://github.com/solid/) clients
+The [Solid](https://solid.mit.edu/) project
+allows people to use apps on the Web
+while storing their data in their own data pod.
 
-## About
-
-### What is this?
-This library facilitates authentication with Solid servers
-by implementing [WebID-OIDC](https://github.com/solid/webid-oidc-spec).
-
-### Why might I need this?
-
-If you're creating a web app and want to identify users with Solid, or store
-personal information on your user's Solid account, you'll have to authenticate
-them.  This library provides a simple API for logging in, logging out, and
-fetching resources with authenticated credentials.
-
-### How do I get this?
-
-You can download the latest version at
-https://solid.github.io/solid-auth-client/dist/solid-auth-client.bundle.js.
-Alternatively, you can install the library via `npm` or `yarn`,
-and then use the ES6 module (`import { login, currentUser, logout } from
-'solid-auth-client'`), or grab the transpiled UMD bundle from
-`node_modules/solid-auth-client/dist-lib/solid-auth-client.bundle.js`.
+`solid-auth-client` is a library that allows
+your apps to securely log in to Solid data pods
+and read and write data from them.
 
 ## Usage
 In the browser, the library is accessible through `solid.auth`:
@@ -41,9 +25,10 @@ solid.auth.trackSession(session => {
 </script>
 ```
 
-In Node.js, the library can be included as follows:
+In Node.js, run `npm install solid-auth-client` and then do:
+
 ```javascript
-const { default: auth } = require('solid-auth-client')
+const auth = require('solid-auth-client')
 
 auth.trackSession(session => {
   if (!session)
@@ -53,112 +38,130 @@ auth.trackSession(session => {
 })
 ```
 
-## API
+## Functionality
+This library offers two main types of functionality:
+- `fetch` functionality to make authenticated HTTP requests to a Solid pod
+- login and logout functionality to authenticate the user
 
-*This API doc uses [flow](https://flow.org/) type annotations for clarity.
-They're just here to show you the types of arguments expected by exported
-functions.  You don't have to know anything about flow.*
+### Reading and writing data
+The `fetch` method mimics
+the browser's [`fetch` API]((https://fetch.spec.whatwg.org/)).
+You can use it to access any kind of HTTP(S) document,
+regardless of whether that document is on a Solid pod:
 
-### `login`
-
-```
-SolidAuthClient#login (idp: string, {
-  callbackUri?: string,
-  storage?: Storage
-}): Promise<?session>
-```
-
-Authenticates the user with their IDP (identity provider) and promises an object
-containing the user's session.
-
-When the user is successfully authenticated, the session will be non-null.  When
-the user is not authenticated by the IDP, the session will be `null`.
-
-Auth flows like OIDC require the user to give consent on their identity provider.
-In such cases, this function will _redirect the user to their auth provider_.
-Then, call `currentSession` when the user gives consent and lands back in your app.
-
-If don't want to take the user away from your app,
-consider using the [popup workflow](#Logging-in-via-the-popup-app).
-
-If there's an error during the auth handshake, the Promise will reject.
-
-Options:
-- `callbackUri` (default current window location): a URI to be redirected back
-  to with credentials for auth flows which involve redirects
-- `storage`: An object implementing the storage interface for persisting
-  credentials.  `localStorage` is the default in the browser.
-
-### `popupLogin`
-
-```
-SolidAuthClient#popupLogin({
-  popupUri: ?string,
-  storage: AsyncStorage
-}): Promise<?session>
+```javascript
+solid.auth.fetch('https://timbl.com/timbl/Public/friends.ttl')
+  .then(console.log);
 ```
 
-Logs the user in using a popup window so that your app doesn't lose state.
-See [Logging in via the popup app](#Logging-in-via-the-popup-app).
-
-### `currentSession`
-
-```
-SolidAuthClient#currentSession (storage?: Storage): Promise<?session>
-```
-
-Finds the current session, and returns it if it is still active, otherwise
-`null`.
-
-### `logout`
-
-```
-SolidAuthClient#logout (storage?: Storage): Promise<void>
+```javascript
+async function showFriends() {
+  const { fetch } = solid.auth;
+  const response = await fetch('https://timbl.com/timbl/Public/friends.ttl')
+  console.log(response);
+}
+showFriends();
 ```
 
-Clears the active user session.
+If the document is on a Solid pod,
+and the user is logged in,
+they will be able to access private documents
+that require read or write permissions.
 
-### `fetch`
+### Logging in
+Since Solid is decentralized,
+users can have an account on any server.
+Therefore, users need to pick their identity provider (IDP)
+in order to log in.
 
-Fetches a resource from the web.  Same API as
-[fetch](https://fetch.spec.whatwg.org/), but retries with credentials when it
-encounters a `401` with a `WWW-Authenticate` header which matches a recognized
-authenticate scheme.
-
+If your application asks them
+for the URL of their identity provider,
+then you can call the `login` method with the IDP as an argument:
+```javascript
+async function login(idp) {
+  const session = await solid.auth.currentSession();
+  if (!session)
+    await solid.auth.login(idp);
+  else
+    alert(`Logged in as ${session.webId}`);
+}
+login('https://solid.community');
 ```
-SolidAuthClient#fetch: (url: RequestInfo, options?: Object) => Promise<Response>
+Be aware that this will _redirect_ the user away from your application
+to their identity provider.
+When they return, `currentSession()` will return their login information.
+
+If you want `solid-auth-client` to ask the user for their identity provider,
+then you can use a popup window:
+```javascript
+async function popupLogin() {
+  let session = await solid.auth.currentSession();
+  let popupUri = 'https://solid.community/common/popup.html';
+  if (!session)
+    session = await solid.auth.popupLogin({ popupUri });
+  alert(`Logged in as ${session.webId}`);
+}
+popupLogin();
+```
+The popup has the additional benefit
+that users are not redirected away.
+
+You can find a popup in `dist-popup/popup.html`.
+
+### Logging out
+To log out, simply call the `logout` method:
+```javascript
+solid.auth.logout()
+  .then(() => alert('Goodbye!'));
 ```
 
+### Getting the current user
+The current user is available through the `currentSession` method.
+This returns a session, with the `webId` field indicating the user's WebID.
+
+```javascript
+async function greetUser() {
+  const session = await solid.auth.currentSession();
+  if (!session)
+    alert('Hello stranger!');
+  else
+    alert(`Hello ${session.webId}!`);
+}
+greetUser();
+```
+
+If you want to track user login and logout,
+use the `trackSession` method instead.
+It will invoke the callback with the current session,
+and notify you of any changes to the login status.
+
+```javascript
+solid.auth.trackSession(session => {
+  if (!session)
+    alert('Hello stranger!');
+  else
+    alert(`Hello ${session.webId}!`);
+});
+```
 
 ### Events
 
-`SolidAuthClient` implements [`EventEmitter`](https://nodejs.org/api/events.html).
-It currently emits the following events:
+`SolidAuthClient` implements [`EventEmitter`](https://nodejs.org/api/events.html)
+and emits the following events:
 - `login (session: Session)` when a user logs in
 - `logout ()` when a user logs out
 - `session (session: Session | null)` when a user logs in or out
 
-### types
 
-```
-type webIdOidcSession = {
-  idp: string,
-  webId: string,
-  accessToken: string,
-  idToken: string
-}
-```
+## Advanced usage
 
-## Logging in via the popup app
-
+### Generating a popup window
 To log in with a popup window, you'll need a popup application running on a
 trusted domain which authenticates the user, handles redirects, and messages
 the authenticated session back to your application.
 
 In order to tell the user they're logging into *your* app, you'll need to
 generate a static popup bound to your application's name.
-
-### Generating a popup window
 
 0. Make sure you've got the `solid-auth-client` package installed globally.
 ```sh
@@ -174,13 +177,9 @@ $ solid-auth-client generate-popup # ["My App Name"] [my-app-popup.html]
 
 3. From within your own app, call `solid.auth.popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
 
-## Developing
 
-### Prerequisites
-
-This library assumes you have [node](https://nodejs.org/en/) >= v7.10.1
-installed. It may work with earlier
-versions, but that hasn't been tested thus far.
+## Developing `solid-auth-client`
+Developing this library requires [Node.js](https://nodejs.org/en/) >= v8.0.
 
 ### Setting up the development environment
 
@@ -192,7 +191,7 @@ $ npm run test     # run the code formatter, linter, and test suite
 $ npm run test:dev # just run the tests in watch mode
 ```
 
-### Acceptance Testing
+### Demo app
 
 You can test how `solid-auth-client` operates within an app by running the demo app.
 
