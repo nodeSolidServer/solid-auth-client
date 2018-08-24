@@ -27,6 +27,32 @@ and then use the ES6 module (`import { login, currentUser, logout } from
 'solid-auth-client'`), or grab the transpiled UMD bundle from
 `node_modules/solid-auth-client/dist-lib/solid-auth-client.bundle.js`.
 
+## Usage
+In the browser, the library is accessible through `solid.auth`:
+```html
+<script src="https://solid.github.io/solid-auth-client/dist/solid-auth-client.bundle.js"></script>
+<script>
+solid.auth.trackSession(session => {
+  if (!session)
+    console.log('The user is not logged in')
+  else
+    console.log(`The user is ${session.webId}`)
+})
+</script>
+```
+
+In Node.js, the library can be included as follows:
+```javascript
+const { default: auth } = require('solid-auth-client')
+
+auth.trackSession(session => {
+  if (!session)
+    console.log('The user is not logged in')
+  else
+    console.log(`The user is ${session.webId}`)
+})
+```
+
 ## API
 
 *This API doc uses [flow](https://flow.org/) type annotations for clarity.
@@ -36,7 +62,7 @@ functions.  You don't have to know anything about flow.*
 ### `login`
 
 ```
-SolidAuthClient.login (idp: string, {
+SolidAuthClient#login (idp: string, {
   callbackUri?: string,
   storage?: Storage
 }): Promise<?session>
@@ -66,7 +92,7 @@ Options:
 ### `popupLogin`
 
 ```
-SolidAuthClient.popupLogin({
+SolidAuthClient#popupLogin({
   popupUri: ?string,
   storage: AsyncStorage
 }): Promise<?session>
@@ -78,7 +104,7 @@ See [Logging in via the popup app](#Logging-in-via-the-popup-app).
 ### `currentSession`
 
 ```
-SolidAuthClient.currentSession (storage?: Storage): Promise<?session>
+SolidAuthClient#currentSession (storage?: Storage): Promise<?session>
 ```
 
 Finds the current session, and returns it if it is still active, otherwise
@@ -87,7 +113,7 @@ Finds the current session, and returns it if it is still active, otherwise
 ### `logout`
 
 ```
-SolidAuthClient.logout (storage?: Storage): Promise<void>
+SolidAuthClient#logout (storage?: Storage): Promise<void>
 ```
 
 Clears the active user session.
@@ -100,7 +126,7 @@ encounters a `401` with a `WWW-Authenticate` header which matches a recognized
 authenticate scheme.
 
 ```
-SolidAuthClient.fetch: (url: RequestInfo, options?: Object) => Promise<Response>
+SolidAuthClient#fetch: (url: RequestInfo, options?: Object) => Promise<Response>
 ```
 
 
@@ -146,7 +172,7 @@ $ solid-auth-client generate-popup # ["My App Name"] [my-app-popup.html]
 
 2. Place the popup file on your server (say at `https://localhost:8080/popup.html`).
 
-3. From within your own app, call `SolidAuthClient.popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
+3. From within your own app, call `solid.auth.popupLogin({ popupUri: 'https://localhost:8080/popup.html' })`.
 
 ## Developing
 
