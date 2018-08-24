@@ -12,3 +12,15 @@ Object.getOwnPropertyNames(SolidAuthClient.prototype).forEach(property => {
     auth[property] = value.bind(auth)
   }
 })
+
+// Backward compatibility: expose window.SolidAuthClient
+if (typeof window !== 'undefined') {
+  Object.defineProperty(window, 'SolidAuthClient', {
+    enumerable: true,
+    get: () => {
+      console.warn('window.SolidAuthClient has been deprecated.')
+      console.warn('Please use window.solid.auth instead.')
+      return auth
+    }
+  })
+}
