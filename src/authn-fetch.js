@@ -8,6 +8,9 @@ import { getSession } from './session'
 import type { AsyncStorage } from './storage'
 import * as WebIdOidc from './webid-oidc'
 
+// Store the global fetch, so the user can safely override it
+const globalFetch = fetch
+
 export function authnFetch(
   storage: AsyncStorage
 ): (RequestInfo, ?Object) => Promise<Response> {
@@ -18,7 +21,7 @@ export function authnFetch(
     if (session && shouldShareCreds) {
       return fetchWithCredentials(session, url, options)
     }
-    const resp = await fetch(url, options)
+    const resp = await globalFetch(url, options)
     if (resp.status === 401) {
       await updateHostFromResponse(storage)(resp)
       const shouldShareCreds = await shouldShareCredentials(storage)(url)

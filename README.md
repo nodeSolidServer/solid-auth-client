@@ -55,12 +55,9 @@ solid.auth.fetch('https://timbl.com/timbl/Public/friends.ttl')
 ```
 
 ```javascript
-async function showFriends() {
-  const { fetch } = solid.auth;
-  const response = await fetch('https://timbl.com/timbl/Public/friends.ttl')
-  console.log(response);
-}
-showFriends();
+const { fetch } = solid.auth;
+fetch('https://timbl.com/timbl/Public/friends.ttl')
+  .then(console.log);
 ```
 
 If the document is on a Solid pod,
