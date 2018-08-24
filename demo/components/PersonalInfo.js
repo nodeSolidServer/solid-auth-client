@@ -1,23 +1,24 @@
 // @flow
-import 'isomorphic-fetch'
 import React from 'react'
 
 import SolidAuthClient from '../../src/'
-import type { Session } from '../../src/session'
 
 type Profile = {
   'foaf:name': ?{ '@value': string }
 }
 
 export default class PersonalInfo extends React.Component<Object, Object> {
-  props: { session: ?Session }
-
-  defaultProps = {
-    session: null
-  }
-
-  state: { profile: Profile } = {
-    profile: { 'foaf:name': null }
+  constructor(props: {}) {
+    super(props)
+    SolidAuthClient.trackSession(async session => {
+      let webId, profile, name
+      if (session) {
+        webId = session.webId
+        profile = await this.fetchProfile(webId)
+        name = profile['foaf:name'] && profile['foaf:name']['@value']
+      }
+      this.setState({ webId, name })
+    })
   }
 
   fetchProfile = (webId: string): Promise<Profile> => {
@@ -31,24 +32,13 @@ export default class PersonalInfo extends React.Component<Object, Object> {
     }).then(resp => resp.json())
   }
 
-  saveProfile = (profile: Profile): void => this.setState({ profile })
-
-  componentWillReceiveProps(props: { session: ?Session }) {
-    if (props.session) {
-      this.fetchProfile(props.session.webId).then(this.saveProfile)
-    }
-  }
-
   render() {
-    const { session } = this.props
-    const name = this.state.profile['foaf:name']
-      ? this.state.profile['foaf:name']['@value']
-      : 'unnamed person'
-    return session ? (
+    const { webId, name } = this.state
+    return webId ? (
       <div>
         Hey there, <span>{name}</span>! Your WebID is:{' '}
-        <a href={session.webId} target="_blank">
-          <code>{session.webId}</code>
+        <a href={webId} target="_blank">
+          <code>{webId}</code>
         </a>
       </div>
     ) : null

@@ -1,5 +1,6 @@
 // @flow
 /* global RequestInfo, Response */
+import EventEmitter from 'events'
 import { authnFetch } from './authn-fetch'
 import { openIdpSelector, startPopupServer } from './popup'
 import type { Session } from './session'
@@ -24,7 +25,7 @@ const defaultLoginOptions = (): loginOptions => {
   }
 }
 
-export default class SolidAuthClient {
+export default class SolidAuthClient extends EventEmitter {
   fetch(url: RequestInfo, options?: Object): Promise<Response> {
     return authnFetch(defaultStorage())(url, options)
   }
@@ -55,6 +56,8 @@ export default class SolidAuthClient {
       childWindow,
       options
     )
+    this.emit('login', session)
+    this.emit('session', session)
     return session
   }
 
@@ -69,10 +72,18 @@ export default class SolidAuthClient {
         console.error(err)
       }
       if (session) {
+        this.emit('login', session)
+        this.emit('session', session)
         await saveSession(storage)(session)
       }
     }
     return session
+  }
+
+  async trackSession(callback: Function): Promise<void> {
+    /* eslint-disable standard/no-callback-literal */
+    callback(await this.currentSession())
+    this.on('session', callback)
   }
 
   async logout(storage: AsyncStorage = defaultStorage()): Promise<void> {
@@ -80,6 +91,8 @@ export default class SolidAuthClient {
     if (session) {
       try {
         await WebIdOidc.logout(storage)
+        this.emit('logout')
+        this.emit('session', null)
       } catch (err) {
         console.warn('Error logging out:')
         console.error(err)

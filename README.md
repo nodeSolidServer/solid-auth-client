@@ -103,6 +103,15 @@ authenticate scheme.
 SolidAuthClient.fetch: (url: RequestInfo, options?: Object) => Promise<Response>
 ```
 
+
+### Events
+
+`SolidAuthClient` implements [`EventEmitter`](https://nodejs.org/api/events.html).
+It currently emits the following events:
+- `login (session: Session)` when a user logs in
+- `logout ()` when a user logs out
+- `session (session: Session | null)` when a user logs in or out
+
 ### types
 
 ```
