@@ -1,13 +1,11 @@
 import React from 'react'
 
-import SolidAuthClient from '../../src/'
+import auth from '../../src/'
 
 export default class Copy extends React.Component<Object, Object> {
   constructor(props) {
     super(props)
-    SolidAuthClient.trackSession(session =>
-      this.setState({ loggedIn: !!session })
-    )
+    auth.trackSession(session => this.setState({ loggedIn: !!session }))
   }
 
   render() {

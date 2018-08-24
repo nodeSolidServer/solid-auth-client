@@ -1,7 +1,7 @@
 // @flow
 import React from 'react'
 
-import SolidAuthClient from '../../src/'
+import auth from '../../src/'
 
 type Profile = {
   'foaf:name': ?{ '@value': string }
@@ -10,7 +10,7 @@ type Profile = {
 export default class PersonalInfo extends React.Component<Object, Object> {
   constructor(props: {}) {
     super(props)
-    SolidAuthClient.trackSession(async session => {
+    auth.trackSession(async session => {
       let webId, profile, name
       if (session) {
         webId = session.webId
@@ -26,10 +26,12 @@ export default class PersonalInfo extends React.Component<Object, Object> {
       @prefix foaf http://xmlns.com/foaf/0.1/
       ${webId} { foaf:name }
     `
-    return SolidAuthClient.fetch('https://databox.me/,query', {
-      method: 'POST',
-      body: query
-    }).then(resp => resp.json())
+    return auth
+      .fetch('https://databox.me/,query', {
+        method: 'POST',
+        body: query
+      })
+      .then(resp => resp.json())
   }
 
   render() {

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import SolidAuthClient from '../../src'
+import auth from '../../src'
 import { client } from '../../src/ipc'
 import { postMessageStorage } from '../../src/storage'
 
@@ -64,7 +64,7 @@ class IdpSelect extends React.Component {
       ...loginOptions,
       storage: postMessageStorage(window.opener, appOrigin)
     }
-    await SolidAuthClient.login(idp.url, loginOptions)
+    await auth.login(idp.url, loginOptions)
   }
 
   componentDidUpdate() {
