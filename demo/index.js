@@ -6,13 +6,13 @@ import './index.css'
 
 import App from './components/App'
 
-import SolidAuthClient from '../src'
+import auth from '../src'
 
 // for demo/debug purposes
-window.SolidAuthClient = SolidAuthClient
+window.solid = { auth }
 console.log('Welcome to the solid-auth-client demo!')
 console.log(
-  'Check out window.SolidAuthClient to explore the interface at the code level.'
+  'Check out window.solid.auth to explore the interface at the code level.'
 )
 console.log(
   'If you find a bug please file it at https://github.com/solid/solid-auth-client/issues/'
