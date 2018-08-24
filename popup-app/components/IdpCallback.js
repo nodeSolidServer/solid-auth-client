@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 
-import SolidAuthClient from '../../src'
+import auth from '../../src'
 import { client } from '../../src/ipc'
 import { postMessageStorage } from '../../src/storage'
 
@@ -11,7 +11,7 @@ export default class IdpCallback extends Component {
 
   postSession = async () => {
     const storage = postMessageStorage(window.opener, this.props.appOrigin)
-    const session = await SolidAuthClient.currentSession(storage)
+    const session = await auth.currentSession(storage)
     return this.request({ method: 'foundSession', args: [session] })
   }
 
