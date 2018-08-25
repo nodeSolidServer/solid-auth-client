@@ -18,11 +18,15 @@ module.exports = auth
 
 // Expose window.SolidAuthClient for backward compatibility
 if (typeof window !== 'undefined') {
+  let warned = false
   Object.defineProperty(window, 'SolidAuthClient', {
     enumerable: true,
     get: () => {
-      console.warn('window.SolidAuthClient has been deprecated.')
-      console.warn('Please use window.solid.auth instead.')
+      if (!warned) {
+        warned = true
+        console.warn('window.SolidAuthClient has been deprecated.')
+        console.warn('Please use window.solid.auth instead.')
+      }
       return auth
     }
   })
