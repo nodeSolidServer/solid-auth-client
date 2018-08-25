@@ -35,7 +35,7 @@ export const currentSession = async (
       return null
     }
     const url = currentUrl()
-    if (!url || !url.includes('#')) {
+    if (!url || !url.includes('#access_token=')) {
       return null
     }
     const storeData = await getData(storage)
