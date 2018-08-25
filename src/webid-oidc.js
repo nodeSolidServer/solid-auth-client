@@ -1,12 +1,12 @@
 // @flow
-/* global fetch, RequestInfo, Response */
+/* global RequestInfo, Response */
 import 'isomorphic-fetch'
 import * as authorization from 'auth-header'
 import RelyingParty from '@trust/oidc-rp'
 import PoPToken from '@trust/oidc-rp/lib/PoPToken'
 
 import type { loginOptions } from './solid-auth-client'
-import { currentUrl, navigateTo } from './url-util'
+import { currentUrl, navigateTo, toUrlString } from './url-util'
 import type { webIdOidcSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
@@ -175,10 +175,11 @@ export const requiresAuth = (resp: Response): boolean => {
  * Assumes that the resource has requested those tokens in a previous response.
  */
 export const fetchWithCredentials = (session: webIdOidcSession) => async (
-  url: RequestInfo,
+  fetch: Function,
+  input: RequestInfo,
   options?: Object
 ): Promise<Response> => {
-  const popToken = await PoPToken.issueFor(url, session)
+  const popToken = await PoPToken.issueFor(toUrlString(input), session)
   const authenticatedOptions = {
     ...options,
     credentials: 'include',
@@ -187,5 +188,5 @@ export const fetchWithCredentials = (session: webIdOidcSession) => async (
       authorization: `Bearer ${popToken}`
     }
   }
-  return fetch(url, authenticatedOptions)
+  return fetch(input, authenticatedOptions)
 }

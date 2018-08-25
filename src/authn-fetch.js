@@ -2,6 +2,7 @@
 /* global fetch, RequestInfo, Response */
 import 'isomorphic-fetch'
 
+import { toUrlString } from './url-util'
 import { getHost, updateHostFromResponse } from './host'
 import type { Session } from './session'
 import { getSession } from './session'
@@ -14,19 +15,19 @@ const globalFetch = fetch
 export function authnFetch(
   storage: AsyncStorage
 ): (RequestInfo, ?Object) => Promise<Response> {
-  return async (url, options) => {
+  return async (input, options) => {
     options = options || {}
     const session = await getSession(storage)
-    const shouldShareCreds = await shouldShareCredentials(storage)(url)
+    const shouldShareCreds = await shouldShareCredentials(storage)(input)
     if (session && shouldShareCreds) {
-      return fetchWithCredentials(session, url, options)
+      return fetchWithCredentials(session, input, options)
     }
-    const resp = await globalFetch(url, options)
+    const resp = await globalFetch(input, options)
     if (resp.status === 401) {
       await updateHostFromResponse(storage)(resp)
-      const shouldShareCreds = await shouldShareCredentials(storage)(url)
+      const shouldShareCreds = await shouldShareCredentials(storage)(input)
       if (session && shouldShareCreds) {
-        return fetchWithCredentials(session, url, options)
+        return fetchWithCredentials(session, input, options)
       }
     }
     return resp
@@ -35,21 +36,21 @@ export function authnFetch(
 
 function shouldShareCredentials(
   storage: AsyncStorage
-): (url: RequestInfo) => Promise<boolean> {
-  return async url => {
+): (input: RequestInfo) => Promise<boolean> {
+  return async input => {
     const session = await getSession(storage)
     if (!session) {
       return false
     }
-    const requestHost = await getHost(storage)(url)
+    const requestHost = await getHost(storage)(toUrlString(input))
     return requestHost != null && requestHost.requiresAuth
   }
 }
 
 const fetchWithCredentials = async (
   session: Session,
-  url: RequestInfo,
+  input: RequestInfo,
   options?: Object
 ): Promise<Response> => {
-  return WebIdOidc.fetchWithCredentials(session)(url, options)
+  return WebIdOidc.fetchWithCredentials(session)(globalFetch, input, options)
 }

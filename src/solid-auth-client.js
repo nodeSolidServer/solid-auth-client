@@ -25,8 +25,8 @@ const defaultLoginOptions = (url: ?string): loginOptions => {
 }
 
 export default class SolidAuthClient extends EventEmitter {
-  fetch(url: RequestInfo, options?: Object): Promise<Response> {
-    return authnFetch(defaultStorage())(url, options)
+  fetch(input: RequestInfo, options?: Object): Promise<Response> {
+    return authnFetch(defaultStorage())(input, options)
   }
 
   async login(idp: string, options: loginOptions): Promise<?Session> {

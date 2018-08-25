@@ -1,5 +1,5 @@
 // @flow
-/* global RequestInfo, Request, Response, URL */
+/* globalRequest, Response, URL */
 import { getSession } from './session'
 import type { AsyncStorage } from './storage'
 import { getData, updateStorage } from './storage'
@@ -10,28 +10,15 @@ export type host = {
   requiresAuth: boolean
 }
 
-export const hostNameFromRequestInfo = (url: RequestInfo): string => {
-  const _url =
-    url instanceof URL
-      ? url
-      : url instanceof Request
-        ? new URL(url.url)
-        : new URL(url)
-  return _url.host
-}
-
-export function getHost(storage: AsyncStorage): RequestInfo => Promise<?host> {
+export function getHost(storage: AsyncStorage): string => Promise<?host> {
   return async url => {
-    const requestHostName = hostNameFromRequestInfo(url)
+    const { host } = new URL(url)
     const session = await getSession(storage)
-    if (session && hostNameFromRequestInfo(session.idp) === requestHostName) {
-      return { url: requestHostName, requiresAuth: true }
+    if (session && host === new URL(session.idp).host) {
+      return { url: host, requiresAuth: true }
     }
     const { hosts } = await getData(storage)
-    if (!hosts) {
-      return null
-    }
-    return hosts[requestHostName] || null
+    return hosts && hosts[host]
   }
 }
 
@@ -52,8 +39,8 @@ export function updateHostFromResponse(
 ): Response => Promise<void> {
   return async resp => {
     if (WebIdOidc.requiresAuth(resp)) {
-      const hostName = hostNameFromRequestInfo(resp.url)
-      await saveHost(storage)({ url: hostName, requiresAuth: true })
+      const { host } = new URL(resp.url)
+      await saveHost(storage)({ url: host, requiresAuth: true })
     }
   }
 }
