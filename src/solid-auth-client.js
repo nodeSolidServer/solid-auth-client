@@ -11,16 +11,15 @@ import { currentUrlNoParams } from './url-util'
 import * as WebIdOidc from './webid-oidc'
 
 export type loginOptions = {
-  callbackUri: ?string,
-  popupUri: ?string,
+  callbackUri: string,
+  popupUri: string,
   storage: AsyncStorage
 }
 
-const defaultLoginOptions = (): loginOptions => {
-  const url = currentUrlNoParams()
+const defaultLoginOptions = (url: ?string): loginOptions => {
   return {
-    callbackUri: url ? url.split('#')[0] : null,
-    popupUri: null,
+    callbackUri: url ? url.split('#')[0] : '',
+    popupUri: '',
     storage: defaultStorage()
   }
 }
@@ -31,25 +30,22 @@ export default class SolidAuthClient extends EventEmitter {
   }
 
   async login(idp: string, options: loginOptions): Promise<?Session> {
-    options = { ...defaultLoginOptions(), ...options }
+    options = { ...defaultLoginOptions(currentUrlNoParams()), ...options }
     const webIdOidcLogin = await WebIdOidc.login(idp, options)
     return webIdOidcLogin
   }
 
   async popupLogin(options: loginOptions): Promise<?Session> {
-    if (!options.popupUri) {
-      throw new Error('Must provide options.popupUri')
-    }
+    options = { ...defaultLoginOptions(), ...options }
     if (!/https?:/.test(options.popupUri)) {
       options.popupUri = new URL(
-        options.popupUri || '',
+        options.popupUri || '/.well-known/solid/login',
         window.location
       ).toString()
     }
     if (!options.callbackUri) {
       options.callbackUri = options.popupUri
     }
-    options = { ...defaultLoginOptions(), ...options }
     const childWindow = openIdpSelector(options)
     const session = await startPopupServer(
       options.storage,

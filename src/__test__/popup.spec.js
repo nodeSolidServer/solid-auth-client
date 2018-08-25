@@ -155,8 +155,8 @@ describe('startPopupServer', () => {
     const store = defaultStorage()
     await expect(
       startPopupServer(store, window, {
-        popupUri: null,
-        callbackUri: null,
+        popupUri: '',
+        callbackUri: '',
         storage: store
       })
     ).rejects.toBeInstanceOf(Error)
