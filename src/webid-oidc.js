@@ -1,6 +1,5 @@
 // @flow
 /* global RequestInfo, Response */
-import 'isomorphic-fetch'
 import * as authorization from 'auth-header'
 import RelyingParty from '@trust/oidc-rp'
 import PoPToken from '@trust/oidc-rp/lib/PoPToken'
