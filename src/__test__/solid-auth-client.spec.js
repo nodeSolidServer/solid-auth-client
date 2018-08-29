@@ -70,6 +70,16 @@ const verifySerializedKey = ssk => {
   expect(new Set(actualFields)).toEqual(new Set(expectedFields))
 }
 
+const fakeSession = {
+  idp: 'https://localhost',
+  webId: 'https://person.me/#me',
+  authorization: {
+    access_token: 'fake_access_token',
+    id_token: 'abc.def.ghi'
+  },
+  sessionKey
+}
+
 beforeEach(() => {
   polyfillWindow()
   nock.disableNetConnect()
@@ -191,13 +201,7 @@ describe('login', () => {
 describe('currentSession', () => {
   it('can find the current session if stored', async () => {
     expect.assertions(2)
-    await saveSession(window.localStorage)({
-      idp: 'https://localhost',
-      webId: 'https://person.me/#me',
-      accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi',
-      sessionKey
-    })
+    await saveSession(window.localStorage)(fakeSession)
 
     const session = await instance.currentSession()
     expect(session.webId).toBe('https://person.me/#me')
@@ -268,9 +272,10 @@ describe('currentSession', () => {
     it('can find the current session from the URL auth response', async () => {
       expect.assertions(6)
       const session = await instance.currentSession()
+      const { authorization } = session
       expect(session.webId).toBe('https://person.me/#me')
-      expect(session.accessToken).toBe(expectedAccessToken)
-      expect(session.idToken).toBe(expectedIdToken)
+      expect(authorization.access_token).toBe(expectedAccessToken)
+      expect(authorization.id_token).toBe(expectedIdToken)
       verifySerializedKey(session.sessionKey)
       expect(await getStoredSession()).toEqual(session)
       expect(window.location.hash).toBe('#the-hash-fragment')
@@ -404,6 +409,7 @@ describe('logout', () => {
         .get('/logout')
         .reply(200)
 
+      window.location.href = 'https://app.biz/page?foo=bar#the-hash-fragment'
       await instance.login('https://localhost')
       // generate the auth response
       const location = new window.URL(window.location.href)
@@ -436,9 +442,10 @@ describe('logout', () => {
     it('hits the end_session_endpoint and clears the current session from the store', async () => {
       expect.assertions(7)
       const session = await instance.currentSession()
+      const { authorization } = session
       expect(session.webId).toBe('https://person.me/#me')
-      expect(session.accessToken).toBe(expectedAccessToken)
-      expect(session.idToken).toBe(expectedIdToken)
+      expect(authorization.access_token).toBe(expectedAccessToken)
+      expect(authorization.id_token).toBe(expectedIdToken)
       verifySerializedKey(session.sessionKey)
       expect(window.location.hash).toBe('#the-hash-fragment')
       const storedSession = await getStoredSession()
@@ -490,7 +497,7 @@ describe('logout', () => {
   })
 })
 
-describe('fetch', () => {
+describe.only('fetch', () => {
   const matchAuthzHeader = origin => headerVal => {
     const popToken = jwt.decode(headerVal[0].split(' ')[1])
     return (
@@ -502,13 +509,7 @@ describe('fetch', () => {
 
   it('handles 401s from WebID-OIDC resources by resending with credentials', async () => {
     expect.assertions(1)
-    await saveSession(window.localStorage)({
-      idp: 'https://localhost',
-      webId: 'https://person.me/#me',
-      accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi',
-      sessionKey
-    })
+    await saveSession(window.localStorage)(fakeSession)
 
     nock('https://third-party.com')
       .get('/protected-resource')
@@ -524,13 +525,7 @@ describe('fetch', () => {
   })
 
   it('merges request headers with the authorization header', async () => {
-    await saveSession(window.localStorage)({
-      idp: 'https://localhost',
-      webId: 'https://person.me/#me',
-      accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi',
-      sessionKey
-    })
+    await saveSession(window.localStorage)(fakeSession)
 
     nock('https://third-party.com')
       .get('/private-resource')
@@ -551,13 +546,7 @@ describe('fetch', () => {
 
   it('does not resend with credentials if the www-authenticate header is missing', async () => {
     expect.assertions(1)
-    await saveSession(window.localStorage)({
-      idp: 'https://localhost',
-      webId: 'https://person.me/#me',
-      accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi',
-      sessionKey
-    })
+    await saveSession(window.localStorage)(fakeSession)
 
     nock('https://third-party.com')
       .get('/protected-resource')
@@ -570,13 +559,7 @@ describe('fetch', () => {
   })
 
   it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', async () => {
-    await saveSession(window.localStorage)({
-      idp: 'https://localhost',
-      webId: 'https://person.me/#me',
-      accessToken: 'fake_access_token',
-      idToken: 'abc.def.ghi',
-      sessionKey
-    })
+    await saveSession(window.localStorage)(fakeSession)
 
     nock('https://third-party.com')
       .get('/protected-resource')
@@ -627,13 +610,7 @@ describe('fetch', () => {
   describe('familiar domains with WebID-OIDC', () => {
     it('just sends one request when the RP is also the IDP', async () => {
       expect.assertions(1)
-      await saveSession(window.localStorage)({
-        idp: 'https://localhost',
-        webId: 'https://person.me/#me',
-        accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi',
-        sessionKey
-      })
+      await saveSession(window.localStorage)(fakeSession)
 
       nock('https://localhost')
         .get('/resource')
@@ -646,13 +623,7 @@ describe('fetch', () => {
 
     it('just sends one request to domains it has already encountered', async () => {
       expect.assertions(1)
-      await saveSession(window.localStorage)({
-        idp: 'https://localhost',
-        webId: 'https://person.me/#me',
-        accessToken: 'fake_access_token',
-        idToken: 'abc.def.ghi',
-        sessionKey
-      })
+      await saveSession(window.localStorage)(fakeSession)
 
       await saveHost(window.localStorage)({
         url: 'third-party.com',

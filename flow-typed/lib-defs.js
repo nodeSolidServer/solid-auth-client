@@ -2,7 +2,7 @@ declare module 'auth-header' {
   declare export function parse(wwwAuthHeader: string): Object
 }
 
-declare module '@trust/oidc-rp' {
+declare module '@solid/oidc-rp' {
   declare export default class RelyingParty {
     provider: { url: string },
     static from(data: Object): Promise<RelyingParty>,

@@ -1,8 +1,8 @@
 // @flow
 /* global RequestInfo, Response */
 import * as authorization from 'auth-header'
-import RelyingParty from '@trust/oidc-rp'
-import PoPToken from '@trust/oidc-rp/lib/PoPToken'
+import RelyingParty from '@solid/oidc-rp'
+import PoPToken from '@solid/oidc-rp/lib/PoPToken'
 
 import type { loginOptions } from './solid-auth-client'
 import { currentUrl, navigateTo, toUrlString } from './url-util'
@@ -38,19 +38,15 @@ export const currentSession = async (
       return null
     }
     const storeData = await getData(storage)
-    const resp = await rp.validateResponse(url, storeData)
-    if (!resp) {
+    const session = await rp.validateResponse(url, storeData)
+    if (!session) {
       return null
     }
     await restoreAppHashFragment(storage)
-    const { idp, idToken, accessToken, clientId, sessionKey } = resp
     return {
-      webId: resp.decoded.payload.sub,
-      idp,
-      idToken,
-      accessToken,
-      clientId,
-      sessionKey
+      ...session,
+      webId: session.idClaims.sub,
+      idp: session.issuer
     }
   } catch (err) {
     console.warn('Error finding a WebID-OIDC session')
