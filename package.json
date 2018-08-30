@@ -1,6 +1,6 @@
 {
   "name": "solid-auth-client",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Opaquely authenticates solid clients",
   "main": "lib/index.js",
   "bin": "./bin/solid-auth-client.js",
@@ -47,10 +47,10 @@
     "auth-header": "^0.3.1",
     "commander": "^2.11.0",
     "isomorphic-fetch": "^2.2.1",
-    "uuid": "^3.1.0"
+    "uuid": "^3.1.0",
+    "@solid/oidc-rp": "^0.7.1",
   },
   "devDependencies": {
-    "@solid/oidc-rp": "^0.7.1",
     "babel-cli": "^6.24.1",
     "babel-eslint": "^8.2.3",
     "babel-jest": "^23.4.2",
