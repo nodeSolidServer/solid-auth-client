@@ -14,8 +14,8 @@ export default class Copy extends React.Component<Object, Object> {
       <p>
         This is a simple demo of the Solid Auth Client. You're currently
         {loggedIn
-          ? ' logged in'
-          : ' anonymous. Click "Log in" to authenticate and see some information about yourself'}.
+          ? ' logged in.'
+          : ' anonymous. Click "Log in" to authenticate and see some information about yourself.'}
       </p>
     )
   }
