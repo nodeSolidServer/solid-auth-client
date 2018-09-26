@@ -1,17 +1,12 @@
 {
   "presets": [
-    ["flow"],
-    ["react"],
-    ["env", {
-      "targets": {
-        "browsers": ["last 2 versions"],
-        "node": "8",
-      }
-    }]
+    ["@babel/flow"],
+    ["@babel/react"],
+    ["@babel/env"],
   ],
   "plugins": [
-    "transform-runtime",
-    "transform-object-rest-spread",
-    "transform-class-properties",
+    "@babel/plugin-transform-runtime",
+    "@babel/plugin-proposal-object-rest-spread",
+    "@babel/plugin-proposal-class-properties",
   ]
 }

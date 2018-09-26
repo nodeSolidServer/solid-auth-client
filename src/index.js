@@ -1,4 +1,4 @@
-import SolidAuthClient from './solid-auth-client'
+const SolidAuthClient = require('./solid-auth-client').default
 
 // Export a singleton instance of SolidAuthClient
 const auth = new SolidAuthClient()
@@ -13,7 +13,7 @@ Object.getOwnPropertyNames(SolidAuthClient.prototype).forEach(property => {
 })
 
 // Export the instance as an object for backward compatibility
-// (should become a default export of auth)
+// (should become a default export)
 module.exports = auth
 
 // Expose window.SolidAuthClient for backward compatibility

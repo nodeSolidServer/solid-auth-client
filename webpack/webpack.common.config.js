@@ -24,6 +24,7 @@ module.exports = {
     'node-fetch': 'fetch',
     'text-encoding': 'TextEncoder',
     'whatwg-url': 'window',
+    'isomorphic-fetch': 'fetch',
     '@trust/webcrypto': 'crypto'
   },
   devtool: 'source-map'
