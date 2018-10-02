@@ -24,7 +24,7 @@
   ],
   "license": "MIT",
   "scripts": {
-    "preinstall": "node .check-engines-requirements",
+    "postinstall": "node .check-engine-version",
     "start:lib": "webpack-dev-server --env development --config=./webpack/webpack.lib.config.js",
     "start:demo": "webpack-dev-server --env development --config=./webpack/webpack.demo.config.js",
     "start:popup": "webpack-dev-server --env development --config=./webpack/webpack.popup.config.js",
