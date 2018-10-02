@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+const semver = require('semver')
+const packageJson = require('./package')
+
+const nodeVersion = packageJson.engines.node
+
+if (!semver.satisfies(process.version, nodeVersion)) {
+  console.log(
+    `Required node version ${nodeVersion} not satisfied with current version ${
+      process.version
+    }.`
+  )
+  process.exit(1)
+}
