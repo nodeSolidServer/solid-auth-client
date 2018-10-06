@@ -6,10 +6,9 @@ import { getData, updateStorage } from './storage'
 export type webIdOidcSession = {
   idp: string,
   webId: string,
-  accessToken: string,
-  idToken: string,
-  clientId: string,
-  sessionKey: string
+  authorization: {
+    id_token: string
+  }
 }
 
 export type Session = webIdOidcSession

@@ -7,6 +7,7 @@ import PoPToken from '@solid/oidc-rp/lib/PoPToken'
 import type { loginOptions } from './solid-auth-client'
 import { currentUrl, navigateTo, toUrlString } from './url-util'
 import type { webIdOidcSession } from './session'
+import { getSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
 
@@ -55,11 +56,18 @@ export async function currentSession(
   }
 }
 
-export async function logout(storage: AsyncStorage): Promise<void> {
+export async function logout(
+  storage: AsyncStorage,
+  fetch: Function
+): Promise<void> {
   const rp = await getStoredRp(storage)
-  if (rp) {
+  const session = await getSession(storage)
+  if (rp && session) {
     try {
-      rp.logout()
+      const url = rp.logoutRequest({
+        id_token_hint: session.authorization.id_token
+      })
+      await fetch(url, { method: 'POST' })
     } catch (err) {
       console.warn('Error logging out of the WebID-OIDC session')
       console.error(err)
