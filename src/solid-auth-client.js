@@ -1,5 +1,5 @@
 // @flow
-/* global RequestInfo, Response */
+/* global fetch */
 import EventEmitter from 'events'
 import { authnFetch } from './authn-fetch'
 import { openIdpSelector, startPopupServer } from './popup'
@@ -10,29 +10,23 @@ import { defaultStorage } from './storage'
 import { currentUrlNoParams } from './url-util'
 import * as WebIdOidc from './webid-oidc'
 
+// Store the global fetch, so the user is free to override it
+const globalFetch = fetch
+
 export type loginOptions = {
   callbackUri: string,
   popupUri: string,
   storage: AsyncStorage
 }
 
-const defaultLoginOptions = (url: ?string): loginOptions => {
-  return {
-    callbackUri: url ? url.split('#')[0] : '',
-    popupUri: '',
-    storage: defaultStorage()
-  }
-}
-
 export default class SolidAuthClient extends EventEmitter {
-  fetch(input: RequestInfo, options?: Object): Promise<Response> {
-    return authnFetch(defaultStorage())(input, options)
+  fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
+    return authnFetch(defaultStorage(), globalFetch, input, options)
   }
 
-  async login(idp: string, options: loginOptions): Promise<?Session> {
+  login(idp: string, options: loginOptions): Promise<?Session> {
     options = { ...defaultLoginOptions(currentUrlNoParams()), ...options }
-    const webIdOidcLogin = await WebIdOidc.login(idp, options)
-    return webIdOidcLogin
+    return WebIdOidc.login(idp, options)
   }
 
   async popupLogin(options: loginOptions): Promise<?Session> {
@@ -95,5 +89,13 @@ export default class SolidAuthClient extends EventEmitter {
       }
       await clearSession(storage)
     }
+  }
+}
+
+function defaultLoginOptions(url: ?string): loginOptions {
+  return {
+    callbackUri: url ? url.split('#')[0] : '',
+    popupUri: '',
+    storage: defaultStorage()
   }
 }

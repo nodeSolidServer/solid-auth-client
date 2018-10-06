@@ -1,56 +1,46 @@
 // @flow
-/* global fetch, RequestInfo, Response */
 import 'isomorphic-fetch'
 
 import { toUrlString } from './url-util'
 import { getHost, updateHostFromResponse } from './host'
-import type { Session } from './session'
 import { getSession } from './session'
 import type { AsyncStorage } from './storage'
-import * as WebIdOidc from './webid-oidc'
+import { fetchWithCredentials } from './webid-oidc'
 
-// Store the global fetch, so the user can safely override it
-const globalFetch = fetch
-
-export function authnFetch(
-  storage: AsyncStorage
-): (RequestInfo, ?Object) => Promise<Response> {
-  return async (input, options) => {
-    options = options || {}
-    const session = await getSession(storage)
-    const shouldShareCreds = await shouldShareCredentials(storage)(input)
-    if (session && shouldShareCreds) {
-      return fetchWithCredentials(session, input, options)
-    }
-    const resp = await globalFetch(input, options)
-    if (resp.status === 401) {
-      await updateHostFromResponse(storage)(resp)
-      const shouldShareCreds = await shouldShareCredentials(storage)(input)
-      if (session && shouldShareCreds) {
-        return fetchWithCredentials(session, input, options)
-      }
-    }
-    return resp
-  }
-}
-
-function shouldShareCredentials(
-  storage: AsyncStorage
-): (input: RequestInfo) => Promise<boolean> {
-  return async input => {
-    const session = await getSession(storage)
-    if (!session) {
-      return false
-    }
-    const requestHost = await getHost(storage)(toUrlString(input))
-    return requestHost != null && requestHost.requiresAuth
-  }
-}
-
-const fetchWithCredentials = async (
-  session: Session,
+export async function authnFetch(
+  storage: AsyncStorage,
+  fetch: Function,
   input: RequestInfo,
-  options?: Object
-): Promise<Response> => {
-  return WebIdOidc.fetchWithCredentials(session)(globalFetch, input, options)
+  options?: RequestOptions
+): Promise<Response> {
+  // If not authenticated, perform a regular fetch
+  const session = await getSession(storage)
+  if (!session) {
+    return fetch(input, options)
+  }
+
+  // If we know the server expects credentials, send them
+  if (await shouldShareCredentials(storage, input)) {
+    return fetchWithCredentials(session, fetch, input, options)
+  }
+
+  // If we don't know for sure, try a regular fetch first
+  let resp = await fetch(input, options)
+
+  // If the server then requests credentials, send them
+  if (resp.status === 401) {
+    await updateHostFromResponse(storage)(resp)
+    if (await shouldShareCredentials(storage, input)) {
+      resp = fetchWithCredentials(session, fetch, input, options)
+    }
+  }
+  return resp
+}
+
+async function shouldShareCredentials(
+  storage: AsyncStorage,
+  input: RequestInfo
+): Promise<boolean> {
+  const requestHost = await getHost(storage)(toUrlString(input))
+  return requestHost != null && requestHost.requiresAuth
 }

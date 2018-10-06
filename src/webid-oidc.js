@@ -174,11 +174,12 @@ export function requiresAuth(resp: Response): boolean {
  * Fetches a resource, providing the WebID-OIDC ID Token as authentication.
  * Assumes that the resource has requested those tokens in a previous response.
  */
-export const fetchWithCredentials = (session: webIdOidcSession) => async (
+export async function fetchWithCredentials(
+  session: webIdOidcSession,
   fetch: Function,
   input: RequestInfo,
-  options?: Object
-): Promise<Response> => {
+  options?: RequestOptions
+): Promise<Response> {
   const popToken = await PoPToken.issueFor(toUrlString(input), session)
   const authenticatedOptions = {
     ...options,
