@@ -1,4 +1,4 @@
-# A library for authenticating to Solid pods
+# solid-auth-client: A library for authentication to Solid pods
 
 [![Build Status](https://travis-ci.org/solid/solid-auth-client.svg?branch=master)](https://travis-ci.org/solid/solid-auth-client)
 [![Coverage Status](https://coveralls.io/repos/github/solid/solid-auth-client/badge.svg?branch=master)](https://coveralls.io/github/solid/solid-auth-client?branch=master)
