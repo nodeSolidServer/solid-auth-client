@@ -19,7 +19,7 @@ In browser, the `solid-auth-client` library is accessible through `solid.auth`.
 ```html
  <script src="https://solid.github.io/solid-auth-client/dist/solid-auth-client.bundle.js"></script>
 ```
-*This bundle is meant for testing purposes only, you should build your own bundles from the latest release source. The build instructions are provided below.*
+*This bundle is meant for testing purposes only, you should build your own bundles from the latest release source. The build instructions are provided in another section below.*
 
 2. In your javascript code add,
 ```js
