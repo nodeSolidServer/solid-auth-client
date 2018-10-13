@@ -1,78 +1,29 @@
 // @flow
 import type { loginOptions } from './solid-auth-client'
-import { combineHandlers, Server } from './ipc'
+import { Server } from './ipc'
 import type { Session } from './session'
 import type { AsyncStorage } from './storage'
 import { originOf } from './url-util'
 
-const popupAppRequestHandler = (
+export function openIdpPopup(popupUri: string): window {
+  const width = 650
+  const height = 400
+  const left = window.screenX + (window.innerWidth - width) / 2
+  const top = window.screenY + (window.innerHeight - height) / 2
+  const settings = `width=${width},height=${height},left=${left},top=${top}`
+  return window.open(popupUri, 'solid-auth-client', settings)
+}
+
+export function obtainSession(
   store: AsyncStorage,
-  options: loginOptions,
-  foundSessionCb: Session => void
-) =>
-  combineHandlers(
-    storageHandler(store),
-    loginHandler(options, foundSessionCb),
-    appOriginHandler
-  )
-
-export const storageHandler = (store: AsyncStorage) => (
-  method: string,
-  ...args: any[]
-): ?Promise<any> => {
-  switch (method) {
-    case 'storage/getItem':
-      return store.getItem(...args)
-    case 'storage/setItem':
-      return store.setItem(...args)
-    case 'storage/removeItem':
-      return store.removeItem(...args)
-    default:
-      return null
-  }
-}
-
-export const loginHandler = (
-  options: loginOptions,
-  foundSessionCb: Session => void
-) => (method: string, ...args: any[]): ?Promise<any> => {
-  switch (method) {
-    case 'getLoginOptions':
-      return Promise.resolve({
-        popupUri: options.popupUri,
-        callbackUri: options.callbackUri
-      })
-    case 'foundSession':
-      foundSessionCb(...args)
-      return Promise.resolve(null)
-    default:
-      return null
-  }
-}
-
-export const appOriginHandler = (method: string): ?Promise<any> => {
-  return method === 'getAppOrigin'
-    ? Promise.resolve(window.location.origin)
-    : null
-}
-
-export const startPopupServer = (
-  store: AsyncStorage,
-  childWindow: window,
+  popup: window,
   options: loginOptions
-): Promise<?Session> => {
+): Promise<?Session> {
   return new Promise((resolve, reject) => {
-    if (!(options.popupUri && options.callbackUri)) {
-      return reject(
-        new Error(
-          'Cannot serve a popup without both "options.popupUri" and "options.callbackUri"'
-        )
-      )
-    }
     const popupServer = new Server(
-      childWindow,
+      popup,
       originOf(options.popupUri || ''),
-      popupAppRequestHandler(store, options, (session: Session) => {
+      popupHandler(store, options, (session: Session) => {
         popupServer.stop()
         resolve(session)
       })
@@ -81,19 +32,30 @@ export const startPopupServer = (
   })
 }
 
-export const openIdpSelector = (options: loginOptions): window => {
-  if (!(options.popupUri && options.callbackUri)) {
-    throw new Error(
-      'Cannot open IDP select UI.  Must provide both "options.popupUri" and "options.callbackUri".'
-    )
+export function popupHandler(
+  store: AsyncStorage,
+  { popupUri, callbackUri }: loginOptions,
+  foundSessionCb: Session => void
+) {
+  return async (method: string, ...args: any[]) => {
+    switch (method) {
+      // Origin
+      case 'getAppOrigin':
+        return window.location.origin
+
+      // Storage
+      case 'storage/getItem':
+        return store.getItem(...args)
+      case 'storage/setItem':
+        return store.setItem(...args)
+      case 'storage/removeItem':
+        return store.removeItem(...args)
+
+      // Login
+      case 'getLoginOptions':
+        return { popupUri, callbackUri }
+      case 'foundSession':
+        foundSessionCb(...args)
+    }
   }
-  const width = 650
-  const height = 400
-  const w = window.open(
-    options.popupUri,
-    '_blank',
-    `width=${width},height=${height},left=${(window.innerWidth - width) /
-      2},top=${(window.innerHeight - height) / 2}`
-  )
-  return w
 }

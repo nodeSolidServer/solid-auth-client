@@ -2,7 +2,7 @@
 /* global fetch */
 import EventEmitter from 'events'
 import { authnFetch } from './authn-fetch'
-import { openIdpSelector, startPopupServer } from './popup'
+import { openIdpPopup, obtainSession } from './popup'
 import type { Session } from './session'
 import { getSession, saveSession, clearSession } from './session'
 import type { AsyncStorage } from './storage'
@@ -40,12 +40,8 @@ export default class SolidAuthClient extends EventEmitter {
     if (!options.callbackUri) {
       options.callbackUri = options.popupUri
     }
-    const childWindow = openIdpSelector(options)
-    const session = await startPopupServer(
-      options.storage,
-      childWindow,
-      options
-    )
+    const popup = openIdpPopup(options.popupUri)
+    const session = await obtainSession(options.storage, popup, options)
     this.emit('login', session)
     this.emit('session', session)
     return session

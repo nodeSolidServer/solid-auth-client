@@ -105,11 +105,3 @@ export class Client {
     })
   }
 }
-
-export const combineHandlers = (...handlers: handler[]) => (
-  method: string,
-  ...args: any[]
-): ?Promise<any> =>
-  handlers
-    .map(handler => handler(method, ...args))
-    .find(promise => promise !== null)
