@@ -1,5 +1,4 @@
 // @flow
-import uuid from 'uuid/v4'
 
 /*
   This module describes a simple IPC interface for communicating between browser windows.
@@ -8,7 +7,7 @@ import uuid from 'uuid/v4'
 
   const request = {
     'solid-auth-client': {
-      id: 'abcd-efgh-ijkl',
+      id: 1234,
       method: 'doSomethingPlease',
       args: [ 'one', 'two', 'three' ]
     }
@@ -16,7 +15,7 @@ import uuid from 'uuid/v4'
 
   const response = {
     'solid-auth-client': {
-      id: 'abcd-efgh-ijkl',
+      id: 1234,
       ret: 'the_value'
     }
   }
@@ -87,7 +86,7 @@ export class Client {
 
   request(method: string, ...args: any[]): Promise<any> {
     // Send the request as a message to the server window
-    const id = uuid()
+    const id = Math.random()
     this._serverWindow.postMessage(
       { [NAMESPACE]: { id, method, args } },
       this._serverOrigin

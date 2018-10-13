@@ -27,13 +27,13 @@ describe('Client', () => {
         expect(origin).toBe(parent.location.origin)
         const request = data['solid-auth-client']
         const { id, method, args } = request
-        expect(typeof id).toBe('string')
+        expect(id).toBeTruthy()
         expect(method).toBe('foo')
         expect(args).toEqual(['bar', 'baz'])
         child.postMessage(
           {
             'solid-auth-client': {
-              id: request.id,
+              id,
               ret: 'the return value!'
             }
           },
@@ -64,7 +64,7 @@ describe('Client', () => {
         expect(origin).toBe(parent.location.origin)
         const request = data['solid-auth-client']
         const { id, method, args } = request
-        expect(typeof id).toBe('string')
+        expect(id).toBeTruthy()
         expect(method).toBe('foo')
         expect(args).toEqual(['bar', 'baz'])
         child.postMessage(
@@ -79,7 +79,7 @@ describe('Client', () => {
         child.postMessage(
           {
             'solid-auth-client': {
-              id: request.id,
+              id,
               ret: 'the return value!'
             }
           },
