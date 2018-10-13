@@ -1,18 +1,17 @@
 import React, { Component } from 'react'
 
 import auth from '../../src'
-import { client } from '../../src/ipc'
+import { Client } from '../../src/ipc'
 import { postMessageStorage } from '../../src/storage'
 
 export default class IdpCallback extends Component {
   state = { loggedIn: false }
-
-  request = client(window.opener, this.props.appOrigin)
+  client = new Client(window.opener, this.props.appOrigin)
 
   postSession = async () => {
     const storage = postMessageStorage(window.opener, this.props.appOrigin)
     const session = await auth.currentSession(storage)
-    return this.request({ method: 'foundSession', args: [session] })
+    await this.client.request('foundSession', session)
   }
 
   constructor(props) {

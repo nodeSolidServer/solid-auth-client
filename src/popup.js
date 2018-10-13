@@ -1,7 +1,6 @@
 // @flow
 import type { loginOptions } from './solid-auth-client'
-import type { handler, request, response } from './ipc'
-import { combineHandlers, server } from './ipc'
+import { combineHandlers, Server } from './ipc'
 import type { Session } from './session'
 import type { AsyncStorage } from './storage'
 import { originOf } from './url-util'
@@ -10,7 +9,7 @@ const popupAppRequestHandler = (
   store: AsyncStorage,
   options: loginOptions,
   foundSessionCb: Session => void
-): handler =>
+) =>
   combineHandlers(
     storageHandler(store),
     loginHandler(options, foundSessionCb),
@@ -18,16 +17,16 @@ const popupAppRequestHandler = (
   )
 
 export const storageHandler = (store: AsyncStorage) => (
-  req: request
-): ?Promise<response> => {
-  const { id, method, args } = req
+  method: string,
+  ...args: any[]
+): ?Promise<any> => {
   switch (method) {
     case 'storage/getItem':
-      return store.getItem(...args).then(item => ({ id, ret: item }))
+      return store.getItem(...args)
     case 'storage/setItem':
-      return store.setItem(...args).then(() => ({ id, ret: null }))
+      return store.setItem(...args)
     case 'storage/removeItem':
-      return store.removeItem(...args).then(() => ({ id, ret: null }))
+      return store.removeItem(...args)
     default:
       return null
   }
@@ -36,29 +35,24 @@ export const storageHandler = (store: AsyncStorage) => (
 export const loginHandler = (
   options: loginOptions,
   foundSessionCb: Session => void
-) => (req: request): ?Promise<response> => {
-  const { id, method, args } = req
+) => (method: string, ...args: any[]): ?Promise<any> => {
   switch (method) {
     case 'getLoginOptions':
       return Promise.resolve({
-        id,
-        ret: {
-          popupUri: options.popupUri,
-          callbackUri: options.callbackUri
-        }
+        popupUri: options.popupUri,
+        callbackUri: options.callbackUri
       })
     case 'foundSession':
-      foundSessionCb(args[0])
-      return Promise.resolve({ id, ret: null })
+      foundSessionCb(...args)
+      return Promise.resolve(null)
     default:
       return null
   }
 }
 
-export const appOriginHandler = (req: request): ?Promise<response> => {
-  const { id, method } = req
+export const appOriginHandler = (method: string): ?Promise<any> => {
   return method === 'getAppOrigin'
-    ? Promise.resolve({ id, ret: window.location.origin })
+    ? Promise.resolve(window.location.origin)
     : null
 }
 
@@ -75,7 +69,9 @@ export const startPopupServer = (
         )
       )
     }
-    const popupServer = server(childWindow, originOf(options.popupUri || ''))(
+    const popupServer = new Server(
+      childWindow,
+      originOf(options.popupUri || ''),
       popupAppRequestHandler(store, options, (session: Session) => {
         popupServer.stop()
         resolve(session)

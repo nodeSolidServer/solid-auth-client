@@ -3,7 +3,7 @@ import uuid from 'uuid/v4'
 
 /*
   This module describes a simple IPC interface for communicating between browser windows.
-  Window.postMessage() is the transport interface, and a request/response interface
+  window.postMessage() is the transport interface, and a request/response interface
   is defined on top of it as follows:
 
   const request = {
@@ -22,134 +22,95 @@ import uuid from 'uuid/v4'
   }
 */
 
-export type request = {
-  id: string,
-  method: string,
-  args: any[]
-}
-
-export type response = {
-  id: string,
-  ret: any
-}
-
-export type handler = request => ?Promise<response>
-
-export interface Server {
-  start: () => Server;
-  stop: () => Server;
-}
+type handler = (string, ...args: any[]) => ?Promise<any>
 
 const NAMESPACE = 'solid-auth-client'
 
-const namespace = (data: request | response): Object => ({
-  [NAMESPACE]: data
-})
+/**
+ * Receives and handles remote procedure calls.
+ */
+export class Server {
+  _clientWindow: window
+  _clientOrigin: string
+  _handler: handler
+  _messageListener: MessageEvent => Promise<void>
 
-const getNamespacedPayload = (eventData: mixed): ?Object => {
-  if (!eventData || typeof eventData !== 'object') {
-    return null
+  constructor(clientWindow: window, clientOrigin: string, handle: handler) {
+    this._clientWindow = clientWindow
+    this._clientOrigin = clientOrigin
+    this._handler = handle
+    this._messageListener = event => this._handleMessage(event)
   }
-  const payload = eventData[NAMESPACE]
-  if (!payload || typeof payload !== 'object') {
-    return null
-  }
-  return payload
-}
 
-const getResponse = (eventData: mixed): ?response => {
-  const resp = getNamespacedPayload(eventData)
-  if (!resp) {
-    return null
-  }
-  const { id, ret } = resp
-  return id != null && typeof id === 'string' && resp.hasOwnProperty('ret')
-    ? { id, ret }
-    : null
-}
-
-const getRequest = (eventData: mixed): ?request => {
-  const req = getNamespacedPayload(eventData)
-  if (!req) {
-    return null
-  }
-  const { id, method, args } = req
-  return id != null &&
-    typeof id === 'string' &&
-    typeof method === 'string' &&
-    Array.isArray(args)
-    ? { id, method, args }
-    : null
-}
-
-export const client = (
-  serverWindow: window,
-  serverOrigin: string
-) => (request: { method: string, args: any[] }): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    const reqId = uuid()
-    const responseListener = event => {
-      const { data, origin } = event
-      const resp = getResponse(data)
-      if ((serverOrigin !== '*' && origin !== serverOrigin) || !resp) {
-        return
-      }
-      if (resp.id !== reqId) {
-        return
-      }
-      resolve(resp.ret)
-      window.removeEventListener('message', responseListener)
-    }
-    window.addEventListener('message', responseListener)
-    serverWindow.postMessage(
-      {
-        'solid-auth-client': {
-          id: reqId,
-          method: request.method,
-          args: request.args
-        }
-      },
-      serverOrigin
-    )
-  })
-}
-
-export const server = (clientWindow: window, clientOrigin: string) => (
-  handle: handler
-): Server => {
-  const messageListener = async (event: MessageEvent) => {
-    const { data, origin } = event
-    const req = getRequest(data)
-    if (!req) {
-      return
-    }
-    if (origin !== clientOrigin) {
+  async _handleMessage({ data, origin }: MessageEvent) {
+    // Ensure we can post to the origin
+    if (origin !== this._clientOrigin) {
       console.warn(
-        `SECURITY WARNING: solid-auth-client is listening for messages from ${clientOrigin}, ` +
-          `but received a message from ${origin}.  Ignoring the message.`
+        `solid-auth-client is listening to ${this._clientOrigin} ` +
+          `so ignored a message received from ${origin}.`
       )
       return
     }
-    const resp = await handle(req)
-    if (resp) {
-      clientWindow.postMessage(namespace(resp), clientOrigin)
+
+    // Parse the request and send it to the handler
+    const req = data && (data: any)[NAMESPACE]
+    if (req && req.method) {
+      const { id, method, args } = (req: any)
+      const ret = await this._handler(method, ...args)
+      this._clientWindow.postMessage(
+        { [NAMESPACE]: { id, ret } },
+        this._clientOrigin
+      )
     }
   }
 
-  const _server = {
-    start: () => {
-      window.addEventListener('message', messageListener)
-      return _server
-    },
-    stop: () => {
-      window.removeEventListener('message', messageListener)
-      return _server
-    }
+  start() {
+    window.addEventListener('message', this._messageListener)
   }
-  return _server
+
+  stop() {
+    window.removeEventListener('message', this._messageListener)
+  }
+}
+
+/**
+ * Makes remote procedure calls.
+ */
+export class Client {
+  _serverWindow: window
+  _serverOrigin: string
+
+  constructor(serverWindow: window, serverOrigin: string) {
+    this._serverWindow = serverWindow
+    this._serverOrigin = serverOrigin
+  }
+
+  request(method: string, ...args: any[]): Promise<any> {
+    // Send the request as a message to the server window
+    const id = uuid()
+    this._serverWindow.postMessage(
+      { [NAMESPACE]: { id, method, args } },
+      this._serverOrigin
+    )
+
+    // Create a promise that resolves to the request's return value
+    return new Promise(resolve => {
+      function responseListener({ data }) {
+        const resp = data && data[NAMESPACE]
+        if (resp && resp.id === id && resp.hasOwnProperty('ret')) {
+          resolve(resp.ret)
+          window.removeEventListener('message', responseListener)
+        }
+      }
+      window.addEventListener('message', responseListener)
+    })
+  }
 }
 
 export const combineHandlers = (...handlers: handler[]) => (
-  req: request
-): ?Promise<response> =>
-  handlers.map(handler => handler(req)).find(promise => promise !== null)
+  method: string,
+  ...args: any[]
+): ?Promise<any> =>
+  handlers
+    .map(handler => handler(method, ...args))
+    .find(promise => promise !== null)

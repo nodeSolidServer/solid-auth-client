@@ -2,7 +2,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-import { client } from '../src/ipc'
+import { Client } from '../src/ipc'
 import { getData, updateStorage } from '../src/storage'
 
 import IdpCallback from './components/IdpCallback'
@@ -62,11 +62,8 @@ async function findAppOrigin() {
   if (appOrigin) {
     return appOrigin
   }
-  const request = client(window.opener, '*')
-  appOrigin = await request({
-    method: 'getAppOrigin',
-    args: []
-  })
+  const client = new Client(window.opener, '*')
+  appOrigin = await client.request('getAppOrigin')
   await storeAppOrigin(appOrigin)
   return appOrigin
 }

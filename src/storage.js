@@ -1,5 +1,5 @@
 // @flow
-import { client } from './ipc'
+import { Client } from './ipc'
 
 export const NAMESPACE = 'solid-auth-client'
 
@@ -97,18 +97,15 @@ export const postMessageStorage = (
   storageWindow: window,
   storageOrigin: string
 ): AsyncStorage => {
-  const request = client(storageWindow, storageOrigin)
+  const client = new Client(storageWindow, storageOrigin)
   return {
-    getItem: (key: string): Promise<?string> => {
-      return request({ method: 'storage/getItem', args: [key] })
-    },
+    getItem: (key: string): Promise<?string> =>
+      client.request('storage/getItem', key),
 
-    setItem: (key: string, val: string): Promise<void> => {
-      return request({ method: 'storage/setItem', args: [key, val] })
-    },
+    setItem: (key: string, val: string): Promise<void> =>
+      client.request('storage/setItem', key, val),
 
-    removeItem: (key: string): Promise<void> => {
-      return request({ method: 'storage/removeItem', args: [key] })
-    }
+    removeItem: (key: string): Promise<void> =>
+      client.request('storage/removeItem', key)
   }
 }

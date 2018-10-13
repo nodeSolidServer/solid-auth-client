@@ -2,20 +2,20 @@
 /* eslint-env jest */
 
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import { client, server } from '../ipc'
+import { Client, Server } from '../ipc'
 
 beforeEach(polyfillWindow)
 
 afterEach(polyunfillWindow)
 
-describe('client', () => {
+describe('Client', () => {
   it('takes a request, sets up a channel to the parent window, and promises a response from the parent', async () => {
     expect.assertions(5)
     const parent = window
     // window.open is not yet implemented in jsdom.  for the purposes of testing, this does just fine.
     const child = parent
     const origin = window.location.origin
-    const request = client(parent, origin)
+    const client = new Client(parent, origin)
     parent.addEventListener('message', function testServer(event) {
       const { data, origin } = event
       const isRequest =
@@ -42,7 +42,7 @@ describe('client', () => {
         parent.removeEventListener('message', testServer)
       }
     })
-    const response = await request({ method: 'foo', args: ['bar', 'baz'] })
+    const response = await client.request('foo', 'bar', 'baz')
     expect(response).toBe('the return value!')
   })
 
@@ -52,7 +52,7 @@ describe('client', () => {
     // window.open is not yet implemented in jsdom.  for the purposes of testing, this does just fine.
     const child = parent
     const origin = window.location.origin
-    const request = client(parent, origin)
+    const client = new Client(parent, origin)
     parent.addEventListener('message', function testServer(event) {
       const { data, origin } = event
       const isRequest =
@@ -88,26 +88,28 @@ describe('client', () => {
         parent.removeEventListener('message', testServer)
       }
     })
-    const response = await request({ method: 'foo', args: ['bar', 'baz'] })
+    const response = await client.request('foo', 'bar', 'baz')
     expect(response).toBe('the return value!')
   })
 })
 
-describe('server', () => {
+describe('Server', () => {
   it('only responds to valid requests', done => {
     expect.assertions(1)
     const parent = window
     const child = parent
     const handler = jest.fn()
-    const s = server(child, child.location.origin)(handler).start()
+    const server = new Server(child, child.location.origin, handler)
+    server.start()
     parent.addEventListener('message', function listener() {
       try {
         expect(handler.mock.calls.length).toBe(0)
-        s.stop()
         parent.removeEventListener('message', listener)
         done()
       } catch (e) {
         done.fail(e)
+      } finally {
+        server.stop()
       }
     })
     parent.postMessage('not-a-well-formed-message', parent.location.origin)
@@ -115,15 +117,11 @@ describe('server', () => {
 
   it('delegates to a handler to compute responses', done => {
     expect.assertions(3)
-    const testHandler = jest.fn(request =>
-      Promise.resolve({
-        id: request.id,
-        ret: 'testHandler return value'
-      })
-    )
+    const testHandler = jest.fn(async () => 'testHandler return value')
     const parent = window
     const child = parent
-    const s = server(child, child.location.origin)(testHandler).start()
+    const server = new Server(child, child.location.origin, testHandler)
+    server.start()
     child.addEventListener('message', function listener(event) {
       try {
         const request = event.data['solid-auth-client']
@@ -131,18 +129,15 @@ describe('server', () => {
         if (!(id && ret)) {
           return
         }
-        expect(testHandler.mock.calls[0][0]).toEqual({
-          id: '12345',
-          method: 'foo',
-          args: ['a', 'b', 'c']
-        })
+        expect(testHandler.mock.calls[0]).toEqual(['foo', 'a', 'b', 'c'])
         expect(id).toBe('12345')
         expect(ret).toBe('testHandler return value')
-        s.stop()
         child.removeEventListener('message', listener)
         done()
       } catch (e) {
         done.fail(e)
+      } finally {
+        server.stop()
       }
     })
     parent.postMessage(

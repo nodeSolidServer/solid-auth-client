@@ -1,7 +1,7 @@
 import React from 'react'
 
 import auth from '../../src'
-import { client } from '../../src/ipc'
+import { Client } from '../../src/ipc'
 import { postMessageStorage } from '../../src/storage'
 
 import './IdpSelect.css'
@@ -41,14 +41,8 @@ class IdpSelect extends React.Component {
       })
       return
     }
-    const request = client(window.opener, appOrigin)
-    let loginOptions = await timeout(
-      request({
-        method: 'getLoginOptions',
-        args: []
-      }),
-      2000
-    )
+    const client = new Client(window.opener, appOrigin)
+    let loginOptions = await timeout(client.request('getLoginOptions'), 2000)
     if (!loginOptions) {
       console.warn(
         'Cannot log in - have not yet received loginOptions from parent window'
