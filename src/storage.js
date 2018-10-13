@@ -93,11 +93,7 @@ export const memStorage = (): Storage => {
   }
 }
 
-export const postMessageStorage = (
-  storageWindow: window,
-  storageOrigin: string
-): AsyncStorage => {
-  const client = new Client(storageWindow, storageOrigin)
+export function ipcStorage(client: Client): AsyncStorage {
   return {
     getItem: (key: string): Promise<?string> =>
       client.request('storage/getItem', key),

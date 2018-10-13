@@ -2,7 +2,8 @@
 
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
 import type { AsyncStorage } from '../storage'
-import { defaultStorage, postMessageStorage } from '../storage'
+import { defaultStorage, ipcStorage } from '../storage'
+import { Client } from '../ipc'
 
 beforeEach(polyfillWindow)
 
@@ -21,7 +22,7 @@ describe('defaultStorage', () => {
   })
 })
 
-describe('postMessage storage', () => {
+describe('ipcStorage', () => {
   ;[
     {
       expectedMethod: 'getItem',
@@ -64,7 +65,8 @@ describe('postMessage storage', () => {
           done.fail(e)
         }
       })
-      const store = postMessageStorage(window, window.location.origin)
+      const client = new Client(window, window.location.origin)
+      const store = ipcStorage(client)
       const item = await store[expectedMethod](...expectedArgs)
       expect(item).toBe(expectedRet)
       done()

@@ -2,7 +2,7 @@ import React from 'react'
 
 import auth from '../../src'
 import { Client } from '../../src/ipc'
-import { postMessageStorage } from '../../src/storage'
+import { ipcStorage } from '../../src/storage'
 
 import './IdpSelect.css'
 
@@ -56,7 +56,7 @@ class IdpSelect extends React.Component {
     }
     loginOptions = {
       ...loginOptions,
-      storage: postMessageStorage(window.opener, appOrigin)
+      storage: ipcStorage(client)
     }
     await auth.login(idp.url, loginOptions)
   }
