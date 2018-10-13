@@ -99,14 +99,8 @@ export const postMessageStorage = (
 ): AsyncStorage => {
   const request = client(storageWindow, storageOrigin)
   return {
-    getItem: async (key: string): Promise<?string> => {
-      const ret = await request({ method: 'storage/getItem', args: [key] })
-      if (typeof ret !== 'string') {
-        throw new Error(
-          `expected postMessage call for 'storage/getItem' to return a string, but got value ${ret}`
-        )
-      }
-      return ret
+    getItem: (key: string): Promise<?string> => {
+      return request({ method: 'storage/getItem', args: [key] })
     },
 
     setItem: (key: string, val: string): Promise<void> => {
