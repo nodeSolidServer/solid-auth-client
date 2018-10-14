@@ -93,15 +93,25 @@ export class Client {
     )
 
     // Create a promise that resolves to the request's return value
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      // Listen for responses to the request
+      window.addEventListener('message', responseListener)
+
+      // Cancel if the response takes too long
+      const timeout = setTimeout(() => {
+        reject(new Error('Could not connect to main window.'))
+        window.removeEventListener('message', responseListener)
+      }, 2000)
+
+      // Processes a possible response to the request
       function responseListener({ data }) {
         const resp = data && data[NAMESPACE]
         if (resp && resp.id === id && resp.hasOwnProperty('ret')) {
           resolve(resp.ret)
+          clearTimeout(timeout)
           window.removeEventListener('message', responseListener)
         }
       }
-      window.addEventListener('message', responseListener)
     })
   }
 }

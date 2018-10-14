@@ -24,35 +24,42 @@ const defaultIdps = [
   }
 ]
 
-findAppOrigin().then(appOrigin => {
-  const baseUrl = window.location.href.replace(/(\/\/[^/]*\/).*/, '$1')
-  const host = baseUrl.replace(/^[^:]+:|\//g, '')
-  const appName = process.env.APP_NAME.trim() || host
+findAppOrigin()
+  .then(appOrigin => {
+    const baseUrl = window.location.href.replace(/(\/\/[^/]*\/).*/, '$1')
+    const host = baseUrl.replace(/^[^:]+:|\//g, '')
+    const appName = process.env.APP_NAME.trim() || host
 
-  let element
-  if (!appOrigin) {
-    element = <NoParent appName={appName} />
-  } else if (window.location.hash) {
-    element = (
-      <IdpCallback
-        appOrigin={appOrigin}
-        afterLoggedIn={() => setTimeout(window.close, 750)}
-      />
-    )
-  } else {
-    const idps = [...defaultIdps]
-    if (!idps.some(idp => idp.url === baseUrl)) {
-      idps.unshift({
-        displayName: host,
-        url: baseUrl,
-        iconUrl: baseUrl + 'favicon.ico'
-      })
+    let element
+    if (!appOrigin) {
+      element = <NoParent appName={appName} />
+    } else if (window.location.hash) {
+      element = (
+        <IdpCallback
+          appOrigin={appOrigin}
+          afterLoggedIn={() => setTimeout(window.close, 750)}
+        />
+      )
+    } else {
+      const idps = [...defaultIdps]
+      if (!idps.some(idp => idp.url === baseUrl)) {
+        idps.unshift({
+          displayName: host,
+          url: baseUrl,
+          iconUrl: baseUrl + 'favicon.ico'
+        })
+      }
+      element = (
+        <IdpSelect idps={idps} appOrigin={appOrigin} appName={appName} />
+      )
     }
-    element = <IdpSelect idps={idps} appOrigin={appOrigin} appName={appName} />
-  }
 
-  ReactDOM.render(element, document.getElementById('app-container'))
-})
+    ReactDOM.render(element, document.getElementById('app-container'))
+  })
+  .catch(error => {
+    window.alert(error)
+    window.close()
+  })
 
 async function findAppOrigin() {
   if (!window.opener) {

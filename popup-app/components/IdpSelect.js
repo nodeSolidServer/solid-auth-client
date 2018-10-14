@@ -6,12 +6,6 @@ import { ipcStorage } from '../../src/storage'
 
 import './IdpSelect.css'
 
-const timeout = (promise, ms) =>
-  Promise.race([
-    promise,
-    new Promise((resolve, reject) => setTimeout(() => resolve(null), ms))
-  ])
-
 class IdpSelect extends React.Component {
   state = {
     enteringCustomIdp: false,
@@ -42,20 +36,8 @@ class IdpSelect extends React.Component {
       return
     }
     const client = new Client(window.opener, appOrigin)
-    let loginOptions = await timeout(client.request('getLoginOptions'), 2000)
-    if (!loginOptions) {
-      console.warn(
-        'Cannot log in - have not yet received loginOptions from parent window'
-      )
-      this.setState({
-        error:
-          "Couldn't find the application window.  " +
-          'Try closing this popup window and logging in again.'
-      })
-      return
-    }
-    loginOptions = {
-      ...loginOptions,
+    const loginOptions = {
+      ...(await client.request('getLoginOptions')),
       storage: ipcStorage(client)
     }
     await auth.login(idp.url, loginOptions)
