@@ -2,7 +2,7 @@ import React from 'react'
 
 import auth from '../../src'
 import { Client } from '../../src/ipc'
-import { ipcStorage } from '../../src/storage'
+import { ipcStorage, getData } from '../../src/storage'
 
 import './IdpSelect.css'
 
@@ -15,8 +15,7 @@ class IdpSelect extends React.Component {
 
   toggleEnteringCustomIdp = () =>
     this.setState(currentState => ({
-      enteringCustomIdp: !currentState.enteringCustomIdp,
-      customIdp: { url: '' }
+      enteringCustomIdp: !currentState.enteringCustomIdp
     }))
 
   handleChangeIdp = event => {
@@ -35,7 +34,6 @@ class IdpSelect extends React.Component {
   }
 
   handleSelectIdp = idp => async event => {
-    const { appOrigin } = this.props
     event.preventDefault()
     if (!window.opener) {
       console.warn('No parent window')
@@ -46,12 +44,26 @@ class IdpSelect extends React.Component {
       })
       return
     }
-    const client = new Client(window.opener, appOrigin)
     const loginOptions = {
-      ...(await client.request('getLoginOptions')),
-      storage: ipcStorage(client)
+      ...(await this.getClient().request('getLoginOptions')),
+      storage: this.getStorage()
     }
     await auth.login(idp.url, loginOptions)
+  }
+
+  getClient() {
+    return new Client(window.opener, this.props.appOrigin)
+  }
+
+  getStorage() {
+    return ipcStorage(this.getClient())
+  }
+
+  async componentDidMount() {
+    const { rpConfig } = await getData(this.getStorage())
+    if (rpConfig) {
+      this.setState({ customIdp: { url: rpConfig.provider.url } })
+    }
   }
 
   componentDidUpdate() {
