@@ -71,8 +71,15 @@ export async function getRegisteredRp(
   idp: string,
   options: loginOptions
 ): Promise<RelyingParty> {
+  // To reuse a possible previous RP,
+  // it be for the same IDP and redirect URI
   let rp = await getStoredRp(options.storage)
-  if (!rp || rp.provider.url !== idp) {
+  if (
+    !rp ||
+    rp.provider.url !== idp ||
+    !rp.registration.redirect_uris.includes(options.callbackUri)
+  ) {
+    // Register a new RP
     rp = await registerRp(idp, options)
     await storeRp(options.storage, idp, rp)
   }
