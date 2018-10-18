@@ -20,7 +20,18 @@ class IdpSelect extends React.Component {
     }))
 
   handleChangeIdp = event => {
-    this.setState({ customIdp: { url: event.target.value } })
+    let url = event.target.value
+    // Auto-prepend https: if the user is not typing it
+    if (!/^($|h$|ht)/.test(url)) url = `https://${url}`
+    this.setState({ customIdp: { url } })
+  }
+
+  handleBlurIdp = event => {
+    let url = event.target.value
+    // Auto-prepend https: if not present
+    if (!/^(https?:\/\/|$)/.test(url))
+      url = url.replace(/^([a-z]*:\/*)?/, 'https://')
+    this.setState({ customIdp: { url } })
   }
 
   handleSelectIdp = idp => async event => {
@@ -67,9 +78,10 @@ class IdpSelect extends React.Component {
             <input
               ref={input => (this.idpInput = input)}
               type="url"
-              placeholder="https://my-identity.databox.me/profile/card#me"
+              placeholder="https://my-identity.provider"
               value={customIdp.url}
               onChange={this.handleChangeIdp}
+              onBlur={this.handleBlurIdp}
             />
             <button type="submit">Log In</button>
             <button type="reset" onClick={this.toggleEnteringCustomIdp}>
