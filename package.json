@@ -3,6 +3,7 @@
   "version": "2.2.9",
   "description": "Opaquely authenticates solid clients",
   "main": "lib/index.js",
+  "modules": "src/index.js",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -11,7 +12,8 @@
     "bin",
     "dist-lib",
     "dist-popup",
-    "lib"
+    "lib",
+    "src"
   ],
   "repository": "git@github.com:solid/solid-auth-client.git",
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
