@@ -13,7 +13,8 @@
     "dist-lib",
     "dist-popup",
     "lib",
-    "src"
+    "src",
+    "!*/__test__"
   ],
   "repository": "git@github.com:solid/solid-auth-client.git",
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
