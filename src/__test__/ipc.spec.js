@@ -103,7 +103,7 @@ describe('Server', () => {
     server.start()
     parent.addEventListener('message', function listener() {
       try {
-        expect(handler.mock.calls.length).toBe(0)
+        expect(handler.mock.calls).toHaveLength(0)
         parent.removeEventListener('message', listener)
         done()
       } catch (e) {

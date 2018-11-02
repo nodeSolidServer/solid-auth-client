@@ -497,7 +497,7 @@ describe('logout', () => {
   })
 })
 
-describe.only('fetch', () => {
+describe('fetch', () => {
   const matchAuthzHeader = origin => headerVal => {
     const popToken = jwt.decode(headerVal[0].split(' ')[1])
     return (

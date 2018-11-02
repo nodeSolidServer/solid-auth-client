@@ -53,9 +53,9 @@
     "prepare": "npm run build"
   },
   "dependencies": {
+    "@babel/runtime": "^7.0.0",
     "@solid/oidc-rp": "^0.8.0",
     "auth-header": "^1.0.0",
-    "@babel/runtime": "^7.0.0",
     "commander": "^2.11.0",
     "isomorphic-fetch": "^2.2.1"
   },
@@ -81,6 +81,7 @@
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-flowtype": "^2.50.0",
     "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jest": "^21.26.2",
     "eslint-plugin-node": "^7.0.1",
     "eslint-plugin-prettier": "^2.6.0",
     "eslint-plugin-promise": "^4.0.1",

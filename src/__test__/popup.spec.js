@@ -92,7 +92,7 @@ describe('popupHandler', () => {
     }
     const _sessionResp = await handler('foundSession', session)
     expect(_sessionResp).toBeUndefined()
-    expect(mockCallback.mock.calls.length).toBe(1)
+    expect(mockCallback.mock.calls).toHaveLength(1)
     expect(mockCallback.mock.calls[0][0]).toEqual(session)
   })
 
