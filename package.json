@@ -2,8 +2,8 @@
   "name": "solid-auth-client",
   "version": "2.2.10",
   "description": "Opaquely authenticates solid clients",
-  "main": "lib/index.js",
-  "modules": "src/index.js",
+  "main": "lib/index-default.js",
+  "module": "module/index.js",
   "engines": {
     "node": ">=8.0.0"
   },
@@ -13,8 +13,7 @@
     "dist-lib",
     "dist-popup",
     "lib",
-    "src",
-    "!*/__test__"
+    "module"
   ],
   "repository": "git@github.com:solid/solid-auth-client.git",
   "author": "Daniel Friedman <dfriedman58@gmail.com>",
@@ -39,8 +38,9 @@
     "test:dev": "npm run jest -- --watch",
     "test:debug": "node --debug-brk ./node_modules/.bin/jest --runInBand src",
     "coverage:report": "cat ./coverage/lcov.info | coveralls",
-    "build": "npm run build:lib && npm run build:lib:umd && npm run build:popup:template",
-    "build:lib": "rm -rf lib && babel --ignore '__test__' src -d lib",
+    "build": "npm run build:lib && npm run build:module && npm run build:lib:umd && npm run build:popup:template",
+    "build:lib": "rm -rf lib && babel src --env-name production -d lib",
+    "build:module": "rm -rf module && babel src --env-name module -d module",
     "build:lib:umd": "webpack --config=./webpack/webpack.lib.config.js -p",
     "build:demo": "webpack --config=./webpack/webpack.demo.config.js -p",
     "build:popup": "webpack --config=./webpack/webpack.popup.config.js -p && rm ./dist-popup/popup.bundle.js && bin/solid-auth-client.js generate-popup '' dist-popup/popup.html",
