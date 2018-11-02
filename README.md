@@ -7,7 +7,7 @@ The [Solid](https://solid.mit.edu/) project
 allows people to use apps on the Web
 while storing their data in their own data pod.
 
-`solid-auth-client` is a library that allows
+`solid-auth-client` is a browser library that allows
 your apps to securely log in to Solid data pods
 and read and write data from them.
 
@@ -25,7 +25,8 @@ solid.auth.trackSession(session => {
 </script>
 ```
 
-In Node.js, run `npm install solid-auth-client` and then do:
+When developing for webpack in a Node.js environment,
+run `npm install solid-auth-client` and then do:
 
 ```javascript
 const auth = require('solid-auth-client')
@@ -37,6 +38,10 @@ auth.trackSession(session => {
     console.log(`The user is ${session.webId}`)
 })
 ```
+
+Note that this library is intended for the browser.
+You can use Node.js as a development environment,
+but not for actually logging in and out or making requests.
 
 ## Functionality
 This library offers two main types of functionality:
