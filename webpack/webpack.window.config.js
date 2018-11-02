@@ -1,8 +1,11 @@
+/* Browser bundle that exposes solid-auth-client as window.solid.auth */
+
 const path = require('path')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const {
   context,
   mode,
+  entry,
   module: _module,
   externals,
   devtool
@@ -13,18 +16,12 @@ const outputDir = './dist-lib'
 module.exports = {
   context,
   mode,
-  entry: {
-    'solid-auth-client': './src/index.js'
-  },
+  entry,
   output: {
     filename: '[name].bundle.js',
     path: path.resolve(outputDir),
     libraryExport: 'default',
-    library: {
-      root: ['solid', 'auth'],
-      amd: 'solid-auth-client',
-      commonjs: 'solid-auth-client'
-    },
+    library: ['solid', 'auth'],
     libraryTarget: 'umd'
   },
   module: _module,

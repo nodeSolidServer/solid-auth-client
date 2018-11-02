@@ -1,8 +1,13 @@
+/* Shared webpack configuration */
+
 const path = require('path')
 
 module.exports = {
   context: path.resolve(__dirname, '..'),
   mode: 'none',
+  entry: {
+    'solid-auth-client': './src/index.js'
+  },
   module: {
     rules: [
       {
