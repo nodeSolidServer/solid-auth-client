@@ -1,11 +1,15 @@
 language: node_js
 node_js:
+  - 10
   - node
+env:
+  - DEFAULT_NODE_VERSION=10
 script:
   - npm test
 after_success:
-  - npm run coverage:report
-  - ./.travis_publish
-cache:
-  directories:
-    - node_modules
+  - if [ "$TRAVIS_NODE_VERSION" == "$DEFAULT_NODE_VERSION" ]; then
+      npm install coveralls;
+      node_modules/.bin/jest --coverage --coverageReporters=text-lcov |
+        node_modules/.bin/coveralls;
+      ./.travis_publish;
+    fi
