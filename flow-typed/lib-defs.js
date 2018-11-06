@@ -15,6 +15,6 @@ declare module '@solid/oidc-rp' {
     createRequest(options: Object, storage: Object): Promise<string>,
     serialize(): string,
     validateResponse(response: string, session: Object): Promise<Object>,
-    logout(): Promise<void>
+    logoutRequest(options?: Object): Promise<void>
   }
 }
