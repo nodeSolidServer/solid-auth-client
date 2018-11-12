@@ -9,6 +9,7 @@ import { currentUrl, navigateTo, toUrlString } from './url-util'
 import type { webIdOidcSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage, getData, updateStorage } from './storage'
+import { copyHeaders } from './fetch-util'
 
 export async function login(
   idp: string,
@@ -191,10 +192,12 @@ export async function fetchWithCredentials(
   const authenticatedOptions = {
     ...options,
     credentials: 'include',
-    headers: {
-      ...(options && options.headers ? options.headers : {}),
-      authorization: `Bearer ${popToken}`
-    }
+    headers: copyHeaders(
+      {
+        authorization: `Bearer ${popToken}`
+      },
+      options
+    )
   }
   return fetch(input, authenticatedOptions)
 }
