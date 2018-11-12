@@ -1,10 +1,13 @@
 // @flow
 /* eslint-env jest */
-/* global Headers */
 
 import { copyHeaders } from '../fetch-util'
+import { polyfillWindow, polyunfillWindow } from './spec-helpers'
 
 describe('copyHeaders', () => {
+  beforeEach(() => polyfillWindow())
+  afterEach(() => polyunfillWindow())
+
   it('returns an object', () => expect(copyHeaders({})).toEqual({}))
   it('returns a copy of whatever is passed in as first param', () =>
     expect(copyHeaders({ foo: 42 })).toEqual({ foo: 42 }))
@@ -14,7 +17,7 @@ describe('copyHeaders', () => {
       bar: 1337
     }))
   it('handles options.headers as Headers', () => {
-    const headers = new Headers()
+    const headers = new window.Headers()
     headers.append('bar', '1337')
     expect(copyHeaders({ foo: '42' }, { headers })).toEqual({
       foo: '42',
