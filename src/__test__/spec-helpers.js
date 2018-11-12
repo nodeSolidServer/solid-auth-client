@@ -33,21 +33,21 @@ export const polyfillWindow = () => {
   MessageEvent.prototype.origin = window.location.origin
 
   // in case Headers is not available
-  Object.defineProperty(window, 'Headers', {
-    value: class Headers {
-      constructor() {
-        this.map = {}
-      }
-
-      append(key, value) {
-        this.map[key] = value
-      }
-
-      forEach(callback) {
-        Object.keys(this.map).forEach(key => callback(this.map[key], key))
-      }
-    }
-  })
+  // Object.defineProperty(window, 'Headers', {
+  //   value: class Headers {
+  //     constructor() {
+  //       this.map = {}
+  //     }
+  //
+  //     append(key, value) {
+  //       this.map[key] = value
+  //     }
+  //
+  //     forEach(callback) {
+  //       Object.keys(this.map).forEach(key => callback(this.map[key], key))
+  //     }
+  //   }
+  // })
 }
 
 export const polyunfillWindow = () => {
