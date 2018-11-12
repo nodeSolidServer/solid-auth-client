@@ -13,8 +13,7 @@ describe('copyHeaders', () => {
       foo: 42,
       bar: 1337
     }))
-  xit('handles options.headers as Headers', () => {
-    // Enable this when there is support for window.Headers
+  it('handles options.headers as Headers', () => {
     const headers = new Headers()
     headers.append('bar', '1337')
     expect(copyHeaders({ foo: '42' }, { headers })).toEqual({
