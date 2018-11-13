@@ -55,11 +55,21 @@ export async function currentSession(
   }
 }
 
-export async function logout(storage: AsyncStorage): Promise<void> {
+export async function logout(
+  storage: AsyncStorage,
+  fetch: Function
+): Promise<void> {
   const rp = await getStoredRp(storage)
   if (rp) {
     try {
-      rp.logout()
+      // First log out from the IDP
+      await rp.logout()
+      // Then, log out from the RP
+      try {
+        await fetch('/.well-known/solid/logout', { credentials: 'include' })
+      } catch (e) {
+        // Ignore errors for when we are not on a Solid pod
+      }
     } catch (err) {
       console.warn('Error logging out of the WebID-OIDC session')
       console.error(err)
