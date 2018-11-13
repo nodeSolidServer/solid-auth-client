@@ -1,5 +1,5 @@
 // @flow
-/* global RequestInfo, Response, fetch */
+/* global RequestInfo, Response */
 import * as authorization from 'auth-header'
 import RelyingParty from '@solid/oidc-rp'
 import PoPToken from '@solid/oidc-rp/lib/PoPToken'
@@ -55,7 +55,10 @@ export async function currentSession(
   }
 }
 
-export async function logout(storage: AsyncStorage): Promise<void> {
+export async function logout(
+  storage: AsyncStorage,
+  fetch: Function
+): Promise<void> {
   const rp = await getStoredRp(storage)
   if (rp) {
     try {

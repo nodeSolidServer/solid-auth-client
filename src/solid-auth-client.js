@@ -76,7 +76,7 @@ export default class SolidAuthClient extends EventEmitter {
     const session = await getSession(storage)
     if (session) {
       try {
-        await WebIdOidc.logout(storage)
+        await WebIdOidc.logout(storage, globalFetch)
         this.emit('logout')
         this.emit('session', null)
       } catch (err) {
