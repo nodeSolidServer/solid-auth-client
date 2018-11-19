@@ -24,7 +24,8 @@ export default class IdpSelect extends React.Component {
     this.setState({ idp })
   }
 
-  handleSelectIdp = async idp => {
+  handleSelectIdp = idp => async event => {
+    event.preventDefault()
     this.setState({ idp })
     if (!window.opener) {
       console.warn('No parent window')
@@ -68,7 +69,7 @@ export default class IdpSelect extends React.Component {
         </h1>
         {error && <p className="error">{error}</p>}
         <p>Please enter your WebID or the URL of your identity provider:</p>
-        <form className="custom-idp" onSubmit={() => this.handleSelectIdp(idp)}>
+        <form className="custom-idp" onSubmit={this.handleSelectIdp(idp)}>
           <input
             ref={input => (this.idpInput = input)}
             type="url"
@@ -86,7 +87,7 @@ export default class IdpSelect extends React.Component {
           {idps.map(idp => (
             <button
               className="idp"
-              onClick={() => this.handleSelectIdp(idp.url)}
+              onClick={this.handleSelectIdp(idp.url)}
               key={idp.url}
             >
               {idp.displayName}
