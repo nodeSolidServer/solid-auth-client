@@ -6,36 +6,23 @@
 
 .idp {
   flex: 1 100%;
+
   margin: .5em;
+  padding: .75em .5em;
 
   border: none;
-  border-radius: 2px;
-  padding: .5em;
+  border-radius: 10px;
   background-color: rgb(61, 109, 211);
   color: #fff;
+  transition: background-color 0.4s;
 
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  transition: background-color 0.4s, box-shadow 0.4s;
+  cursor: pointer;
 }
 
 .idp:hover,
 .idp:focus {
   background-color: rgb(55, 97, 188);
   box-shadow: 1px 1px rgb(46, 80, 151);
-}
-
-.idp:active {
-  cursor: pointer;
-  box-shadow: inset 1px 1px rgb(46, 80, 152);
-}
-
-.idp .icon {
-  display: flex;
-  height: 42px;
-  border-radius: 2px;
-  margin-left: .5em;
 }
 
 .custom-idp {

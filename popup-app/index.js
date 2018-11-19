@@ -14,13 +14,11 @@ import './index.css'
 const defaultIdps = [
   {
     displayName: 'Solid Community',
-    url: 'https://solid.community/',
-    iconUrl: 'https://solidtest.space/favicon.ico'
+    url: 'https://solid.community/'
   },
   {
     displayName: 'Solid Test Space',
-    url: 'https://solidtest.space/',
-    iconUrl: 'https://solidtest.space/favicon.ico'
+    url: 'https://solidtest.space/'
   }
 ]
 
@@ -43,11 +41,7 @@ findAppOrigin()
     } else {
       const idps = [...defaultIdps]
       if (!idps.some(idp => idp.url === baseUrl)) {
-        idps.unshift({
-          displayName: host,
-          url: baseUrl,
-          iconUrl: baseUrl + 'favicon.ico'
-        })
+        idps.unshift({ displayName: host, url: baseUrl })
       }
       element = (
         <IdpSelect idps={idps} appOrigin={appOrigin} appName={appName} />
