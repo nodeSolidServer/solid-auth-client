@@ -1,39 +1,25 @@
-.idp-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-.idp {
-  flex: 1 100%;
-
-  margin: .5em;
-  padding: .75em .5em;
-
-  border: none;
-  border-radius: 10px;
-  background-color: rgb(61, 109, 211);
-  color: #fff;
-  transition: background-color 0.4s;
-
-  cursor: pointer;
-}
-
-.idp:hover,
-.idp:focus {
-  background-color: rgb(55, 97, 188);
-  box-shadow: 1px 1px rgb(46, 80, 151);
-}
-
 .custom-idp {
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
-  margin: .5em;
+  margin: 0 0 2em;
 }
-
 .custom-idp input {
   flex-grow: 2;
+  margin-right: .5em;
+}
+
+.idp-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin: -.25em -.5em;
+}
+.idp {
+  flex: 1 100%;
+  margin: .25em;
+  padding: .75em .5em;
+  border-radius: 10px;
 }
 
 @media all and (min-width: 500px) {

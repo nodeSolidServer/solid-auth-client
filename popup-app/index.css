@@ -1,3 +1,7 @@
+body {
+  margin: 20px;
+}
+
 body, button, input {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 11pt;
@@ -6,19 +10,24 @@ body, button, input {
 h1 {
   font-weight: normal;
   padding-bottom: 10px;
-  text-align: center;
 }
 
 p {
-  text-align: center;
+  margin: .75em 0;
 }
 
 button {
-  border: 1px solid grey;
-  border-radius: 2px;
-  padding: 4px;
-  margin-left: 4px;
+  font-weight: bold;
+  border: none;
+  border-radius: 7px;
+  background-color: rgb(61, 109, 211);
+  color: #fff;
+  transition: background-color 0.4s;
   cursor: pointer;
+}
+button:hover,
+button:focus {
+  background-color: rgb(55, 97, 188);
 }
 
 :focus {
