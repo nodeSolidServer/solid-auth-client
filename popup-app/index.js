@@ -9,18 +9,9 @@ import IdpCallback from './components/IdpCallback'
 import IdpSelect from './components/IdpSelect'
 import NoParent from './components/NoParent'
 
-import './index.css'
+import defaultIdps from './idps.json'
 
-const defaultIdps = [
-  {
-    displayName: 'Solid Community',
-    url: 'https://solid.community/'
-  },
-  {
-    displayName: 'Solid Test Space',
-    url: 'https://solidtest.space/'
-  }
-]
+import './index.css'
 
 findAppOrigin()
   .then(appOrigin => {
