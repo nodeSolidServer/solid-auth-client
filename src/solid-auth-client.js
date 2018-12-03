@@ -20,6 +20,8 @@ export type loginOptions = {
 }
 
 export default class SolidAuthClient extends EventEmitter {
+  _pendingSession: ?Promise<?Session>
+
   fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
     return authnFetch(defaultStorage(), globalFetch, input, options)
   }
@@ -50,17 +52,30 @@ export default class SolidAuthClient extends EventEmitter {
   async currentSession(
     storage: AsyncStorage = defaultStorage()
   ): Promise<?Session> {
+    // Try to obtain a stored session
     let session = await getSession(storage)
+
+    // Try to create a new session
     if (!session) {
+      // Return if session creation is already pending
+      if (this._pendingSession) {
+        return this._pendingSession
+      }
+
+      // Create a new OIDC session
       try {
-        session = await WebIdOidc.currentSession(storage)
+        this._pendingSession = WebIdOidc.currentSession(storage)
+        session = await this._pendingSession
       } catch (err) {
         console.error(err)
       }
+      delete this._pendingSession
+
+      // Save the session and emit session events
       if (session) {
+        await saveSession(storage)(session)
         this.emit('login', session)
         this.emit('session', session)
-        await saveSession(storage)(session)
       }
     }
     return session
