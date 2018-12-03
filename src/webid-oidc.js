@@ -29,20 +29,26 @@ export async function currentSession(
   storage: AsyncStorage = defaultStorage()
 ): Promise<?webIdOidcSession> {
   try {
+    // Obtain the Relying Party
     const rp = await getStoredRp(storage)
     if (!rp) {
       return null
     }
+
+    // Obtain and clear the OIDC URL fragment
     const url = currentUrl()
     if (!/#(.*&)?access_token=/.test(url)) {
       return null
     }
+    window.location.hash = ''
+    await restoreAppHashFragment(storage)
+
+    // Obtain a session from the Relying Party
     const storeData = await getData(storage)
     const session = await rp.validateResponse(url, storeData)
     if (!session) {
       return null
     }
-    await restoreAppHashFragment(storage)
     return {
       ...session,
       webId: session.idClaims.sub,
@@ -161,9 +167,8 @@ async function saveAppHashFragment(store: AsyncStorage): Promise<void> {
 }
 
 async function restoreAppHashFragment(store: AsyncStorage): Promise<void> {
-  await updateStorage(store, data => {
-    window.location.hash = data.appHashFragment
-    delete data.appHashFragment
+  await updateStorage(store, ({ appHashFragment = '', ...data }) => {
+    window.location.hash = appHashFragment
     return data
   })
 }

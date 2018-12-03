@@ -17,7 +17,7 @@ export const polyfillWindow = () => {
         return this.href.replace(/^[^#]+/, '')
       },
       set hash(value) {
-        this.href = this.href.replace(/#.*/, value)
+        this.href = this.href.replace(/#.*|$/, value)
       }
     }
   })
