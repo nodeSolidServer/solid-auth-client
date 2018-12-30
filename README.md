@@ -50,7 +50,8 @@ This library offers two main types of functionality:
 
 ### Reading and writing data
 The `fetch` method mimics
-the browser's [`fetch` API]((https://fetch.spec.whatwg.org/)).
+the browser's [`fetch` API]((https://fetch.spec.whatwg.org/)): 
+it has the same signature and also returns a promise that resolves to the response to the request.
 You can use it to access any kind of HTTP(S) document,
 regardless of whether that document is on a Solid pod:
 
