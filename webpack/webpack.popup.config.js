@@ -10,7 +10,8 @@ const {
   context,
   mode,
   module: _module,
-  externals
+  externals,
+  devtool
 } = require('./webpack.common.config')
 
 const outputDir = './dist-popup'
@@ -45,7 +46,9 @@ module.exports = {
     }),
     new HtmlWebpackInlineSourcePlugin()
   ],
+  devtool,
   devServer: {
-    contentBase: path.join(__dirname, 'dist')
+    contentBase: outputDir,
+    port: 8606
   }
 }
