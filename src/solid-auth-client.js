@@ -7,7 +7,7 @@ import type { Session } from './session'
 import { getSession, saveSession, clearSession } from './session'
 import type { AsyncStorage } from './storage'
 import { defaultStorage } from './storage'
-import { currentUrlNoParams } from './url-util'
+import { toUrlString, currentUrlNoParams } from './url-util'
 import * as WebIdOidc from './webid-oidc'
 
 // Store the global fetch, so the user is free to override it
@@ -23,6 +23,7 @@ export default class SolidAuthClient extends EventEmitter {
   _pendingSession: ?Promise<?Session>
 
   fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
+    this.emit('request', toUrlString(input))
     return authnFetch(defaultStorage(), globalFetch, input, options)
   }
 

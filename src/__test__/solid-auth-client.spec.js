@@ -507,6 +507,20 @@ describe('fetch', () => {
     )
   }
 
+  it('fires the request event', async () => {
+    nock('https://third-party.com')
+      .get('/resource')
+      .reply(200)
+
+    const allArgs = []
+    const collectArgs = allArgs.push.bind(allArgs)
+    instance.on('request', collectArgs)
+    await instance.fetch('https://third-party.com/resource')
+    instance.removeListener('request', collectArgs)
+
+    expect(allArgs).toEqual(['https://third-party.com/resource'])
+  })
+
   it('handles 401s from WebID-OIDC resources by resending with credentials', async () => {
     expect.assertions(1)
     await saveSession(window.localStorage)(fakeSession)
