@@ -75,6 +75,8 @@ export async function logout(
         await fetch('/.well-known/solid/logout', { credentials: 'include' })
       } catch (e) {
         // Ignore errors for when we are not on a Solid pod
+        // But tell users it is harmless because they will see the GET failure in the console
+        console.err("Coulnd't find /.well-known/solid/logout, THIS IS HARMLESS.");
       }
     } catch (err) {
       console.warn('Error logging out of the WebID-OIDC session')
