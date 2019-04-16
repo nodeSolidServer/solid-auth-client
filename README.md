@@ -182,7 +182,7 @@ $ solid-auth-client generate-popup # ["My App Name"] [my-app-popup.html]
 
 
 ## Developing `solid-auth-client`
-Developing this library requires [Node.js](https://nodejs.org/en/) >= v8.0.
+Developing this library requires [Node.js](https://nodejs.org/en/) >= v10.0.
 
 ### Setting up the development environment
 
