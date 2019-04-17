@@ -29,36 +29,6 @@ export const defaultStorage = () => {
 }
 
 /**
- * Gets the deserialized stored data
- */
-export async function getData(store: Storage): Promise<Object> {
-  let serialized
-  let data
-  try {
-    serialized = await store.getItem(NAMESPACE)
-    data = JSON.parse(serialized || '{}')
-  } catch (e) {
-    console.warn('Could not deserialize data:', serialized)
-    console.error(e)
-    data = {}
-  }
-  return data
-}
-
-/**
- * Updates a Storage object without mutating its intermediate representation.
- */
-export async function updateStorage(
-  store: Storage,
-  update: Object => Object
-): Promise<Object> {
-  const currentData = await getData(store)
-  const newData = update(currentData)
-  await store.setItem(NAMESPACE, JSON.stringify(newData))
-  return newData
-}
-
-/**
  * Takes a synchronous storage interface and wraps it with an async interface.
  */
 export function asyncStorage(storage: Storage): AsyncStorage {
@@ -105,3 +75,43 @@ export function ipcStorage(client: Client): AsyncStorage {
       client.request('storage/removeItem', key)
   }
 }
+
+export class StorageSession {
+  _id: string
+  _storage: AsyncStorage
+
+  constructor(id: string, storage: AsyncStorage) {
+    this._id = `${NAMESPACE}-storage-${id}`
+    this._storage = storage
+  }
+
+  async get(key: string): Promise<any> {
+    const data = await this.getData()
+    return key in data ? data[key] : null
+  }
+
+  async getData(): Promise<Object> {
+    const serialized = await this._storage.getItem(this._id)
+    return typeof serialized === 'string' ? JSON.parse(serialized) : {}
+  }
+
+  async set(key: string, val: any): Promise<void> {
+    const data = await this.getData()
+    data[key] = val
+    return this.setData(data)
+  }
+
+  async setData(data: Object): Promise<void> {
+    const serialized = JSON.stringify(data)
+    return this._storage.setItem(this._id, serialized)
+  }
+
+  async remove(key: string): Promise<void> {
+    const data = await this.getData()
+    delete data[key]
+    return this.setData(data)
+  }
+}
+
+export const SESSION_KEY = 'session'
+export const HOSTS_KEY = 'hosts'

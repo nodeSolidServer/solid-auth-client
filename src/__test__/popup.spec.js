@@ -2,7 +2,7 @@
 /* eslint-env jest */
 import { obtainSession, popupHandler } from '../popup'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import { defaultStorage } from '../storage'
+import { defaultStorage, StorageSession } from '../storage'
 
 beforeEach(polyfillWindow)
 
@@ -16,10 +16,10 @@ describe('obtainSession', () => {
       idp: 'https://localhost',
       webId: 'https://localhost/profile#me'
     }
-    const sessionPromise = obtainSession(store, window, {
+    const sessionPromise = obtainSession('my-session-id', store, window, {
       popupUri: 'https://app.biz/select-idp',
       callbackUri: 'https://app.biz/callback',
-      storage: store
+      storage: new StorageSession('my-session-id', store)
     })
     window.postMessage(
       {
@@ -37,25 +37,26 @@ describe('obtainSession', () => {
 })
 
 describe('popupHandler', () => {
-  let store
+  const asyncStore = defaultStorage()
+  const store = new StorageSession('my-session-id', asyncStore)
   let handler
   const mockCallback = jest.fn()
 
   const options = {
     popupUri: 'https://localhost/select-idp',
     callbackUri: 'https://localhost/callback',
-    storage: defaultStorage()
+    storage: store
   }
 
-  beforeEach(() => {
-    store = defaultStorage()
-    handler = popupHandler(store, options, mockCallback)
+  beforeEach(async () => {
+    await store.setData({})
+    handler = popupHandler('my-session-id', asyncStore, options, mockCallback)
     mockCallback.mockReset()
   })
 
   it('implements getItem', async () => {
     expect.assertions(1)
-    await store.setItem('foo', 'bar')
+    await asyncStore.setItem('foo', 'bar')
     const resp = await handler('storage/getItem', 'foo')
     expect(resp).toEqual('bar')
   })
@@ -64,15 +65,15 @@ describe('popupHandler', () => {
     expect.assertions(2)
     const resp = await handler('storage/setItem', 'foo', 'bar')
     expect(resp).toEqual(undefined)
-    expect(await store.getItem('foo')).toEqual('bar')
+    expect(await asyncStore.getItem('foo')).toEqual('bar')
   })
 
   it('implements removeItem', async () => {
     expect.assertions(2)
-    await store.setItem('foo', 'bar')
+    await asyncStore.setItem('foo', 'bar')
     const resp = await handler('storage/removeItem', 'foo')
     expect(resp).toEqual(undefined)
-    expect(await store.getItem('foo')).toEqual(null)
+    expect(await asyncStore.getItem('foo')).toEqual(null)
   })
 
   it('returns the loginOptions', async () => {

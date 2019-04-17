@@ -3,18 +3,17 @@ import 'isomorphic-fetch'
 
 import { toUrlString } from './url-util'
 import { getHost, updateHostFromResponse } from './host'
-import { getSession } from './session'
-import type { AsyncStorage } from './storage'
 import { fetchWithCredentials } from './webid-oidc'
+import { StorageSession, SESSION_KEY } from './storage'
 
 export async function authnFetch(
-  storage: AsyncStorage,
+  storage: StorageSession,
   fetch: Function,
   input: RequestInfo,
   options?: RequestOptions
 ): Promise<Response> {
   // If not authenticated, perform a regular fetch
-  const session = await getSession(storage)
+  const session = await storage.get(SESSION_KEY)
   if (!session) {
     return fetch(input, options)
   }
@@ -29,7 +28,7 @@ export async function authnFetch(
 
   // If the server then requests credentials, send them
   if (resp.status === 401) {
-    await updateHostFromResponse(storage)(resp)
+    await updateHostFromResponse(storage, resp)
     if (await shouldShareCredentials(storage, input)) {
       resp = fetchWithCredentials(session, fetch, input, options)
     }
@@ -38,9 +37,9 @@ export async function authnFetch(
 }
 
 async function shouldShareCredentials(
-  storage: AsyncStorage,
+  storage: StorageSession,
   input: RequestInfo
 ): Promise<boolean> {
-  const requestHost = await getHost(storage)(toUrlString(input))
+  const requestHost = await getHost(storage, toUrlString(input))
   return requestHost != null && requestHost.requiresAuth
 }

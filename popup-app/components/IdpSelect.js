@@ -1,9 +1,8 @@
 import React from 'react'
 
-import auth from '../../src'
+import SolidAuthClient from '../../src/solid-auth-client'
 import { Client } from '../../src/ipc'
-import { ipcStorage, getData } from '../../src/storage'
-
+import { ipcStorage, StorageSession } from '../../src/storage'
 import './IdpSelect.css'
 
 export default class IdpSelect extends React.Component {
@@ -37,22 +36,33 @@ export default class IdpSelect extends React.Component {
       return
     }
     const loginOptions = {
-      ...(await this.getClient().request('getLoginOptions')),
-      storage: this.getStorage()
+      ...(await this.getClient().request('getLoginOptions'))
     }
-    await auth.login(idp, loginOptions)
+    const authSession = await this.getAuthClientSession()
+    await authSession.login(idp, loginOptions)
   }
 
   getClient() {
     return new Client(window.opener, this.props.appOrigin)
   }
 
-  getStorage() {
+  getAsyncStorage() {
     return ipcStorage(this.getClient())
   }
 
+  async getStorageSession() {
+    const sessionId = await this.getClient().request('getSessionId')
+    return new StorageSession(sessionId, this.getAsyncStorage())
+  }
+
+  async getAuthClientSession() {
+    const sessionId = await this.getClient().request('getSessionId')
+    return SolidAuthClient.openSession(sessionId, this.getAsyncStorage())
+  }
+
   async componentDidMount() {
-    const { rpConfig } = await getData(this.getStorage())
+    const storage = await this.getStorageSession()
+    const rpConfig = await storage.get('rpConfig')
     if (rpConfig) {
       this.setState({ idp: rpConfig.provider.url })
     }

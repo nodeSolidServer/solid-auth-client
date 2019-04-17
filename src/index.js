@@ -1,7 +1,7 @@
 import SolidAuthClient from './solid-auth-client'
 
 // Export a singleton instance of SolidAuthClient
-const auth = new SolidAuthClient()
+const auth = new SolidAuthClient('__DEFAULT__') // TODO: Use static method for this
 export default auth
 
 // Bind methods to instance, so they can be invoked as regular functions
