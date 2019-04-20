@@ -31,8 +31,9 @@ module.exports = {
     'whatwg-url': 'window',
     'isomorphic-fetch': 'fetch',
     'solid-rest-browser': {
-        commonjs: 'solid-rest-browser',
-        commonjs2: 'solid-rest-browser',
+        root: ['../node-modules/solid-rest-browser/src','appfetch'],
+        commonjs: '../node_modules/solid-rest-browser/src',
+        commonjs2: '../node_modules/solid-rest-browser/src',
     },
     '@trust/webcrypto': 'crypto'
   },
