@@ -30,11 +30,7 @@ module.exports = {
     'text-encoding': 'TextEncoder',
     'whatwg-url': 'window',
     'isomorphic-fetch': 'fetch',
-    'solid-rest-browser': {
-        root: ['../node-modules/solid-rest-browser/src','appfetch'],
-        commonjs: '../node_modules/solid-rest-browser/src',
-        commonjs2: '../node_modules/solid-rest-browser/src',
-    },
+    'solid-rest-browser': "solid-rest-browser",
     '@trust/webcrypto': 'crypto'
   },
   devtool: 'source-map'
