@@ -23,7 +23,7 @@ export default class SolidAuthClient extends EventEmitter {
   _pendingSession: ?Promise<?Session>
 
   fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
-    if (input.startsWith('app:')) {
+    if (input.toString().startsWith('app:')) {
       return require('solid-rest-browser/src').appfetch(input, options)
     }
     this.emit('request', toUrlString(input))
