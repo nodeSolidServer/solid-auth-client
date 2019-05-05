@@ -30,7 +30,7 @@ module.exports = {
     'text-encoding': 'TextEncoder',
     'whatwg-url': 'window',
     'isomorphic-fetch': 'fetch',
-    'solid-rest-browser': "solid-rest-browser",
+    'solid-rest-browser': "SolidRestBrowser",
     '@trust/webcrypto': 'crypto'
   },
   devtool: 'source-map'

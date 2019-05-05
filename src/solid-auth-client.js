@@ -24,7 +24,7 @@ export default class SolidAuthClient extends EventEmitter {
 
   fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
     if (input.toString().startsWith('app:')) {
-      return require('solid-rest-browser/src').appfetch(input, options)
+      return require('solid-rest-browser').appfetch(input, options)
     }
     this.emit('request', toUrlString(input))
     return authnFetch(defaultStorage(), globalFetch, input, options)
