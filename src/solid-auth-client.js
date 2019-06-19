@@ -5,7 +5,7 @@ import { authnFetch } from './authn-fetch'
 import { openIdpPopup, obtainSession } from './popup'
 import type { Session } from './webid-oidc'
 import type { AsyncStorage } from './storage'
-import { defaultStorage, StorageSession, SESSION_KEY } from './storage'
+import { defaultStorage, ItemStorage, SESSION_KEY } from './storage'
 import { toUrlString, currentUrlNoParams } from './url-util'
 import * as WebIdOidc from './webid-oidc'
 
@@ -15,37 +15,32 @@ const globalFetch = fetch
 export type loginOptions = {
   callbackUri: string,
   popupUri: string,
-  storage: StorageSession
+  storage: ItemStorage
 }
-
-const sessions = {}
 
 export default class SolidAuthClient extends EventEmitter {
   _pendingSession: ?Promise<?Session>
-  _id: string
-  _storage: StorageSession
+  _storage: ItemStorage
   _asyncStorage: AsyncStorage
 
-  constructor(id: string, asyncStorage: AsyncStorage = defaultStorage()) {
+  constructor(id: ?string, asyncStorage: AsyncStorage = defaultStorage()) {
     super()
-    this._id = id
-    this._storage = new StorageSession(id, asyncStorage)
+    this._storage = new ItemStorage(id, asyncStorage)
     this._asyncStorage = asyncStorage
   }
 
-  // Create or open an existing auth-session for managing a single solid account
-  static openSession(
-    id: string,
+  static async getActiveClients(
     asyncStorage: AsyncStorage = defaultStorage()
-  ) {
-    if (!(id in sessions)) {
-      sessions[id] = new SolidAuthClient(id, asyncStorage)
-    }
-    return sessions[id]
+  ): Promise<SolidAuthClient[]> {
+    const ids = await ItemStorage.getUsedIds(asyncStorage).then(Object.keys)
+    const clients: SolidAuthClient[] = ids.map(id => new SolidAuthClient(id, asyncStorage))
+    const activeClients = filterAsync(clients, client => client.currentSession().then(session => !!session))
+    return activeClients
   }
 
-  // Make static method available on class instances
-  openSession = SolidAuthClient.openSession
+  getId(): Promise<string> {
+    return this._storage.getId()
+  }
 
   fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
     this.emit('request', toUrlString(input))
@@ -74,13 +69,9 @@ export default class SolidAuthClient extends EventEmitter {
     if (!options.callbackUri) {
       options.callbackUri = options.popupUri
     }
+    const id = await this._storage.getId()
     const popup = openIdpPopup(options.popupUri)
-    const session = await obtainSession(
-      this._id,
-      this._asyncStorage,
-      popup,
-      options
-    )
+    const session = await obtainSession(id, this._asyncStorage, popup, options)
     this.emit('login', session)
     this.emit('session', session)
     return session
@@ -140,4 +131,13 @@ function defaultLoginOptions(
     callbackUri: url ? url.split('#')[0] : '',
     popupUri: ''
   }
+}
+
+function filterAsync(
+  array: any[],
+  filter: (val: any) => Promise<boolean>
+): any[] {
+  return Promise.all(array.map(val => filter(val))).then(bits =>
+    array.filter(() => bits.shift())
+  )
 }

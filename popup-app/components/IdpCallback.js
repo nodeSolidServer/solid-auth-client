@@ -11,7 +11,7 @@ export default class IdpCallback extends Component {
   async componentDidMount() {
     const asyncStorage = ipcStorage(this.client)
     const sessionId = await this.client.request('getSessionId')
-    const authClient = SolidAuthClient.openSession(sessionId, asyncStorage)
+    const authClient = new SolidAuthClient(sessionId, asyncStorage)
     const session = await authClient.currentSession()
     await this.client.request('foundSession', session)
     this.setState({ loggedIn: true })

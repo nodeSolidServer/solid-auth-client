@@ -8,13 +8,13 @@ import rsaPemToJwk from 'rsa-pem-to-jwk'
 import SolidAuthClient from '../solid-auth-client'
 import { saveHost } from '../host'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import { asyncStorage, StorageSession, SESSION_KEY } from '../storage'
+import { asyncStorage, ItemStorage, SESSION_KEY } from '../storage'
 import { sessionKeys } from './session-keys'
 
 const testId = 'TEST'
 const asyncStore = asyncStorage(window.localStorage)
 const instance = new SolidAuthClient(testId, asyncStore)
-const testStorage = new StorageSession(testId, asyncStore)
+const testStorage = new ItemStorage(testId, asyncStore)
 
 /*
  * OIDC test data:

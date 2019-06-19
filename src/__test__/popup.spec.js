@@ -2,7 +2,7 @@
 /* eslint-env jest */
 import { obtainSession, popupHandler } from '../popup'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import { defaultStorage, StorageSession } from '../storage'
+import { defaultStorage, ItemStorage } from '../storage'
 
 beforeEach(polyfillWindow)
 
@@ -19,7 +19,7 @@ describe('obtainSession', () => {
     const sessionPromise = obtainSession('my-session-id', store, window, {
       popupUri: 'https://app.biz/select-idp',
       callbackUri: 'https://app.biz/callback',
-      storage: new StorageSession('my-session-id', store)
+      storage: new ItemStorage('my-session-id', store)
     })
     window.postMessage(
       {
@@ -38,7 +38,7 @@ describe('obtainSession', () => {
 
 describe('popupHandler', () => {
   const asyncStore = defaultStorage()
-  const store = new StorageSession('my-session-id', asyncStore)
+  const store = new ItemStorage('my-session-id', asyncStore)
   let handler
   const mockCallback = jest.fn()
 

@@ -6,7 +6,7 @@ import PoPToken from '@solid/oidc-rp/lib/PoPToken'
 
 import type { loginOptions } from './solid-auth-client'
 import { currentUrl, navigateTo, toUrlString } from './url-util'
-import { StorageSession } from './storage'
+import { ItemStorage } from './storage'
 
 export type webIdOidcSession = {
   idp: string,
@@ -25,6 +25,7 @@ export async function login(
 ): Promise<?null> {
   try {
     const rp = await getRegisteredRp(idp, options)
+    await rp.logout()
     await saveAppHashFragment(options.storage)
     return sendAuthRequest(rp, options)
   } catch (err) {
@@ -35,7 +36,7 @@ export async function login(
 }
 
 export async function currentSession(
-  storage: StorageSession
+  storage: ItemStorage
 ): Promise<?webIdOidcSession> {
   try {
     // Obtain the Relying Party
@@ -71,7 +72,7 @@ export async function currentSession(
 }
 
 export async function logout(
-  storage: StorageSession,
+  storage: ItemStorage,
   fetch: Function
 ): Promise<void> {
   const rp = await getStoredRp(storage)
@@ -111,7 +112,7 @@ export async function getRegisteredRp(
   return rp
 }
 
-async function getStoredRp(storage: StorageSession): Promise<?RelyingParty> {
+async function getStoredRp(storage: ItemStorage): Promise<?RelyingParty> {
   const rpConfig = await storage.get('rpConfig')
   if (rpConfig) {
     rpConfig.store = storage
@@ -122,7 +123,7 @@ async function getStoredRp(storage: StorageSession): Promise<?RelyingParty> {
 }
 
 async function storeRp(
-  storage: StorageSession,
+  storage: ItemStorage,
   idp: string,
   rp: RelyingParty
 ): Promise<RelyingParty> {
@@ -164,11 +165,11 @@ async function sendAuthRequest(
   return navigateTo(url)
 }
 
-async function saveAppHashFragment(store: StorageSession): Promise<void> {
+async function saveAppHashFragment(store: ItemStorage): Promise<void> {
   await store.set('appHashFragment', window.location.hash)
 }
 
-async function restoreAppHashFragment(store: StorageSession): Promise<void> {
+async function restoreAppHashFragment(store: ItemStorage): Promise<void> {
   window.location.hash = (await store.get('appHashFragment')) || ''
   await store.remove('appHashFragment')
 }

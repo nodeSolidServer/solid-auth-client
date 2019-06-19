@@ -4,10 +4,10 @@ import 'isomorphic-fetch'
 import { toUrlString } from './url-util'
 import { getHost, updateHostFromResponse } from './host'
 import { fetchWithCredentials } from './webid-oidc'
-import { StorageSession, SESSION_KEY } from './storage'
+import { ItemStorage, SESSION_KEY } from './storage'
 
 export async function authnFetch(
-  storage: StorageSession,
+  storage: ItemStorage,
   fetch: Function,
   input: RequestInfo,
   options?: RequestOptions
@@ -37,7 +37,7 @@ export async function authnFetch(
 }
 
 async function shouldShareCredentials(
-  storage: StorageSession,
+  storage: ItemStorage,
   input: RequestInfo
 ): Promise<boolean> {
   const requestHost = await getHost(storage, toUrlString(input))

@@ -1,6 +1,6 @@
 // @flow
 /* globalRequest, Response, URL */
-import { StorageSession, SESSION_KEY, HOSTS_KEY } from './storage'
+import { ItemStorage, SESSION_KEY, HOSTS_KEY } from './storage'
 import * as WebIdOidc from './webid-oidc'
 
 export type host = {
@@ -9,7 +9,7 @@ export type host = {
 }
 
 export async function getHost(
-  storage: StorageSession,
+  storage: ItemStorage,
   url: string
 ): Promise<?host> {
   const { host } = new URL(url)
@@ -22,7 +22,7 @@ export async function getHost(
 }
 
 export async function saveHost(
-  storage: StorageSession,
+  storage: ItemStorage,
   { url, requiresAuth }: host
 ): Promise<void> {
   const oldHosts = await storage.get(HOSTS_KEY)
@@ -34,7 +34,7 @@ export async function saveHost(
 }
 
 export async function updateHostFromResponse(
-  storage: StorageSession,
+  storage: ItemStorage,
   resp: Response
 ): Promise<void> {
   if (WebIdOidc.requiresAuth(resp)) {
