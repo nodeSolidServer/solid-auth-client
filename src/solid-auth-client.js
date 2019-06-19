@@ -136,7 +136,7 @@ function defaultLoginOptions(
 function filterAsync(
   array: any[],
   filter: (val: any) => Promise<boolean>
-): any[] {
+): Promise<any[]> {
   return Promise.all(array.map(val => filter(val))).then(bits =>
     array.filter(() => bits.shift())
   )
