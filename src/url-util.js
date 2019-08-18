@@ -1,13 +1,19 @@
 // @flow
 /* eslint-env browser */
 
-export const currentUrl = (): string => window.location.href
+function getLocation() {
+  return typeof window !== 'undefined'
+    ? window.location
+    : { href: 'https://example.org/', pathname: '/', origin: 'example.org' }
+}
+
+export const currentUrl = (): string => getLocation().href
 
 export const currentUrlNoParams = (): string =>
-  window.location.origin + window.location.pathname
+  getLocation().origin + getLocation().pathname
 
 export const navigateTo = (url: string) => {
-  window.location.href = url
+  getLocation().href = url
 }
 
 export const originOf = (url: string): string => new URL(url).origin
