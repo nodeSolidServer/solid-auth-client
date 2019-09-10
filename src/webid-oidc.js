@@ -6,9 +6,18 @@ import PoPToken from '@solid/oidc-rp/lib/PoPToken'
 
 import type { loginOptions } from './solid-auth-client'
 import { currentUrl, navigateTo, toUrlString } from './url-util'
-import type { webIdOidcSession } from './session'
-import type { AsyncStorage } from './storage'
-import { defaultStorage, getData, updateStorage } from './storage'
+import { ItemStorage } from './storage'
+
+export type webIdOidcSession = {
+  idp: string,
+  webId: string,
+  accessToken: string,
+  idToken: string,
+  clientId: string,
+  sessionKey: string
+}
+
+export type Session = webIdOidcSession
 
 export async function login(
   idp: string,
@@ -16,6 +25,7 @@ export async function login(
 ): Promise<?null> {
   try {
     const rp = await getRegisteredRp(idp, options)
+    await rp.logout()
     await saveAppHashFragment(options.storage)
     return sendAuthRequest(rp, options)
   } catch (err) {
@@ -26,7 +36,7 @@ export async function login(
 }
 
 export async function currentSession(
-  storage: AsyncStorage = defaultStorage()
+  storage: ItemStorage
 ): Promise<?webIdOidcSession> {
   try {
     // Obtain the Relying Party
@@ -44,7 +54,7 @@ export async function currentSession(
     await restoreAppHashFragment(storage)
 
     // Obtain a session from the Relying Party
-    const storeData = await getData(storage)
+    const storeData = await storage.getData()
     const session = await rp.validateResponse(url, storeData)
     if (!session) {
       return null
@@ -62,7 +72,7 @@ export async function currentSession(
 }
 
 export async function logout(
-  storage: AsyncStorage,
+  storage: ItemStorage,
   fetch: Function
 ): Promise<void> {
   const rp = await getStoredRp(storage)
@@ -102,9 +112,8 @@ export async function getRegisteredRp(
   return rp
 }
 
-async function getStoredRp(storage: AsyncStorage): Promise<?RelyingParty> {
-  const data = await getData(storage)
-  const { rpConfig } = data
+async function getStoredRp(storage: ItemStorage): Promise<?RelyingParty> {
+  const rpConfig = await storage.get('rpConfig')
   if (rpConfig) {
     rpConfig.store = storage
     return RelyingParty.from(rpConfig)
@@ -114,14 +123,11 @@ async function getStoredRp(storage: AsyncStorage): Promise<?RelyingParty> {
 }
 
 async function storeRp(
-  storage: AsyncStorage,
+  storage: ItemStorage,
   idp: string,
   rp: RelyingParty
 ): Promise<RelyingParty> {
-  await updateStorage(storage, data => ({
-    ...data,
-    rpConfig: rp
-  }))
+  await storage.set('rpConfig', rp)
   return rp
 }
 
@@ -153,24 +159,19 @@ async function sendAuthRequest(
   rp: RelyingParty,
   { callbackUri, storage }: loginOptions
 ): Promise<void> {
-  const data = await getData(storage)
+  const data = await storage.getData()
   const url = await rp.createRequest({ redirect_uri: callbackUri }, data)
-  await updateStorage(storage, () => data)
+  await storage.setData(data)
   return navigateTo(url)
 }
 
-async function saveAppHashFragment(store: AsyncStorage): Promise<void> {
-  await updateStorage(store, data => ({
-    ...data,
-    appHashFragment: window.location.hash
-  }))
+async function saveAppHashFragment(store: ItemStorage): Promise<void> {
+  await store.set('appHashFragment', window.location.hash)
 }
 
-async function restoreAppHashFragment(store: AsyncStorage): Promise<void> {
-  await updateStorage(store, ({ appHashFragment = '', ...data }) => {
-    window.location.hash = appHashFragment
-    return data
-  })
+async function restoreAppHashFragment(store: ItemStorage): Promise<void> {
+  window.location.hash = (await store.get('appHashFragment')) || ''
+  await store.remove('appHashFragment')
 }
 
 /**

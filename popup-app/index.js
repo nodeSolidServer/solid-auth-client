@@ -3,7 +3,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 import { Client } from '../src/ipc'
-import { getData, updateStorage } from '../src/storage'
 
 import IdpCallback from './components/IdpCallback'
 import IdpSelect from './components/IdpSelect'
@@ -60,14 +59,10 @@ async function findAppOrigin() {
   return appOrigin
 }
 
-async function getStoredAppOrigin() {
-  const { appOrigin } = await getData(sessionStorage)
-  return appOrigin
+function getStoredAppOrigin() {
+  return sessionStorage.getItem('appOrigin')
 }
 
 function storeAppOrigin(origin) {
-  return updateStorage(sessionStorage, data => ({
-    ...data,
-    appOrigin: origin
-  }))
+  return sessionStorage.setItem('appOrigin', origin)
 }

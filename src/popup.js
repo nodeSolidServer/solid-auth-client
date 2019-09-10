@@ -1,7 +1,7 @@
 // @flow
 import type { loginOptions } from './solid-auth-client'
 import { Server } from './ipc'
-import type { Session } from './session'
+import type { Session } from './webid-oidc'
 import type { AsyncStorage } from './storage'
 import { originOf } from './url-util'
 
@@ -15,6 +15,7 @@ export function openIdpPopup(popupUri: string): window {
 }
 
 export function obtainSession(
+  sessionId: string,
   store: AsyncStorage,
   popup: window,
   options: loginOptions
@@ -23,7 +24,7 @@ export function obtainSession(
     const popupServer = new Server(
       popup,
       originOf(options.popupUri || ''),
-      popupHandler(store, options, (session: Session) => {
+      popupHandler(sessionId, store, options, (session: Session) => {
         popupServer.stop()
         resolve(session)
       })
@@ -33,6 +34,7 @@ export function obtainSession(
 }
 
 export function popupHandler(
+  sessionId: string,
   store: AsyncStorage,
   { popupUri, callbackUri }: loginOptions,
   foundSessionCb: Session => void
@@ -43,7 +45,9 @@ export function popupHandler(
       case 'getAppOrigin':
         return window.location.origin
 
-      // Storage
+      case 'getSessionId':
+        return sessionId
+
       case 'storage/getItem':
         return store.getItem(...args)
       case 'storage/setItem':

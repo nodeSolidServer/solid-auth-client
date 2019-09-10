@@ -7,12 +7,14 @@ import rsaPemToJwk from 'rsa-pem-to-jwk'
 
 import SolidAuthClient from '../solid-auth-client'
 import { saveHost } from '../host'
-import { getSession, saveSession } from '../session'
 import { polyfillWindow, polyunfillWindow } from './spec-helpers'
-import { asyncStorage } from '../storage'
+import { asyncStorage, ItemStorage, SESSION_KEY } from '../storage'
 import { sessionKeys } from './session-keys'
 
-const instance = new SolidAuthClient()
+const testId = 'TEST'
+const asyncStore = asyncStorage(window.localStorage)
+const instance = new SolidAuthClient(testId, asyncStore)
+const testStorage = new ItemStorage(testId, asyncStore)
 
 /*
  * OIDC test data:
@@ -80,12 +82,13 @@ const fakeSession = {
   sessionKey
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   polyfillWindow()
   nock.disableNetConnect()
   instance.removeAllListeners('login')
   instance.removeAllListeners('logout')
   instance.removeAllListeners('session')
+  testStorage.setData({}) // TODO: Why wasn't this need before?
 })
 
 afterEach(() => {
@@ -94,7 +97,8 @@ afterEach(() => {
   nock.enableNetConnect()
 })
 
-const getStoredSession = () => getSession(asyncStorage(window.localStorage))
+const getStoredSession = () => testStorage.get(SESSION_KEY)
+const saveSession = session => testStorage.set(SESSION_KEY, session)
 
 describe('login', () => {
   beforeEach(() => {
@@ -201,7 +205,7 @@ describe('login', () => {
 describe('currentSession', () => {
   it('can find the current session if stored', async () => {
     expect.assertions(2)
-    await saveSession(window.localStorage)(fakeSession)
+    await saveSession(fakeSession)
 
     const session = await instance.currentSession()
     expect(session.webId).toBe('https://person.me/#me')
@@ -343,7 +347,7 @@ describe('trackSession', () => {
   it('yields an active session', async () => {
     expect.assertions(2)
     const session = {}
-    await saveSession(window.localStorage)(session)
+    await saveSession(session)
 
     const callback = jest.fn()
     await instance.trackSession(callback)
@@ -368,7 +372,7 @@ describe('trackSession', () => {
   it('calls the callback on logout', async () => {
     expect.assertions(4)
     const session = {}
-    await saveSession(window.localStorage)(session)
+    await saveSession(session)
 
     const callback = jest.fn()
     await instance.trackSession(callback)
@@ -523,7 +527,7 @@ describe('fetch', () => {
 
   it('handles 401s from WebID-OIDC resources by resending with credentials', async () => {
     expect.assertions(1)
-    await saveSession(window.localStorage)(fakeSession)
+    await saveSession(fakeSession)
 
     nock('https://third-party.com')
       .get('/protected-resource')
@@ -539,7 +543,7 @@ describe('fetch', () => {
   })
 
   it('merges request headers with the authorization header', async () => {
-    await saveSession(window.localStorage)(fakeSession)
+    await saveSession(fakeSession)
 
     nock('https://third-party.com')
       .get('/private-resource')
@@ -560,7 +564,7 @@ describe('fetch', () => {
 
   it('does not resend with credentials if the www-authenticate header is missing', async () => {
     expect.assertions(1)
-    await saveSession(window.localStorage)(fakeSession)
+    await saveSession(fakeSession)
 
     nock('https://third-party.com')
       .get('/protected-resource')
@@ -573,7 +577,7 @@ describe('fetch', () => {
   })
 
   it('does not resend with credentials if the www-authenticate header suggests an unknown scheme', async () => {
-    await saveSession(window.localStorage)(fakeSession)
+    await saveSession(fakeSession)
 
     nock('https://third-party.com')
       .get('/protected-resource')
@@ -624,7 +628,7 @@ describe('fetch', () => {
   describe('familiar domains with WebID-OIDC', () => {
     it('just sends one request when the RP is also the IDP', async () => {
       expect.assertions(1)
-      await saveSession(window.localStorage)(fakeSession)
+      await saveSession(fakeSession)
 
       nock('https://localhost')
         .get('/resource')
@@ -637,9 +641,9 @@ describe('fetch', () => {
 
     it('just sends one request to domains it has already encountered', async () => {
       expect.assertions(1)
-      await saveSession(window.localStorage)(fakeSession)
+      await saveSession(fakeSession)
 
-      await saveHost(window.localStorage)({
+      await saveHost(testStorage, {
         url: 'third-party.com',
         requiresAuth: true
       })

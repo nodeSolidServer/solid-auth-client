@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 
-import auth from '../../src'
+import SolidAuthClient from '../../src/solid-auth-client'
 import { Client } from '../../src/ipc'
 import { ipcStorage } from '../../src/storage'
 
@@ -9,8 +9,10 @@ export default class IdpCallback extends Component {
   client = new Client(window.opener, this.props.appOrigin)
 
   async componentDidMount() {
-    const storage = ipcStorage(this.client)
-    const session = await auth.currentSession(storage)
+    const asyncStorage = ipcStorage(this.client)
+    const sessionId = await this.client.request('getSessionId')
+    const authClient = new SolidAuthClient(sessionId, asyncStorage)
+    const session = await authClient.currentSession()
     await this.client.request('foundSession', session)
     this.setState({ loggedIn: true })
   }
