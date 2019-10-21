@@ -15,9 +15,6 @@ const globalFetch = fetch
 
 export type loginOptions = {
   callbackUri: string,
-  clientName?: string,
-  contacts?: Array<string>,
-  logoUri?: string,
   popupUri: string,
   storage: AsyncStorage
 }
