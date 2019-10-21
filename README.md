@@ -155,31 +155,6 @@ and emits the following events:
 - `logout ()` when a user logs out
 - `session (session: Session | null)` when a user logs in or out
 
-### Client registration
-
-`SolidAuthClient` automatically registers your OIDC client application if it is
-unknown to the authorization server, following
-[the registration request spec](https://openid.net/specs/openid-connect-registration-1_0.html#RegistrationRequest).
-
-You can specify some fields of this registration request by passing them to the
-`loginSession` parameter of `solid.auth.login`.
-
-Supported fields are:
-
-*  `client_name` and internationalized variants (`clientName` property)
-* `contacts` (`contacts` property)
-* `logo_uri` (`contacts` property)
-
-**Example**:
-
-```js
-solid.auth.login(idp, {
-    clientName: 'My Example',
-    'clientName#ja-Jpan-JP': 'クライアント名',
-    logoUri: 'https://client.example.org/logo.png',
-    contacts: ['ve7jtb@example.org', 'mary@example.org']
-})
-````
 
 ## Advanced usage
 

@@ -125,34 +125,18 @@ async function storeRp(
   return rp
 }
 
-function registerRp(idp: string, opts: loginOptions): Promise<RelyingParty> {
-  const { storage, callbackUri } = opts
+function registerRp(
+  idp: string,
+  { storage, callbackUri }: loginOptions
+): Promise<RelyingParty> {
   const responseType = 'id_token token'
-
-  const clientNameI18n = {}
-  Object.entries(opts)
-    .filter(([key, _]) => key.startsWith('clientName#'))
-    .forEach(
-      ([key, value]) =>
-        (clientNameI18n[key.replace('clientName#', 'client_name#')] = value)
-    )
-
-  const supplementaryOptions = {
-    logo_uri: opts.logoUri,
-    contacts: opts.contacts,
-    client_name: opts.clientName
-  }
-
   const registration = {
     issuer: idp,
     grant_types: ['implicit'],
     redirect_uris: [callbackUri],
     response_types: [responseType],
-    scope: 'openid profile',
-    ...clientNameI18n,
-    ...supplementaryOptions
+    scope: 'openid profile'
   }
-
   const options = {
     defaults: {
       authenticate: {
@@ -162,7 +146,6 @@ function registerRp(idp: string, opts: loginOptions): Promise<RelyingParty> {
     },
     store: storage
   }
-
   return RelyingParty.register(idp, registration, options)
 }
 
