@@ -195,6 +195,36 @@ describe('login', () => {
       expect(location.searchParams.get('scope')).toEqual('openid')
       expect(location.searchParams.get('client_id')).toEqual('the-client-id')
     })
+
+    it('performs the client registration the the correct provided registration parameters', async () => {
+      let requestBody = {}
+      nock('https://localhost/')
+        .get('/.well-known/openid-configuration')
+        .reply(200, oidcConfiguration)
+        .get('/jwks')
+        .reply(200, jwks)
+        .post('/register', body => {
+          requestBody = body
+          return true
+        })
+        .reply(200, oidcRegistration)
+
+      await instance.login('https://localhost', {
+        clientName: 'My Example',
+        'clientName#ja-Jpan-JP': 'クライアント名',
+        logoUri: 'https://client.example.org/logo.png',
+        contacts: ['ve7jtb@example.org', 'mary@example.org']
+      })
+
+      expect(requestBody).toMatchObject({
+        client_name: 'My Example',
+        'client_name#ja-Jpan-JP': 'クライアント名',
+        contacts: ['ve7jtb@example.org', 'mary@example.org'],
+        logo_uri: 'https://client.example.org/logo.png'
+      })
+
+      expect.assertions(1)
+    })
   })
 })
 
