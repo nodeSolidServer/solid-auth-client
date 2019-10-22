@@ -86,6 +86,10 @@ export default class SolidAuthClient extends EventEmitter {
     this.on('session', callback)
   }
 
+  stopTrackingSession(callback: Function): void {
+    this.off('session', callback)
+  }
+
   async logout(storage: AsyncStorage = defaultStorage()): Promise<void> {
     const session = await getSession(storage)
     if (session) {
