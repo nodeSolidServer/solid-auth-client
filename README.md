@@ -168,7 +168,7 @@ Supported fields are:
 
 *  `client_name` and internationalized variants (`clientName` property)
 * `contacts` (`contacts` property)
-* `logo_uri` (`contacts` property)
+* `logo_uri` (`logo_uri` property)
 
 **Example**:
 
