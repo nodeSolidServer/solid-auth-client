@@ -86,7 +86,7 @@ export default class SolidAuthClient extends EventEmitter {
     this.on('session', callback)
   }
 
-  stopTrackingSession(callback: Function): void {
+  stopTrackSession(callback: Function): void {
     this.removeListener('session', callback)
   }
 

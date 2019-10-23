@@ -411,7 +411,7 @@ describe('trackSession', () => {
   })
 })
 
-describe('stopTrackingSession', () => {
+describe('stopTrackSession', () => {
   it('does not call callback on session change', async () => {
     expect.assertions(4)
 
@@ -420,7 +420,7 @@ describe('stopTrackingSession', () => {
     expect(callback).toHaveBeenCalledTimes(1)
     expect(callback).toHaveBeenLastCalledWith(null)
 
-    instance.stopTrackingSession(callback)
+    instance.stopTrackSession(callback)
 
     const session = {}
     instance.emit('session', session)
