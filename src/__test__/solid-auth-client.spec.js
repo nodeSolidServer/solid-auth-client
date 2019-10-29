@@ -411,6 +411,24 @@ describe('trackSession', () => {
   })
 })
 
+describe('stopTrackSession', () => {
+  it('does not call callback on session change', async () => {
+    expect.assertions(4)
+
+    const callback = jest.fn()
+    await instance.trackSession(callback)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenLastCalledWith(null)
+
+    instance.stopTrackSession(callback)
+
+    const session = {}
+    instance.emit('session', session)
+    expect(callback).toHaveBeenCalledTimes(1)
+    expect(callback).toHaveBeenLastCalledWith(null)
+  })
+})
+
 describe('logout', () => {
   describe('WebID-OIDC', () => {
     let expectedIdToken, expectedAccessToken
