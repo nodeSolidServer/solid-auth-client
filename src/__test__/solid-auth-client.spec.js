@@ -586,7 +586,7 @@ describe('fetch', () => {
     expect(resp.status).toBe(200)
   })
 
-  it('merges request headers with the authorization header', async () => {
+  it('merges an object of request headers with the authorization header', async () => {
     await saveSession(window.localStorage)(fakeSession)
 
     nock('https://third-party.com')
@@ -601,6 +601,28 @@ describe('fetch', () => {
       'https://third-party.com/private-resource',
       {
         headers: { accept: 'text/plain' }
+      }
+    )
+    expect(resp.status).toBe(200)
+  })
+
+  it('merges a Header object with the authorization header', async () => {
+    await saveSession(window.localStorage)(fakeSession)
+
+    nock('https://third-party.com')
+      .get('/private-resource')
+      .reply(401, '', { 'www-authenticate': 'Bearer scope="openid webid"' })
+      .get('/private-resource')
+      .matchHeader('accept', 'text/plain')
+      .matchHeader('authorization', matchAuthzHeader('https://third-party.com'))
+      .reply(200)
+
+    const resp = await instance.fetch(
+      'https://third-party.com/private-resource',
+      {
+        headers: {
+          entries: () => [['accept', 'text/plain']]
+        }
       }
     )
     expect(resp.status).toBe(200)
