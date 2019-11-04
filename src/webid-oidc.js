@@ -1,5 +1,5 @@
 // @flow
-/* global RequestInfo, Response */
+/* global Response */
 import * as authorization from 'auth-header'
 import RelyingParty from '@solid/oidc-rp'
 import PoPToken from '@solid/oidc-rp/lib/PoPToken'
@@ -216,16 +216,17 @@ export function requiresAuth(resp: Response): boolean {
 export async function fetchWithCredentials(
   session: webIdOidcSession,
   fetch: Function,
-  input: RequestInfo,
+  input: any,
   options?: RequestOptions
 ): Promise<Response> {
   // Create a copy of the headers
   const headers = {}
-  if (options && options.headers) {
+  const origHeaders = options ? options.headers : input.headers
+  if (origHeaders) {
     const entries =
-      typeof options.headers.entries === 'function'
-        ? options.headers.entries()
-        : Object.entries(options.headers)
+      typeof origHeaders.entries === 'function'
+        ? origHeaders.entries()
+        : Object.entries(origHeaders)
     for (const [name, value] of entries) {
       headers[name] = value
     }
