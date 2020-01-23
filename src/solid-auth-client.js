@@ -25,10 +25,16 @@ export type loginOptions = {
 export default class SolidAuthClient extends EventEmitter {
   _pendingSession: ?Promise<?Session>
 
-  fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
-    this.emit('request', toUrlString(input))
-    return authnFetch(defaultStorage(), globalFetch, input, options)
-  }
+   fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
+     this.emit('request', toUrlString(input))
+     if( input.match(/^app/) ){
+       if(typeof solid.rest==="undefined") {
+         throw "To use the app:// space, you must first import solid-rest."
+       }
+       return solid.rest.fetch( input, options )
+     }
+     return authnFetch(defaultStorage(), globalFetch, input, options)
+   }
 
   login(idp: string, options: loginOptions): Promise<?Session> {
     options = { ...defaultLoginOptions(currentUrlNoParams()), ...options }
