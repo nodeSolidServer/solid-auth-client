@@ -28,7 +28,7 @@ export default class SolidAuthClient extends EventEmitter {
    fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
      this.emit('request', toUrlString(input))
      if( toUrlString(input).match(/^app/) ){
-       if(typeof solid.rest==="undefined") {
+       if(typeof solid==="undefined" || typeof solid.rest==="undefined") {
          throw "To use the app:// space, you must first import solid-rest."
        }
        return solid.rest.fetch( input, options )
