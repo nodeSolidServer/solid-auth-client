@@ -36,7 +36,9 @@ export default class SolidAuthClient extends EventEmitter {
           'To use the app:// space, you must first import solid-rest.'
         )
       }
-      return window.solid.rest.fetch(input, options)
+      else {
+          return window.solid.rest.fetch(input, options)
+      }
     }
   }
 
