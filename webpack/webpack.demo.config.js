@@ -50,6 +50,7 @@ module.exports = {
     index: 'demo.html',
     contentBase: outputDir,
     historyApiFallback: true,
+    port: 3001,
     hot: true
   }
 }

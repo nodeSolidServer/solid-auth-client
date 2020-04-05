@@ -4,9 +4,10 @@ import auth from '../../src/'
 
 const popupUri = process.env.POPUP_URI
 
-export default class AuthButtons extends React.Component<Object, Object> {
-  constructor(props: {}) {
+export default class AuthButtons extends React.Component {
+  constructor(props) {
     super(props)
+    this.state = {}
     auth.trackSession(session => this.setState({ loggedIn: !!session }))
   }
 
@@ -17,15 +18,22 @@ export default class AuthButtons extends React.Component<Object, Object> {
   login() {
     const idp = window.prompt(
       'What is the URL of your identity provider?',
-      'https://solid.community/'
+      'http://localhost:8080'
     )
     if (idp) {
-      auth.login(idp)
+      auth.login(idp, {
+        // TODO: remove this this is only here because some IDPs are not spec compliant
+        clientName: 'coolApp'
+      })
     }
   }
 
   popupLogin() {
-    auth.popupLogin({ popupUri })
+    auth.popupLogin({
+      popupUri,
+      // TODO: remove this this is only here because some IDPs are not spec compliant
+      clientName: 'coolApp'
+    })
   }
 
   render() {
