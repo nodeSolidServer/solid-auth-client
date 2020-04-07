@@ -22,7 +22,7 @@ findAppOrigin()
     let element
     if (!appOrigin) {
       element = <NoParent appName={appName} />
-    } else if (window.location.hash) {
+    } else if (window.location.search) {
       element = (
         <IdpCallback
           appOrigin={appOrigin}

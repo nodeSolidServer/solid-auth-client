@@ -9,7 +9,7 @@ import { toUrlString, currentUrlNoParams } from './url-util'
 import { customAuthFetcher } from '../../../solid-auth-client-rewrite/dist/index'
 
 export default class SolidAuthClient extends EventEmitter {
-  getAuthFetcher(storage) {
+  async getAuthFetcher(storage) {
     if (storage) {
       return customAuthFetcher({
         storage: {
@@ -23,8 +23,8 @@ export default class SolidAuthClient extends EventEmitter {
     }
   }
 
-  fetch(input, options) {
-    const authFetcher = this.getAuthFetcher()
+  async fetch(input, options) {
+    const authFetcher = await this.getAuthFetcher()
     this.emit('request', toUrlString(input))
     // @ts-ignore TODO: reconcile the input type
     return authFetcher.fetch(input, options)
@@ -32,7 +32,7 @@ export default class SolidAuthClient extends EventEmitter {
 
   async login(idp, options) {
     options = { ...defaultLoginOptions(currentUrlNoParams()), ...options }
-    const authFetcher = this.getAuthFetcher(options.storage)
+    const authFetcher = await this.getAuthFetcher(options.storage)
     await authFetcher.login({
       redirect: options.callbackUri,
       clientId: options.clientName,
@@ -59,7 +59,7 @@ export default class SolidAuthClient extends EventEmitter {
   }
 
   async currentSession(storage) {
-    const authFetcher = this.getAuthFetcher(storage)
+    const authFetcher = await this.getAuthFetcher(storage)
     const newSession = await authFetcher.getSession()
     return {
       webId: newSession.webId
@@ -77,7 +77,7 @@ export default class SolidAuthClient extends EventEmitter {
   }
 
   async logout(storage = defaultStorage()) {
-    const authFetcher = this.getAuthFetcher(storage)
+    const authFetcher = await this.getAuthFetcher(storage)
     const session = await this.currentSession(storage)
     if (session) {
       try {
