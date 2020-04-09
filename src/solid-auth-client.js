@@ -3,10 +3,18 @@ import EventEmitter from 'events'
 import { openIdpPopup, obtainSession } from './popup'
 
 import { defaultStorage } from './storage'
-
 import { toUrlString, currentUrlNoParams } from './url-util'
 
 import { customAuthFetcher } from '../../../solid-auth-fetcher/dist/index'
+
+export type loginOptions = {
+  callbackUri: string,
+  clientName?: string,
+  contacts?: Array<string>,
+  logoUri?: string,
+  popupUri: string,
+  storage: AsyncStorage
+}
 
 export default class SolidAuthClient extends EventEmitter {
   async getAuthFetcher(storage) {
@@ -59,7 +67,7 @@ export default class SolidAuthClient extends EventEmitter {
   }
 
   async currentSession(
-    storage: AsyncStorage = defaultStorage()
+    storage: AsyncStorage
   ): Promise<?Session> {
     const authFetcher = await this.getAuthFetcher(storage)
     const newSession = await authFetcher.getSession()
