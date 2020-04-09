@@ -6,7 +6,7 @@ import { defaultStorage } from './storage'
 
 import { toUrlString, currentUrlNoParams } from './url-util'
 
-import { customAuthFetcher } from '../../../solid-auth-client-rewrite/dist/index'
+import { customAuthFetcher } from '../../../solid-auth-fetcher/dist/index'
 
 export default class SolidAuthClient extends EventEmitter {
   async getAuthFetcher(storage) {
