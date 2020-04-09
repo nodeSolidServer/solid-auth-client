@@ -23,14 +23,14 @@ export default class SolidAuthClient extends EventEmitter {
     }
   }
 
-  async fetch(input, options) {
+  async fetch(input: RequestInfo, options?: RequestOptions): Promise<Response> {
     const authFetcher = await this.getAuthFetcher()
     this.emit('request', toUrlString(input))
     // @ts-ignore TODO: reconcile the input type
     return authFetcher.fetch(input, options)
   }
 
-  async login(idp, options) {
+  async login(idp: string, options: loginOptions): Promise<?Session> {
     options = { ...defaultLoginOptions(currentUrlNoParams()), ...options }
     const authFetcher = await this.getAuthFetcher(options.storage)
     await authFetcher.login({
@@ -40,7 +40,7 @@ export default class SolidAuthClient extends EventEmitter {
     })
   }
 
-  async popupLogin(options) {
+  async popupLogin(options: loginOptions): Promise<?Session> {
     options = { ...defaultLoginOptions(), ...options }
     if (!/https?:/.test(options.popupUri)) {
       options.popupUri = new URL(
@@ -58,7 +58,9 @@ export default class SolidAuthClient extends EventEmitter {
     return session
   }
 
-  async currentSession(storage) {
+  async currentSession(
+    storage: AsyncStorage = defaultStorage()
+  ): Promise<?Session> {
     const authFetcher = await this.getAuthFetcher(storage)
     const newSession = await authFetcher.getSession()
     return {
@@ -66,17 +68,17 @@ export default class SolidAuthClient extends EventEmitter {
     }
   }
 
-  async trackSession(callback) {
+  async trackSession(callback: Function): Promise<void> {
     /* eslint-disable standard/no-callback-literal */
     callback(await this.currentSession())
     this.on('session', callback)
   }
 
-  stopTrackSession(callback) {
+  stopTrackSession(callback: Function): void {
     this.removeListener('session', callback)
   }
 
-  async logout(storage = defaultStorage()) {
+  async logout(storage: AsyncStorage): Promise<void> {
     const authFetcher = await this.getAuthFetcher(storage)
     const session = await this.currentSession(storage)
     if (session) {
@@ -92,7 +94,7 @@ export default class SolidAuthClient extends EventEmitter {
   }
 }
 
-function defaultLoginOptions(url) {
+function defaultLoginOptions(url: ?string): loginOptions {
   return {
     callbackUri: url ? url.split('#')[0] : '',
     popupUri: '',
