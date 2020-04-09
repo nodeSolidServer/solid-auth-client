@@ -4,8 +4,11 @@ import auth from '../../src/'
 
 const popupUri = process.env.POPUP_URI
 
-export default class AuthButtons extends React.Component {
-  constructor(props) {
+export default class AuthButtons extends React.Component<Object, Object> {
+  state: {
+    loggedIn?: boolean
+  }
+  constructor(props: {}) {
     super(props)
     this.state = {}
     auth.trackSession(session => this.setState({ loggedIn: !!session }))

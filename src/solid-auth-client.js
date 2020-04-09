@@ -4,7 +4,9 @@ import { openIdpPopup, obtainSession } from './popup'
 
 import { defaultStorage } from './storage'
 import { toUrlString, currentUrlNoParams } from './url-util'
-
+import type { AsyncStorage } from './storage'
+import type { Session } from './session'
+// $FlowFixMe
 import { customAuthFetcher } from '../../../solid-auth-fetcher/dist/index'
 
 export type loginOptions = {
@@ -17,13 +19,14 @@ export type loginOptions = {
 }
 
 export default class SolidAuthClient extends EventEmitter {
-  async getAuthFetcher(storage) {
+  async getAuthFetcher(storage?: AsyncStorage) {
     if (storage) {
+      const asyncStorage = storage
       return customAuthFetcher({
         storage: {
-          get: key => storage.getItem(key),
-          set: (key, value) => storage.setItem(key, value),
-          delete: key => storage.removeItem(key)
+          get: key => asyncStorage.getItem(key),
+          set: (key, value) => asyncStorage.setItem(key, value),
+          delete: key => asyncStorage.removeItem(key)
         }
       })
     } else {
@@ -66,19 +69,21 @@ export default class SolidAuthClient extends EventEmitter {
     return session
   }
 
-  async currentSession(
-    storage: AsyncStorage
-  ): Promise<?Session> {
+  async currentSession(storage?: AsyncStorage): Promise<?Session> {
     const authFetcher = await this.getAuthFetcher(storage)
     const newSession = await authFetcher.getSession()
     return {
-      webId: newSession.webId
+      webId: newSession.webId,
+      sessionKey: newSession.localUserId
     }
   }
 
-  async trackSession(callback: Function): Promise<void> {
+  async trackSession(
+    callback: Function,
+    storage?: AsyncStorage
+  ): Promise<void> {
     /* eslint-disable standard/no-callback-literal */
-    callback(await this.currentSession())
+    callback(await this.currentSession(storage))
     this.on('session', callback)
   }
 
@@ -86,7 +91,7 @@ export default class SolidAuthClient extends EventEmitter {
     this.removeListener('session', callback)
   }
 
-  async logout(storage: AsyncStorage): Promise<void> {
+  async logout(storage?: AsyncStorage): Promise<void> {
     const authFetcher = await this.getAuthFetcher(storage)
     const session = await this.currentSession(storage)
     if (session) {
