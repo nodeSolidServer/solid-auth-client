@@ -35,7 +35,7 @@ export function obtainSession(
 export function popupHandler(
   store: AsyncStorage,
   { popupUri, callbackUri }: loginOptions,
-  foundSessionCb: Session => void
+  foundSessionCb: (Session) => void
 ) {
   return async (method: string, ...args: any[]) => {
     switch (method) {

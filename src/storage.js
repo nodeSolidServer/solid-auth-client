@@ -39,7 +39,7 @@ export async function getData(store: Storage): Promise<Object> {
  */
 export async function updateStorage(
   store: Storage,
-  update: Object => Object
+  update: (Object) => Object
 ): Promise<Object> {
   const currentData = await getData(store)
   const newData = update(currentData)
@@ -62,7 +62,7 @@ export function asyncStorage(storage: Storage): AsyncStorage {
 
     removeItem: (key: string): Promise<void> => {
       return Promise.resolve(storage.removeItem(key))
-    }
+    },
   }
 }
 
@@ -78,7 +78,7 @@ export const memStorage = (): Storage => {
     },
     removeItem: (key: string): void => {
       delete store[key]
-    }
+    },
   }
 }
 
@@ -91,6 +91,6 @@ export function ipcStorage(client: Client): AsyncStorage {
       client.request('storage/setItem', key, val),
 
     removeItem: (key: string): Promise<void> =>
-      client.request('storage/removeItem', key)
+      client.request('storage/removeItem', key),
   }
 }

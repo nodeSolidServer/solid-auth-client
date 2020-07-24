@@ -1,7 +1,7 @@
 /* Browser bundle that exposes solid-auth-client as window.solid.auth */
 
 const path = require('path')
-const CleanWebpackPlugin = require('clean-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const {
   context,
   mode,
@@ -26,6 +26,6 @@ module.exports = {
   },
   module: _module,
   externals,
-  plugins: [new CleanWebpackPlugin([outputDir])],
+  plugins: [new CleanWebpackPlugin()],
   devtool
 }

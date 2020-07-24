@@ -7,7 +7,7 @@ const popupUri = process.env.POPUP_URI
 export default class AuthButtons extends React.Component<Object, Object> {
   constructor(props: {}) {
     super(props)
-    auth.trackSession(session => this.setState({ loggedIn: !!session }))
+    auth.trackSession((session) => this.setState({ loggedIn: !!session }))
   }
 
   logout() {

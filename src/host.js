@@ -7,11 +7,11 @@ import * as WebIdOidc from './webid-oidc'
 
 export type host = {
   url: string,
-  requiresAuth: boolean
+  requiresAuth: boolean,
 }
 
-export function getHost(storage: AsyncStorage): string => Promise<?host> {
-  return async url => {
+export function getHost(storage: AsyncStorage): (string) => Promise<?host> {
+  return async (url) => {
     const { host } = new URL(url)
     const session = await getSession(storage)
     if (session && host === new URL(session.idp).host) {
@@ -22,22 +22,22 @@ export function getHost(storage: AsyncStorage): string => Promise<?host> {
   }
 }
 
-export function saveHost(storage: AsyncStorage): host => Promise<void> {
+export function saveHost(storage: AsyncStorage): (host) => Promise<void> {
   return async ({ url, requiresAuth }) => {
-    await updateStorage(storage, data => ({
+    await updateStorage(storage, (data) => ({
       ...data,
       hosts: {
         ...data.hosts,
-        [url]: { requiresAuth }
-      }
+        [url]: { requiresAuth },
+      },
     }))
   }
 }
 
 export function updateHostFromResponse(
   storage: AsyncStorage
-): Response => Promise<void> {
-  return async resp => {
+): (Response) => Promise<void> {
+  return async (resp) => {
     if (WebIdOidc.requiresAuth(resp)) {
       const { host } = new URL(resp.url)
       await saveHost(storage)({ url: host, requiresAuth: true })

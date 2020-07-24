@@ -10,7 +10,7 @@ const { version } = require('../package.json')
 // helpers
 
 function ns(fn) {
-  return function(...args) {
+  return function (...args) {
     fn('[solid-auth-client]', ...args)
   }
 }

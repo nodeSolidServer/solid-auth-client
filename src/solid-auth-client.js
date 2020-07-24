@@ -19,7 +19,7 @@ export type loginOptions = {
   contacts?: Array<string>,
   logoUri?: string,
   popupUri: string,
-  storage: AsyncStorage
+  storage: AsyncStorage,
 }
 
 export default class SolidAuthClient extends EventEmitter {
@@ -110,6 +110,6 @@ function defaultLoginOptions(url: ?string): loginOptions {
   return {
     callbackUri: url ? url.split('#')[0] : '',
     popupUri: '',
-    storage: defaultStorage()
+    storage: defaultStorage(),
   }
 }
