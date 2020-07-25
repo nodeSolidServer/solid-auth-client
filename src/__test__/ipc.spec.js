@@ -94,57 +94,53 @@ describe('Client', () => {
 })
 
 describe('Server', () => {
-  // FIXME: unskip this test:
-  it.skip('only responds to valid requests', async () => {
+  // eslint-disable-next-line jest/no-test-callback
+  it('only responds to valid requests', (done) => {
     expect.assertions(1)
     const parent = window
     const child = parent
     const handler = jest.fn()
     const server = new Server(child, child.location.origin, handler)
     server.start()
-    await new Promise((resolve, reject) => {
-      parent.addEventListener('message', function listener() {
-        try {
-          expect(handler.mock.calls).toHaveLength(0)
-          parent.removeEventListener('message', listener)
-          resolve()
-        } catch (e) {
-          reject(e)
-        } finally {
-          server.stop()
-        }
-      })
+    parent.addEventListener('message', function listener() {
+      try {
+        expect(handler.mock.calls).toHaveLength(0)
+        parent.removeEventListener('message', listener)
+        done()
+      } catch (e) {
+        done.fail(e)
+      } finally {
+        server.stop()
+      }
     })
     parent.postMessage('not-a-well-formed-message', parent.location.origin)
   })
 
-  // FIXME: unskip this test:
-  it.skip('delegates to a handler to compute responses', async () => {
+  // eslint-disable-next-line jest/no-test-callback
+  it('delegates to a handler to compute responses', (done) => {
     expect.assertions(3)
     const testHandler = jest.fn(async () => 'testHandler return value')
     const parent = window
     const child = parent
     const server = new Server(child, child.location.origin, testHandler)
     server.start()
-    await new Promise((resolve, reject) => {
-      child.addEventListener('message', function listener(event) {
-        try {
-          const request = event.data['solid-auth-client']
-          const { id, ret } = request
-          if (!(id && ret)) {
-            return
-          }
-          expect(testHandler.mock.calls[0]).toEqual(['foo', 'a', 'b', 'c'])
-          expect(id).toBe('12345')
-          expect(ret).toBe('testHandler return value')
-          child.removeEventListener('message', listener)
-          resolve()
-        } catch (e) {
-          reject(e)
-        } finally {
-          server.stop()
+    child.addEventListener('message', function listener(event) {
+      try {
+        const request = event.data['solid-auth-client']
+        const { id, ret } = request
+        if (!(id && ret)) {
+          return
         }
-      })
+        expect(testHandler.mock.calls[0]).toEqual(['foo', 'a', 'b', 'c'])
+        expect(id).toBe('12345')
+        expect(ret).toBe('testHandler return value')
+        child.removeEventListener('message', listener)
+        done()
+      } catch (e) {
+        done.fail(e)
+      } finally {
+        server.stop()
+      }
     })
     parent.postMessage(
       {

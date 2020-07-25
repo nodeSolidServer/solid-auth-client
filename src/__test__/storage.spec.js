@@ -13,7 +13,8 @@ describe('defaultStorage', () => {
   it('returns a memStorage if window is not available', async () => {
     expect.assertions(1)
     const { window } = global
-    delete global.window
+    global.window = undefined
+
     const storage: AsyncStorage = defaultStorage()
     await storage.setItem('foo', 'bar')
     const val = await storage.getItem('foo')
@@ -40,39 +41,37 @@ describe('ipcStorage', () => {
       expectedRet: null,
     },
   ].forEach(({ expectedMethod, expectedArgs, expectedRet }) => {
-    it.skip(`requests '${expectedMethod}' over window.postMessage`, async () => {
-      // FIXME expect.assertions(3)
-      await new Promise((resolve, reject) => {
-        window.addEventListener.bind(window)('message', function listener(
-          event
-        ) {
-          try {
-            const storageRequest = event.data['solid-auth-client']
-            const { id, method, args } = storageRequest
-            if (!(id && method && args)) {
-              return
-            }
-            expect(method).toBe(`storage/${expectedMethod}`)
-            expect(args).toEqual(expectedArgs)
-            window.postMessage.bind(window)(
-              {
-                'solid-auth-client': {
-                  id,
-                  ret: expectedRet,
-                },
-              },
-              window.location.origin
-            )
-            window.removeEventListener('message', listener)
-          } catch (e) {
-            reject(e)
+    // eslint-disable-next-line jest/no-test-callback
+    it(`requests '${expectedMethod}' over window.postMessage`, async (done) => {
+      expect.assertions(3)
+      global.window.addEventListener('message', function listener(event) {
+        try {
+          const storageRequest = event.data['solid-auth-client']
+          const { id, method, args } = storageRequest
+          if (!(id && method && args)) {
+            return
           }
-        })
+          expect(method).toBe(`storage/${expectedMethod}`)
+          expect(args).toEqual(expectedArgs)
+          global.window.postMessage(
+            {
+              'solid-auth-client': {
+                id,
+                ret: expectedRet,
+              },
+            },
+            global.window.location.origin
+          )
+          global.window.removeEventListener('message', listener)
+        } catch (e) {
+          done.fail(e)
+        }
       })
-      const client = new Client(window, window.location.origin)
+      const client = new Client(global.window, global.window.location.origin)
       const store = ipcStorage(client)
       const item = await store[expectedMethod](...expectedArgs)
       expect(item).toBe(expectedRet)
+      done()
     })
   })
 })

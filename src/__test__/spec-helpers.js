@@ -8,7 +8,7 @@ export const polyfillWindow = () => {
   _window = global.window
   global.window = Object.create(window)
 
-  Object.defineProperty(window, 'location', {
+  Object.defineProperty(global.window, 'location', {
     value: {
       href: 'https://app.biz/',
       pathname: '/',
@@ -22,7 +22,7 @@ export const polyfillWindow = () => {
     },
   })
 
-  window.localStorage = memStorage()
+  global.window.localStorage = memStorage()
 
   // this is fixed in the latest jsdom, but jest has not yet updated the jsdom dependency
   window.origin = window.location.origin
@@ -30,10 +30,10 @@ export const polyfillWindow = () => {
     writable: true,
     value: window.origin,
   })
-  MessageEvent.prototype.origin = window.location.origin
+  MessageEvent.prototype.origin = global.window.location.origin
 }
 
 export const polyunfillWindow = () => {
-  delete window.localStorage
+  delete global.window.localStorage
   global.window = _window
 }
