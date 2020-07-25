@@ -44,7 +44,7 @@ describe('ipcStorage', () => {
     // eslint-disable-next-line jest/no-test-callback
     it(`requests '${expectedMethod}' over window.postMessage`, async (done) => {
       expect.assertions(3)
-      global.window.addEventListener('message', function listener(event) {
+      window.addEventListener('message', function listener(event) {
         try {
           const storageRequest = event.data['solid-auth-client']
           const { id, method, args } = storageRequest
@@ -53,21 +53,21 @@ describe('ipcStorage', () => {
           }
           expect(method).toBe(`storage/${expectedMethod}`)
           expect(args).toEqual(expectedArgs)
-          global.window.postMessage(
+          window.postMessage(
             {
               'solid-auth-client': {
                 id,
                 ret: expectedRet,
               },
             },
-            global.window.location.origin
+            window.location.origin
           )
-          global.window.removeEventListener('message', listener)
+          window.removeEventListener('message', listener)
         } catch (e) {
           done.fail(e)
         }
       })
-      const client = new Client(global.window, global.window.location.origin)
+      const client = new Client(window, window.location.origin)
       const store = ipcStorage(client)
       const item = await store[expectedMethod](...expectedArgs)
       expect(item).toBe(expectedRet)
