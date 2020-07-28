@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/solid/solid-auth-client.svg?branch=master)](https://travis-ci.org/solid/solid-auth-client)
 [![Coverage Status](https://coveralls.io/repos/github/solid/solid-auth-client/badge.svg?branch=master)](https://coveralls.io/github/solid/solid-auth-client?branch=master)
+[![NPM Package](https://img.shields.io/npm/v/solid-auth-client.svg)](https://www.npmjs.com/package/solid-auth-client)
 
 The [Solid](https://solid.mit.edu/) project
 allows people to use apps on the Web
