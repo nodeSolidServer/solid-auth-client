@@ -30,8 +30,8 @@ module.exports = {
   externals,
   resolve: {
     alias: {
-      react: 'preact-compat',
-      'react-dom': 'preact-compat'
+      react: 'preact/compat',
+      'react-dom': 'preact/compat'
     }
   },
   plugins: [
