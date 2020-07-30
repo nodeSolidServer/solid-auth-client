@@ -86,7 +86,7 @@
     "flow-bin": "^0.130.0",
     "html-webpack-inline-source-plugin": "^1.0.0-beta.2",
     "html-webpack-plugin": "^4.3.0",
-    "jest": "^26.1.0",
+    "jest": "^26.2.1",
     "jsonwebtoken": "^8.5.1",
     "nock": "^13.0.3",
     "pre-commit": "^1.2.2",
