@@ -32,13 +32,13 @@ export class Server {
   _clientWindow: window
   _clientOrigin: string
   _handler: handler
-  _messageListener: MessageEvent => Promise<void>
+  _messageListener: (MessageEvent) => Promise<void>
 
   constructor(clientWindow: window, clientOrigin: string, handle: handler) {
     this._clientWindow = clientWindow
     this._clientOrigin = clientOrigin
     this._handler = handle
-    this._messageListener = event => this._handleMessage(event)
+    this._messageListener = (event) => this._handleMessage(event)
   }
 
   async _handleMessage({ data, origin }: MessageEvent) {
@@ -106,6 +106,7 @@ export class Client {
       // Processes a possible response to the request
       function responseListener({ data }) {
         const resp = data && data[NAMESPACE]
+        // eslint-disable-next-line no-prototype-builtins
         if (resp && resp.id === id && resp.hasOwnProperty('ret')) {
           resolve(resp.ret)
           clearTimeout(timeout)

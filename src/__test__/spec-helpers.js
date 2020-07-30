@@ -18,8 +18,8 @@ export const polyfillWindow = () => {
       },
       set hash(value) {
         this.href = this.href.replace(/#.*|$/, value)
-      }
-    }
+      },
+    },
   })
 
   window.localStorage = memStorage()
@@ -28,7 +28,7 @@ export const polyfillWindow = () => {
   window.origin = window.location.origin
   Object.defineProperty(MessageEvent.prototype, 'origin', {
     writable: true,
-    value: window.origin
+    value: window.origin,
   })
   MessageEvent.prototype.origin = window.location.origin
 }

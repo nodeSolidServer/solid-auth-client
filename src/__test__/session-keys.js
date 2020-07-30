@@ -6,7 +6,7 @@ export const sessionKeys = {
       '1Urq5L3kf4ojt1TTQOyIXBhgFxs1Ts-kLRnP9PELjrjjV5P5J12D_ejjFduTXDLwJCAvlava1mbortrPMQT-ELSRLLvJGSjtqVWFeazOC_D6mbTfZmt9AaBIx0jDCC3kLDIB1DXuLl7Iihr8ME81vgkXYtLmiHGQjmq9fDFeIocnEH9wgUc4m9N92cHw0ApMLX8RAmLub9_2PFYGvQ00EajOMa8zvmLzIAxcfb09SjRrTZ0nZgkKz2vI9p2emq0EXMABn2NY0hCdWUs7ny8OxrRbVqV3vl8PdEaDXViZQHr1jVhNaa-3p4c2JkeeMEBHZqte0nNRYu66eMZVuODO0w',
     e: 'AQAB',
     key_ops: ['verify'],
-    ext: true
+    ext: true,
   },
   private: {
     kty: 'RSA',
@@ -27,6 +27,6 @@ export const sessionKeys = {
     qi:
       'GeeRzGT0hFr2-kRAg9asOrP91QXCuXQxj9BopE2_JVyACBsXu-elNUEEzz5iV6AEVXVFhOheCUOYc5y6KL7CtqYRwhy69HHC-QpdXt46heg38fBOponKgen4IjjOEWloVT64bOZurFDL4ztnoxMKFC4nknN6OI36RyWxe10z8fs',
     key_ops: ['sign'],
-    ext: true
-  }
+    ext: true,
+  },
 }

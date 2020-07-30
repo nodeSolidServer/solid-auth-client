@@ -13,7 +13,8 @@ describe('defaultStorage', () => {
   it('returns a memStorage if window is not available', async () => {
     expect.assertions(1)
     const { window } = global
-    delete global.window
+    global.window = undefined
+
     const storage: AsyncStorage = defaultStorage()
     await storage.setItem('foo', 'bar')
     const val = await storage.getItem('foo')
@@ -27,20 +28,21 @@ describe('ipcStorage', () => {
     {
       expectedMethod: 'getItem',
       expectedArgs: ['foo'],
-      expectedRet: 'bar'
+      expectedRet: 'bar',
     },
     {
       expectedMethod: 'setItem',
       expectedArgs: ['foo', 'bar'],
-      expectedRet: null
+      expectedRet: null,
     },
     {
       expectedMethod: 'removeItem',
       expectedArgs: ['foo'],
-      expectedRet: null
-    }
+      expectedRet: null,
+    },
   ].forEach(({ expectedMethod, expectedArgs, expectedRet }) => {
-    it(`requests '${expectedMethod}' over window.postMessage`, async done => {
+    // eslint-disable-next-line jest/no-test-callback
+    it(`requests '${expectedMethod}' over window.postMessage`, async (done) => {
       expect.assertions(3)
       window.addEventListener('message', function listener(event) {
         try {
@@ -55,8 +57,8 @@ describe('ipcStorage', () => {
             {
               'solid-auth-client': {
                 id,
-                ret: expectedRet
-              }
+                ret: expectedRet,
+              },
             },
             window.location.origin
           )

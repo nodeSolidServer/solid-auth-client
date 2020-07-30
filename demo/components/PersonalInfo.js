@@ -5,7 +5,7 @@ import auth from '../../src/'
 
 export default class PersonalInfo extends React.Component<Object, Object> {
   componentWillMount() {
-    auth.trackSession(session =>
+    auth.trackSession((session) =>
       this.setState({ webId: session && session.webId })
     )
   }

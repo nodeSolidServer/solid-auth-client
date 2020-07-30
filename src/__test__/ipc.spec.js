@@ -34,8 +34,8 @@ describe('Client', () => {
           {
             'solid-auth-client': {
               id,
-              ret: 'the return value!'
-            }
+              ret: 'the return value!',
+            },
           },
           child.location.origin
         )
@@ -71,8 +71,8 @@ describe('Client', () => {
           {
             'solid-auth-client': {
               id: 'other-id',
-              ret: 'other return value'
-            }
+              ret: 'other return value',
+            },
           },
           child.location.origin
         )
@@ -80,8 +80,8 @@ describe('Client', () => {
           {
             'solid-auth-client': {
               id,
-              ret: 'the return value!'
-            }
+              ret: 'the return value!',
+            },
           },
           child.location.origin
         )
@@ -94,7 +94,8 @@ describe('Client', () => {
 })
 
 describe('Server', () => {
-  it('only responds to valid requests', done => {
+  // eslint-disable-next-line jest/no-test-callback
+  it('only responds to valid requests', (done) => {
     expect.assertions(1)
     const parent = window
     const child = parent
@@ -115,7 +116,8 @@ describe('Server', () => {
     parent.postMessage('not-a-well-formed-message', parent.location.origin)
   })
 
-  it('delegates to a handler to compute responses', done => {
+  // eslint-disable-next-line jest/no-test-callback
+  it('delegates to a handler to compute responses', (done) => {
     expect.assertions(3)
     const testHandler = jest.fn(async () => 'testHandler return value')
     const parent = window
@@ -145,8 +147,8 @@ describe('Server', () => {
         'solid-auth-client': {
           id: '12345',
           method: 'foo',
-          args: ['a', 'b', 'c']
-        }
+          args: ['a', 'b', 'c'],
+        },
       },
       parent.location.origin
     )

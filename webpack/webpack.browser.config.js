@@ -1,7 +1,7 @@
 /* Browser-friendly CommonJS bundle that exports solid-auth-client */
 
 const path = require('path')
-const CleanWebpackPlugin = require('clean-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const ReplaceInFileWebpackPlugin = require('replace-in-file-webpack-plugin');
 const {
   context,
@@ -37,7 +37,7 @@ module.exports = {
           replace: 'module.exports'
         }]
     }]),
-    new CleanWebpackPlugin([outputDir]),
+    new CleanWebpackPlugin(),
   ],
   devtool
 }

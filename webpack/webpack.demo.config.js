@@ -1,6 +1,6 @@
 /* HTML bundle of the demo application */
 
-const CleanWebpackPlugin = require('clean-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const HtmlWebpackInlineSourcePlugin = require('html-webpack-inline-source-plugin')
 const { EnvironmentPlugin, HotModuleReplacementPlugin } = require('webpack')
@@ -30,13 +30,13 @@ module.exports = {
   externals,
   resolve: {
     alias: {
-      react: 'preact-compat',
-      'react-dom': 'preact-compat'
+      react: 'preact/compat',
+      'react-dom': 'preact/compat'
     }
   },
   plugins: [
     new EnvironmentPlugin(['POPUP_URI']),
-    new CleanWebpackPlugin([outputDir]),
+    new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       chunks: ['demo'],
       filename: 'demo.html',

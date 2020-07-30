@@ -1,8 +1,9 @@
 // @flow
 /* global Response */
 import * as authorization from 'auth-header'
+
 import RelyingParty from '@solid/oidc-rp'
-import PoPToken from '@solid/oidc-rp/lib/PoPToken'
+import PoPToken from '@solid/oidc-rp/src/PoPToken'
 
 import type { loginOptions } from './solid-auth-client'
 import { currentUrl, navigateTo, toUrlString } from './url-util'
@@ -52,7 +53,7 @@ export async function currentSession(
     return {
       ...session,
       webId: session.idClaims.sub,
-      idp: session.issuer
+      idp: session.issuer,
     }
   } catch (err) {
     console.warn('Error finding a WebID-OIDC session')
@@ -120,9 +121,9 @@ async function storeRp(
   idp: string,
   rp: RelyingParty
 ): Promise<RelyingParty> {
-  await updateStorage(storage, data => ({
+  await updateStorage(storage, (data) => ({
     ...data,
-    rpConfig: rp
+    rpConfig: rp,
   }))
   return rp
 }
@@ -142,7 +143,7 @@ function registerRp(idp: string, opts: loginOptions): Promise<RelyingParty> {
   const supplementaryOptions = {
     logo_uri: opts.logoUri,
     contacts: opts.contacts,
-    client_name: opts.clientName
+    client_name: opts.clientName,
   }
 
   const registration = {
@@ -152,17 +153,20 @@ function registerRp(idp: string, opts: loginOptions): Promise<RelyingParty> {
     response_types: [responseType],
     scope: 'openid profile',
     ...clientNameI18n,
-    ...supplementaryOptions
+    ...supplementaryOptions,
   }
 
+  // Note that overrides @solid/oidc-rp/RelyingParty defaults (i.e. not merged)
   const options = {
     defaults: {
       authenticate: {
         redirect_uri: callbackUri,
-        response_type: responseType
-      }
+        response_type: responseType,
+        display: 'page',
+        scope: ['openid'],
+      },
     },
-    store: storage
+    store: storage,
   }
 
   return RelyingParty.register(idp, registration, options)
@@ -179,9 +183,9 @@ async function sendAuthRequest(
 }
 
 async function saveAppHashFragment(store: AsyncStorage): Promise<void> {
-  await updateStorage(store, data => ({
+  await updateStorage(store, (data) => ({
     ...data,
-    appHashFragment: window.location.hash
+    appHashFragment: window.location.hash,
   }))
 }
 

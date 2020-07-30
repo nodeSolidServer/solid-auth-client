@@ -9,7 +9,7 @@ export type webIdOidcSession = {
   accessToken: string,
   idToken: string,
   clientId: string,
-  sessionKey: string
+  sessionKey: string,
 }
 
 export type Session = webIdOidcSession
@@ -22,12 +22,12 @@ export async function getSession(storage: AsyncStorage): Promise<?Session> {
 export function saveSession(
   storage: AsyncStorage
 ): (session: Session) => Promise<Session> {
-  return async session => {
-    const data = await updateStorage(storage, data => ({ ...data, session }))
+  return async (session) => {
+    const data = await updateStorage(storage, (data) => ({ ...data, session }))
     return data.session
   }
 }
 
 export async function clearSession(storage: AsyncStorage): Promise<void> {
-  await updateStorage(storage, data => ({ ...data, session: null }))
+  await updateStorage(storage, (data) => ({ ...data, session: null }))
 }

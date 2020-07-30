@@ -14,20 +14,20 @@ describe('obtainSession', () => {
     const store = defaultStorage()
     const session = {
       idp: 'https://localhost',
-      webId: 'https://localhost/profile#me'
+      webId: 'https://localhost/profile#me',
     }
     const sessionPromise = obtainSession(store, window, {
       popupUri: 'https://app.biz/select-idp',
       callbackUri: 'https://app.biz/callback',
-      storage: store
+      storage: store,
     })
     window.postMessage(
       {
         'solid-auth-client': {
           id: '12345',
           method: 'foundSession',
-          args: [session]
-        }
+          args: [session],
+        },
       },
       window.location.origin
     )
@@ -44,7 +44,7 @@ describe('popupHandler', () => {
   const options = {
     popupUri: 'https://localhost/select-idp',
     callbackUri: 'https://localhost/callback',
-    storage: defaultStorage()
+    storage: defaultStorage(),
   }
 
   beforeEach(() => {
@@ -80,7 +80,7 @@ describe('popupHandler', () => {
     const _options = await handler('getLoginOptions')
     expect(_options).toEqual({
       popupUri: options.popupUri,
-      callbackUri: options.callbackUri
+      callbackUri: options.callbackUri,
     })
   })
 
@@ -88,7 +88,7 @@ describe('popupHandler', () => {
     expect.assertions(3)
     const session = {
       idp: 'https://example.com',
-      webId: 'https://me.example.com/profile#me'
+      webId: 'https://me.example.com/profile#me',
     }
     const _sessionResp = await handler('foundSession', session)
     expect(_sessionResp).toBeUndefined()

@@ -14,7 +14,7 @@ import defaultIdps from './idps.json'
 import './index.css'
 
 findAppOrigin()
-  .then(appOrigin => {
+  .then((appOrigin) => {
     const baseUrl = window.location.href.replace(/(\/\/[^/]*\/).*/, '$1')
     const host = baseUrl.replace(/^[^:]+:|\//g, '')
     const appName = process.env.APP_NAME.trim() || host
@@ -31,7 +31,7 @@ findAppOrigin()
       )
     } else {
       const idps = [...defaultIdps]
-      if (!idps.some(idp => idp.url === baseUrl)) {
+      if (!idps.some((idp) => idp.url === baseUrl)) {
         idps.unshift({ displayName: host, url: baseUrl })
       }
       element = (
@@ -41,7 +41,7 @@ findAppOrigin()
 
     ReactDOM.render(element, document.getElementById('app-container'))
   })
-  .catch(error => {
+  .catch((error) => {
     window.alert(error)
     window.close()
   })
@@ -66,8 +66,8 @@ async function getStoredAppOrigin() {
 }
 
 function storeAppOrigin(origin) {
-  return updateStorage(sessionStorage, data => ({
+  return updateStorage(sessionStorage, (data) => ({
     ...data,
-    appOrigin: origin
+    appOrigin: origin,
   }))
 }

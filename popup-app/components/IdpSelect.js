@@ -9,14 +9,14 @@ import './IdpSelect.css'
 export default class IdpSelect extends React.Component {
   state = { idp: '', error: null }
 
-  handleChangeIdp = event => {
+  handleChangeIdp = (event) => {
     let idp = event.target.value
     // Auto-prepend https: if the user is not typing it
     if (!/^($|h$|ht)/.test(idp)) idp = `https://${idp}`
     this.setState({ idp })
   }
 
-  handleBlurIdp = event => {
+  handleBlurIdp = (event) => {
     let idp = event.target.value
     // Auto-prepend https: if not present
     if (!/^(https?:\/\/|$)/.test(idp))
@@ -24,7 +24,7 @@ export default class IdpSelect extends React.Component {
     this.setState({ idp })
   }
 
-  handleSelectIdp = idp => async event => {
+  handleSelectIdp = (idp) => async (event) => {
     event.preventDefault()
     this.setState({ idp })
     if (!window.opener) {
@@ -32,13 +32,13 @@ export default class IdpSelect extends React.Component {
       this.setState({
         error:
           "Couldn't find the application window.  " +
-          'Try closing this popup window and logging in again.'
+          'Try closing this popup window and logging in again.',
       })
       return
     }
     const loginOptions = {
       ...(await this.getClient().request('getLoginOptions')),
-      storage: this.getStorage()
+      storage: this.getStorage(),
     }
     await auth.login(idp, loginOptions)
   }
@@ -71,7 +71,7 @@ export default class IdpSelect extends React.Component {
         <p>Please enter your WebID or the URL of your identity provider:</p>
         <form className="custom-idp" onSubmit={this.handleSelectIdp(idp)}>
           <input
-            ref={input => (this.idpInput = input)}
+            ref={(input) => (this.idpInput = input)}
             type="url"
             placeholder="https://my-identity.provider"
             value={idp}
@@ -84,7 +84,7 @@ export default class IdpSelect extends React.Component {
         </form>
         <p>Or pick an identity provider from the list below:</p>
         <div className="idp-list">
-          {idps.map(idp => (
+          {idps.map((idp) => (
             <button
               className="idp"
               onClick={this.handleSelectIdp(idp.url)}
