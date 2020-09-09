@@ -227,20 +227,8 @@ export async function fetchWithCredentials(
   input: any,
   options?: RequestOptions
 ): Promise<Response> {
-  // Create a copy of the headers
-  const headers = {}
-  const origHeaders = options ? options.headers : input.headers
-  if (origHeaders) {
-    const entries =
-      typeof origHeaders.entries === 'function'
-        ? origHeaders.entries()
-        : Object.entries(origHeaders)
-    for (const [name, value] of entries) {
-      headers[name] = value
-    }
-  }
-
-  // Add Authorization header
+  // Add Authorization header (assuming a modifiable headers object)
+  const headers: any = (options ? options.headers : input.headers) || {}
   const popToken = await PoPToken.issueFor(toUrlString(input), session)
   headers.authorization = `Bearer ${popToken}`
   return fetch(input, { ...options, credentials: 'include', headers })
