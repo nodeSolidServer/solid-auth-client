@@ -13,6 +13,12 @@ export async function authnFetch(
   input: RequestInfo,
   options?: RequestOptions
 ): Promise<Response> {
+  // Copy headers into a modifiable object
+  if (options) {
+    const headers = copyHeaders((options: any).headers)
+    options = { ...options, headers }
+  }
+
   // If not authenticated, perform a regular fetch
   const session = await getSession(storage)
   if (!session) {
@@ -43,4 +49,20 @@ async function shouldShareCredentials(
 ): Promise<boolean> {
   const requestHost = await getHost(storage)(toUrlString(input))
   return requestHost != null && requestHost.requiresAuth
+}
+
+function copyHeaders(origHeaders: any) {
+  const headers = {}
+  if (origHeaders) {
+    if (typeof origHeaders.forEach === 'function') {
+      origHeaders.forEach((value, key) => {
+        headers[key] = value
+      })
+    } else {
+      for (const key in origHeaders) {
+        headers[key] = origHeaders[key]
+      }
+    }
+  }
+  return headers
 }

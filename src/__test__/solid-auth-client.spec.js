@@ -619,7 +619,26 @@ describe('fetch', () => {
       'https://third-party.com/private-resource',
       {
         headers: {
-          entries: () => [['accept', 'text/plain']],
+          forEach: (iterate) => iterate('text/plain', 'accept'),
+        },
+      }
+    )
+    expect(resp.status).toBe(200)
+  })
+
+  it('accepts a Headers object when no authentication is needed', async () => {
+    await saveSession(window.localStorage)(fakeSession)
+
+    nock('https://third-party.com')
+      .get('/public-resource')
+      .matchHeader('accept', 'text/plain')
+      .reply(200)
+
+    const resp = await instance.fetch(
+      'https://third-party.com/public-resource',
+      {
+        headers: {
+          forEach: (iterate) => iterate('text/plain', 'accept'),
         },
       }
     )
@@ -642,7 +661,7 @@ describe('fetch', () => {
     const resp = await instance.fetch({
       url: 'https://third-party.com/private-resource',
       headers: {
-        entries: () => [['accept', 'text/plain']],
+        forEach: (iterate) => iterate('text/plain', 'accept'),
       },
     })
     expect(resp.status).toBe(200)
