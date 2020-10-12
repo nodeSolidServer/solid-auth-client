@@ -89,7 +89,7 @@ async function login(idp) {
   else
     alert(`Logged in as ${session.webId}`);
 }
-login('https://solid.community');
+login('https://solidcommunity.net');
 ```
 Be aware that this will _redirect_ the user away from your application
 to their identity provider.
@@ -100,7 +100,7 @@ then you can use a popup window:
 ```javascript
 async function popupLogin() {
   let session = await solid.auth.currentSession();
-  let popupUri = 'https://solid.community/common/popup.html';
+  let popupUri = 'https://solidcommunity.net/common/popup.html';
   if (!session)
     session = await solid.auth.popupLogin({ popupUri });
   alert(`Logged in as ${session.webId}`);
