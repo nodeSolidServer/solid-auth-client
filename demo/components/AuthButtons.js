@@ -17,7 +17,7 @@ export default class AuthButtons extends React.Component<Object, Object> {
   login() {
     const idp = window.prompt(
       'What is the URL of your identity provider?',
-      'https://solid.community/'
+      'https://solidcommunity.net/'
     )
     if (idp) {
       auth.login(idp)
