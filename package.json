@@ -52,11 +52,11 @@
     "prepare": "npm run build"
   },
   "dependencies": {
-    "@babel/runtime": "^7.10.5",
+    "@babel/runtime": "^7.12.1",
     "@solid/oidc-rp": "^0.11.0",
     "auth-header": "^1.0.0",
-    "commander": "^6.0.0",
-    "isomorphic-fetch": "^2.2.1"
+    "commander": "^6.2.0",
+    "isomorphic-fetch": "^3.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",
