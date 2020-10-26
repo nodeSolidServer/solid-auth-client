@@ -26,6 +26,17 @@ module.exports = {
   },
   module: _module,
   externals,
+  resolve: {
+    fallback: {
+      "assert": require.resolve("assert"),
+      "http": require.resolve("stream-http"),
+      "crypto": require.resolve("crypto-browserify"),
+      "stream": require.resolve("stream-browserify"),
+      "buffer": require.resolve("buffer/"),
+      "util": require.resolve("util/")
+    }
+  },
+  target: false,
   plugins: [new CleanWebpackPlugin()],
   devtool
 }
