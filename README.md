@@ -1,16 +1,24 @@
-# A library for reading and writing to Solid pods
+# A library for reading and writing to legacy Solid pods
 
 [![Build Status](https://travis-ci.org/solid/solid-auth-client.svg?branch=master)](https://travis-ci.org/solid/solid-auth-client)
 [![Coverage Status](https://coveralls.io/repos/github/solid/solid-auth-client/badge.svg?branch=master)](https://coveralls.io/github/solid/solid-auth-client?branch=master)
 [![NPM Package](https://img.shields.io/npm/v/solid-auth-client.svg)](https://www.npmjs.com/package/solid-auth-client)
 
-The [Solid](https://solid.mit.edu/) project
+The [Solid](https://solidproject.org/) project
 allows people to use apps on the Web
 while storing their data in their own data pod.
 
-`solid-auth-client` is a browser library that allows
-your apps to securely log in to Solid data pods
-and read and write data from them.
+`solid-auth-client` is a legacy browser library
+that allows your apps to log in and read/write data using
+a [Node Solid Server](https://github.com/solid/node-solid-server/).
+
+**⚠️ New projects should use [solid-client-authn](https://github.com/inrupt/solid-client-authn-js) instead,
+which leverages the secure DPoP authentication mechanism
+from the current [Solid specification](https://solid.github.io/authentication-panel/solid-oidc/),
+as implemented by
+the [Community Solid Server](https://github.com/solid/community-server/)
+and
+the [Enterprise Solid Server](https://inrupt.com/products/enterprise-solid-server/).**
 
 ## Usage
 In the browser, the library is accessible through `solid.auth`:
