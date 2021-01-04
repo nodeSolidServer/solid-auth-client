@@ -12,7 +12,8 @@ while storing their data in their own data pod.
 that allows your apps to log in and read/write data using
 a [Node Solid Server](https://github.com/solid/node-solid-server/).
 
-**⚠️ New projects should use [solid-client-authn](https://github.com/inrupt/solid-client-authn-js) instead,
+**⚠️ New projects should use [solid-client-authn](https://github.com/inrupt/solid-client-authn-js)
+or [solid-auth-fetcher](https://github.com/solid/solid-auth-fetcher) instead,
 which leverages the secure DPoP authentication mechanism
 from the current [Solid specification](https://solid.github.io/authentication-panel/solid-oidc/),
 as implemented by
