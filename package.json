@@ -1,6 +1,6 @@
 {
   "name": "solid-auth-client",
-  "version": "2.5.5",
+  "version": "2.5.6",
   "description": "Opaquely authenticates solid clients",
   "main": "lib/index-default.js",
   "browser": "browser/index.js",
