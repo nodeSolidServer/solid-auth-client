@@ -15,13 +15,13 @@ a [Node Solid Server](https://github.com/solid/node-solid-server/).
 **⚠️ New projects should use [solid-client-authn](https://github.com/inrupt/solid-client-authn-js)
 or [solid-auth-fetcher](https://github.com/solid/solid-auth-fetcher) instead,
 which leverage the secure DPoP authentication mechanism
-from the current [Solid specification](https://solid.github.io/authentication-panel/solid-oidc/),
+from the current [Solid specification](https://nodeSolidServer.github.io/authentication-panel/solid-oidc/),
 as implemented by [all the various Solid server implementations](https://github.com/solid/test-suite).**
 
 ## Usage
 In the browser, the library is accessible through `solid.auth`:
 ```html
-<script src="https://solid.github.io/solid-auth-client/dist/solid-auth-client.bundle.js"></script>
+<script src="https://nodeSolidServer.github.io/solid-auth-client/dist/solid-auth-client.bundle.js"></script>
 <script>
 solid.auth.trackSession(session => {
   if (!session)
